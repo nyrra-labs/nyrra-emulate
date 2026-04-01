@@ -19,7 +19,7 @@ program
   .command("start", { isDefault: true })
   .description("Start the emulator server")
   .option("-p, --port <port>", "Base port", defaultPort)
-  .option("-s, --service <services>", "Comma-separated services to enable")
+  .option("-s, --service <services>", "Comma-separated services to enable (for example: github,foundry)")
   .option("--seed <file>", "Path to seed config file")
   .action(async (opts) => {
     const port = parseInt(opts.port, 10);
@@ -37,7 +37,7 @@ program
 program
   .command("init")
   .description("Generate a starter config file")
-  .option("-s, --service <service>", "Service to generate config for", "all")
+  .option("-s, --service <service>", "Service to generate config for (for example: foundry)", "all")
   .action((opts) => {
     initCommand({ service: opts.service });
   });

@@ -12,7 +12,7 @@ export const maxDuration = 60;
 
 const DEFAULT_MODEL = "anthropic/claude-haiku-4.5";
 
-const SYSTEM_PROMPT = `You are a helpful documentation assistant for emulate, a local drop-in replacement for GitHub, Vercel, and Google APIs used in CI and no-network sandboxes.
+const SYSTEM_PROMPT = `You are a helpful documentation assistant for emulate, a local drop-in replacement for cloud and SaaS APIs used in CI and no-network sandboxes.
 
 emulate provides fully stateful, production-fidelity API emulation, not mocks. The CLI is installed as the "emulate" npm package and run via "npx emulate" or just "emulate".
 

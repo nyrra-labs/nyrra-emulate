@@ -7,6 +7,7 @@ export const PAGE_TITLES: Record<string, string> = {
   slack: "Slack API",
   apple: "Apple Sign In",
   microsoft: "Microsoft Entra ID",
+  foundry: "Foundry OAuth",
   aws: "AWS",
   authentication: "Authentication",
   architecture: "Architecture",

@@ -1,5 +1,5 @@
 import { createServer, type AppKeyResolver, type Store } from "@emulators/core";
-import { SERVICE_REGISTRY, SERVICE_NAMES } from "../registry.js";
+import { DEFAULT_SERVICE_NAMES, SERVICE_REGISTRY, SERVICE_NAMES } from "../registry.js";
 import { serve } from "@hono/node-server";
 import { readFileSync, existsSync } from "fs";
 import { resolve } from "path";
@@ -86,7 +86,7 @@ export async function startCommand(options: StartOptions): Promise<void> {
   } else if (seedConfig) {
     services = inferServicesFromConfig(seedConfig) ?? SERVICE_NAMES;
   } else {
-    services = SERVICE_NAMES;
+    services = [...DEFAULT_SERVICE_NAMES];
   }
 
   for (const svc of services) {

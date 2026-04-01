@@ -14,9 +14,13 @@ export interface ServiceEntry {
   initConfig: Record<string, unknown>;
 }
 
-const SERVICE_NAME_LIST = ["vercel", "github", "google", "slack", "apple", "microsoft", "okta", "aws", "resend", "stripe", "mongoatlas"] as const;
+const DEFAULT_SERVICE_NAME_LIST = ["vercel", "github", "google", "slack", "apple", "microsoft", "okta", "aws", "resend", "stripe", "mongoatlas"] as const;
+const EXTRA_SERVICE_NAME_LIST = ["foundry"] as const;
+const SERVICE_NAME_LIST = [...DEFAULT_SERVICE_NAME_LIST, ...EXTRA_SERVICE_NAME_LIST] as const;
+
 export type ServiceName = (typeof SERVICE_NAME_LIST)[number];
 export const SERVICE_NAMES: readonly ServiceName[] = SERVICE_NAME_LIST;
+export const DEFAULT_SERVICE_NAMES: readonly ServiceName[] = DEFAULT_SERVICE_NAME_LIST;
 
 export const SERVICE_REGISTRY: Record<ServiceName, ServiceEntry> = {
   vercel: {
@@ -188,6 +192,44 @@ export const SERVICE_REGISTRY: Record<ServiceName, ServiceEntry> = {
           client_id: "example-client-id", client_secret: "example-client-secret",
           name: "My Microsoft App", redirect_uris: ["http://localhost:3000/api/auth/callback/microsoft-entra-id"],
         }],
+      },
+    },
+  },
+
+  foundry: {
+    label: "Palantir Foundry OAuth 2.0 and current user emulator",
+    endpoints: "OAuth authorize, token exchange, current user lookup",
+    async load() {
+      const mod = await import("@emulators/foundry");
+      return { plugin: mod.foundryPlugin, seedFromConfig: mod.seedFromConfig };
+    },
+    defaultFallback(cfg) {
+      const firstLogin = (cfg?.users as Array<{ username?: string }> | undefined)?.[0]?.username ?? "admin";
+      return { login: firstLogin, id: 1, scopes: [] };
+    },
+    initConfig: {
+      foundry: {
+        users: [
+          {
+            username: "jane",
+            display_name: "Jane Smith",
+            email: "jane@example.com",
+            given_name: "Jane",
+            family_name: "Smith",
+            attributes: {
+              department: ["Finance"],
+            },
+          },
+        ],
+        oauth_clients: [
+          {
+            client_id: "foundry-web",
+            client_secret: "foundry-secret",
+            name: "Foundry Web App",
+            redirect_uris: ["http://localhost:3000/callback"],
+            allowed_scopes: ["api:admin-read", "api:ontologies-read", "api:ontologies-write", "offline_access"],
+          },
+        ],
       },
     },
   },

@@ -1,6 +1,6 @@
 # Getting Started
 
-Local drop-in replacement for Vercel, GitHub, Google, Slack, Apple, Microsoft, and AWS APIs. Built for CI and no-network sandboxes. Fully stateful, production-fidelity API emulation. Not mocks.
+Local drop-in replacement for Vercel, GitHub, Google, Slack, Apple, Microsoft, AWS, and Foundry APIs. Built for CI and no-network sandboxes. Fully stateful, production-fidelity API emulation. Not mocks.
 
 ## Quick Start
 
@@ -8,7 +8,7 @@ Local drop-in replacement for Vercel, GitHub, Google, Slack, Apple, Microsoft, a
 npx emulate
 ```
 
-All services start with sensible defaults. No config file needed:
+The default startup set starts with sensible defaults. No config file needed:
 
 - **Vercel** on `http://localhost:4000`
 - **GitHub** on `http://localhost:4001`
@@ -18,14 +18,16 @@ All services start with sensible defaults. No config file needed:
 - **Microsoft** on `http://localhost:4005`
 - **AWS** on `http://localhost:4006`
 
+Foundry is available when you enable it explicitly with `emulate --service foundry` or include `foundry:` in the seed config.
+
 ## CLI
 
 ```bash
-# Start all services (zero-config)
+# Start the default startup set
 emulate
 
 # Start specific services
-emulate --service vercel,github
+emulate --service vercel,github,foundry
 
 # Custom port
 emulate --port 3000
@@ -37,7 +39,7 @@ emulate --seed config.yaml
 emulate init
 
 # Generate config for a specific service
-emulate init --service github
+emulate init --service foundry
 
 # List available services
 emulate list
@@ -61,7 +63,7 @@ emulate list
     </tr>
     <tr>
       <td><code>-s, --service</code></td>
-      <td>all</td>
+      <td>default startup set</td>
       <td>Comma-separated services to enable</td>
     </tr>
     <tr>
