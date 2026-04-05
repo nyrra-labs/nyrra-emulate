@@ -128,3 +128,29 @@ google:
       mime_type: application/vnd.google-apps.folder
       parent_ids:
         - root
+
+foundry:
+  users:
+    - username: jane
+      display_name: Jane Smith
+      email: jane@example.com
+      given_name: Jane
+      family_name: Smith
+      attributes:
+        department:
+          - Finance
+  oauth_clients:
+    - client_id: foundry-web
+      client_secret: foundry-secret
+      name: Foundry Web App
+      redirect_uris:
+        - http://localhost:3000/callback
+      grant_types:
+        - authorization_code
+        - refresh_token
+        - client_credentials
+      allowed_scopes:
+        - api:admin-read
+        - api:ontologies-read
+        - api:ontologies-write
+        - offline_access

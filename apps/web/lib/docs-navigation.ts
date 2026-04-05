@@ -12,6 +12,7 @@ export const allDocsPages: NavItem[] = [
   { name: "Slack API", href: "/slack" },
   { name: "Apple Sign In", href: "/apple" },
   { name: "Microsoft Entra ID", href: "/microsoft" },
+  { name: "Foundry OAuth", href: "/foundry" },
   { name: "AWS", href: "/aws" },
   { name: "Authentication", href: "/authentication" },
   { name: "Architecture", href: "/architecture" },

@@ -8,7 +8,7 @@ Local drop-in replacement services for CI and no-network sandboxes. Fully statef
 npx emulate
 ```
 
-All services start with sensible defaults. No config file needed:
+The default startup set starts with sensible defaults. No config file needed:
 
 - **Vercel** on `http://localhost:4000`
 - **GitHub** on `http://localhost:4001`
@@ -18,14 +18,16 @@ All services start with sensible defaults. No config file needed:
 - **Microsoft** on `http://localhost:4005`
 - **AWS** on `http://localhost:4006`
 
+Foundry is available when you enable it explicitly with `emulate --service foundry` or include `foundry:` in the seed config.
+
 ## CLI
 
 ```bash
-# Start all services (zero-config)
+# Start the default startup set
 emulate
 
 # Start specific services
-emulate --service vercel,github
+emulate --service vercel,github,foundry
 
 # Custom port
 emulate --port 3000
@@ -37,7 +39,7 @@ emulate --seed config.yaml
 emulate init
 
 # Generate config for a specific service
-emulate init --service vercel
+emulate init --service foundry
 
 # List available services
 emulate list
@@ -48,7 +50,7 @@ emulate list
 | Flag | Default | Description |
 |------|---------|-------------|
 | `-p, --port` | `4000` | Base port (auto-increments per service) |
-| `-s, --service` | all | Comma-separated services to enable |
+| `-s, --service` | default startup set | Comma-separated services to enable |
 | `--seed` | auto-detect | Path to seed config (YAML or JSON) |
 
 The port can also be set via `EMULATE_PORT` or `PORT` environment variables.
@@ -66,12 +68,15 @@ import { createEmulator } from 'emulate'
 
 const github = await createEmulator({ service: 'github', port: 4001 })
 const vercel = await createEmulator({ service: 'vercel', port: 4002 })
+const foundry = await createEmulator({ service: 'foundry', port: 4003 })
 
 github.url   // 'http://localhost:4001'
 vercel.url   // 'http://localhost:4002'
+foundry.url  // 'http://localhost:4003'
 
 await github.close()
 await vercel.close()
+await foundry.close()
 ```
 
 ### Vitest / Jest setup
@@ -100,7 +105,7 @@ afterAll(() => Promise.all([github.close(), vercel.close()]))
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `service` | *(required)* | Service name: `'vercel'`, `'github'`, `'google'`, `'slack'`, `'apple'`, `'microsoft'`, or `'aws'` |
+| `service` | *(required)* | Registered service name such as `'vercel'`, `'github'`, `'google'`, `'slack'`, `'apple'`, `'microsoft'`, `'aws'`, or `'foundry'` |
 | `port` | `4000` | Port for the HTTP server |
 | `seed` | none | Inline seed data (same shape as YAML config) |
 
@@ -237,6 +242,32 @@ microsoft:
       redirect_uris:
         - http://localhost:3000/api/auth/callback/microsoft-entra-id
 
+foundry:
+  users:
+    - username: jane
+      display_name: Jane Smith
+      email: jane@example.com
+      given_name: Jane
+      family_name: Smith
+      attributes:
+        department:
+          - Finance
+  oauth_clients:
+    - client_id: foundry-web
+      client_secret: foundry-secret
+      name: Foundry Web App
+      redirect_uris:
+        - http://localhost:3000/callback
+      grant_types:
+        - authorization_code
+        - refresh_token
+        - client_credentials
+      allowed_scopes:
+        - api:admin-read
+        - api:ontologies-read
+        - api:ontologies-write
+        - offline_access
+
 aws:
   region: us-east-1
   s3:
@@ -353,6 +384,24 @@ microsoft:
       redirect_uris:
         - "http://localhost:3000/api/auth/callback/microsoft-entra-id"
 ```
+
+### Foundry OAuth Clients
+
+```yaml
+foundry:
+  oauth_clients:
+    - client_id: "foundry-web"
+      client_secret: "foundry-secret"
+      name: "Foundry Web App"
+      redirect_uris:
+        - "http://localhost:3000/callback"
+      allowed_scopes:
+        - "api:admin-read"
+        - "api:ontologies-read"
+        - "offline_access"
+```
+
+When no `oauth_clients` are configured, Foundry accepts any `client_id`. With clients configured, strict validation is enforced for `client_id`, `client_secret`, `redirect_uri`, grant type, and requested scopes.
 
 ## Vercel API
 
@@ -610,6 +659,21 @@ Microsoft Entra ID (Azure AD) v2.0 OAuth 2.0 and OpenID Connect emulation with a
 - `GET /oauth2/v2.0/logout` - end session / logout
 - `POST /oauth2/v2.0/revoke` - token revocation
 
+## Foundry OAuth
+
+Palantir Foundry OAuth 2.0 emulation with authorization code, PKCE, refresh token rotation, client credentials, and current user lookup.
+
+- `GET /multipass/api/oauth2/authorize` - authorization endpoint (shows user picker)
+- `POST /multipass/api/oauth2/token` - token exchange (authorization code, refresh token, client credentials)
+- `GET /api/v2/admin/users/getCurrent` - current user lookup
+
+Behavior notes:
+
+- The token endpoint accepts `application/x-www-form-urlencoded`
+- `offline_access` returns refresh tokens and refresh rotates them
+- `client_credentials` creates a service principal whose username matches `client_id`
+- `getCurrent` requires the `api:admin-read` scope
+
 ## AWS
 
 S3, SQS, IAM, and STS emulation with REST-style S3 paths and query-style SQS/IAM/STS endpoints. All responses use AWS-compatible XML.
@@ -654,6 +718,7 @@ packages/
     slack/          # Slack Web API, OAuth v2, incoming webhooks
     apple/          # Apple Sign In / OIDC
     microsoft/      # Microsoft Entra ID OAuth 2.0 / OIDC + Graph /me
+    foundry/        # Foundry OAuth 2.0 + current user
     aws/            # AWS S3, SQS, IAM, STS
 apps/
   web/              # Documentation site (Next.js)
@@ -676,5 +741,7 @@ Tokens are configured in the seed config and map to users. Pass them as `Authori
 **Apple**: OIDC authorization code flow with RS256 ID tokens. On first auth per user/client pair, a `user` JSON blob is included.
 
 **Microsoft**: OIDC authorization code flow with PKCE support. Also supports client credentials grants. Microsoft Graph `/v1.0/me` available.
+
+**Foundry**: OAuth 2.0 authorization code, refresh token, and client credentials flows. `GET /api/v2/admin/users/getCurrent` requires `api:admin-read`.
 
 **AWS**: Bearer tokens or IAM access key credentials. Default key pair always seeded: `AKIAIOSFODNN7EXAMPLE` / `wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY`.

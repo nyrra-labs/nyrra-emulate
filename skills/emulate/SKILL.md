@@ -1,6 +1,6 @@
 ---
 name: emulate
-description: Local drop-in API emulator for Vercel, GitHub, Google, Slack, Apple, Microsoft, and AWS. Use when the user needs to start emulated services, configure seed data, write tests against local APIs, set up CI without network access, or work with the emulate CLI or programmatic API. Triggers include "start the emulator", "emulate services", "mock API locally", "create emulator config", "test against local API", "npx emulate", or any task requiring local service emulation.
+description: Local drop-in API emulator for Vercel, GitHub, Google, Slack, Apple, Microsoft, AWS, and Foundry. Use when the user needs to start emulated services, configure seed data, write tests against local APIs, set up CI without network access, or work with the emulate CLI or programmatic API. Triggers include "start the emulator", "emulate services", "mock API locally", "create emulator config", "test against local API", "npx emulate", or any task requiring local service emulation.
 allowed-tools: Bash(npx emulate:*), Bash(emulate:*)
 ---
 
@@ -14,7 +14,7 @@ Local drop-in replacement services for CI and no-network sandboxes. Fully statef
 npx emulate
 ```
 
-All services start with sensible defaults:
+The default startup set starts with sensible defaults:
 
 | Service   | Default Port |
 |-----------|-------------|
@@ -26,14 +26,16 @@ All services start with sensible defaults:
 | Microsoft | 4005        |
 | AWS       | 4006        |
 
+Foundry is opt-in. Start it explicitly with `npx emulate --service foundry`, or include `foundry:` in the seed config so service inference enables it.
+
 ## CLI
 
 ```bash
-# Start all services (zero-config)
+# Start the default startup set
 emulate
 
 # Start specific services
-emulate --service vercel,github
+emulate --service vercel,github,foundry
 
 # Custom base port (auto-increments per service)
 emulate --port 3000
@@ -45,7 +47,7 @@ emulate --seed config.yaml
 emulate init
 
 # Generate config for a specific service
-emulate init --service vercel
+emulate init --service foundry
 
 # List available services
 emulate list
@@ -56,7 +58,7 @@ emulate list
 | Flag | Default | Description |
 |------|---------|-------------|
 | `-p, --port` | `4000` | Base port (auto-increments per service) |
-| `-s, --service` | all | Comma-separated services to enable |
+| `-s, --service` | default startup set | Comma-separated services to enable |
 | `--seed` | auto-detect | Path to seed config (YAML or JSON) |
 
 The port can also be set via `EMULATE_PORT` or `PORT` environment variables.
@@ -74,19 +76,22 @@ import { createEmulator } from 'emulate'
 
 const github = await createEmulator({ service: 'github', port: 4001 })
 const vercel = await createEmulator({ service: 'vercel', port: 4002 })
+const foundry = await createEmulator({ service: 'foundry', port: 4003 })
 
 github.url   // 'http://localhost:4001'
 vercel.url   // 'http://localhost:4002'
+foundry.url  // 'http://localhost:4003'
 
 await github.close()
 await vercel.close()
+await foundry.close()
 ```
 
 ### Options
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `service` | *(required)* | `'vercel'`, `'github'`, `'google'`, `'slack'`, `'apple'`, `'microsoft'`, or `'aws'` |
+| `service` | *(required)* | Registered service name such as `'vercel'`, `'github'`, `'google'`, `'slack'`, `'apple'`, `'microsoft'`, `'aws'`, or `'foundry'` |
 | `port` | `4000` | Port for the HTTP server |
 | `seed` | none | Inline seed data (same shape as YAML config) |
 
@@ -229,6 +234,32 @@ microsoft:
       redirect_uris:
         - http://localhost:3000/api/auth/callback/microsoft-entra-id
 
+foundry:
+  users:
+    - username: jane
+      display_name: Jane Smith
+      email: jane@example.com
+      given_name: Jane
+      family_name: Smith
+      attributes:
+        department:
+          - Finance
+  oauth_clients:
+    - client_id: foundry-web
+      client_secret: foundry-secret
+      name: Foundry Web App
+      redirect_uris:
+        - http://localhost:3000/callback
+      grant_types:
+        - authorization_code
+        - refresh_token
+        - client_credentials
+      allowed_scopes:
+        - api:admin-read
+        - api:ontologies-read
+        - api:ontologies-write
+        - offline_access
+
 aws:
   region: us-east-1
   s3:
@@ -251,6 +282,8 @@ Tokens map to users. Pass them as `Authorization: Bearer <token>` or `Authorizat
 
 Each service also has a fallback user. If no token is provided, requests authenticate as the first seeded user.
 
+Foundry current-user lookups still require `api:admin-read`, even when the token resolves to a seeded fallback user.
+
 ## Pointing Your App at the Emulator
 
 Set environment variables to override real service URLs:
@@ -263,6 +296,12 @@ SLACK_EMULATOR_URL=http://localhost:4003
 APPLE_EMULATOR_URL=http://localhost:4004
 MICROSOFT_EMULATOR_URL=http://localhost:4005
 AWS_EMULATOR_URL=http://localhost:4006
+```
+
+When Foundry is started on its own, the usual URL is:
+
+```bash
+FOUNDRY_EMULATOR_URL=http://localhost:4000
 ```
 
 Then use these in your app to construct API and OAuth URLs. See each service's skill for SDK-specific override instructions.
@@ -280,6 +319,7 @@ packages/
     slack/           # Slack Web API, OAuth, incoming webhooks plugin
     apple/           # Sign in with Apple / OIDC plugin
     microsoft/       # Microsoft Entra ID OAuth 2.0 / OIDC plugin
+    foundry/         # Foundry OAuth 2.0 + current user plugin
     aws/             # AWS S3, SQS, IAM, STS plugin
 ```
 

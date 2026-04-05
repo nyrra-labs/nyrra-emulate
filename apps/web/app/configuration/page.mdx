@@ -256,6 +256,38 @@ microsoft:
       tenant_id: 9188040d-6c67-4c5b-b112-36a304b66dad
 ```
 
+## Foundry Seed Config
+
+```yaml
+foundry:
+  users:
+    - username: jane
+      display_name: Jane Smith
+      email: jane@example.com
+      given_name: Jane
+      family_name: Smith
+      attributes:
+        department:
+          - Finance
+  oauth_clients:
+    - client_id: foundry-web
+      client_secret: foundry-secret
+      name: Foundry Web App
+      redirect_uris:
+        - http://localhost:3000/callback
+      grant_types:
+        - authorization_code
+        - refresh_token
+        - client_credentials
+      allowed_scopes:
+        - api:admin-read
+        - api:ontologies-read
+        - api:ontologies-write
+        - offline_access
+```
+
+When no `oauth_clients` are configured, Foundry accepts any `client_id`. With clients configured, strict validation is enforced for `client_id`, `client_secret`, `redirect_uri`, grant type, and requested scopes.
+
 ## AWS Seed Config
 
 ```yaml
