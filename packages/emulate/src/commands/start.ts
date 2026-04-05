@@ -84,7 +84,7 @@ export async function startCommand(options: StartOptions): Promise<void> {
   if (options.service) {
     services = options.service.split(",").map((s) => s.trim());
   } else if (seedConfig) {
-    services = inferServicesFromConfig(seedConfig) ?? SERVICE_NAMES;
+    services = inferServicesFromConfig(seedConfig) ?? [...DEFAULT_SERVICE_NAMES];
   } else {
     services = [...DEFAULT_SERVICE_NAMES];
   }
