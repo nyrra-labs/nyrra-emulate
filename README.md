@@ -18,7 +18,7 @@ The default startup set starts with sensible defaults. No config file needed:
 - **Microsoft** on `http://localhost:4005`
 - **AWS** on `http://localhost:4006`
 
-Foundry is available when you enable it explicitly with `emulate --service foundry` or include `foundry:` in the seed config.
+Foundry is available when you enable it explicitly with `emulate --service foundry` or include `foundry:` in the seed config. The current Foundry slice covers OAuth 2.0, current-user lookup, and compute-module runtime plus contour job routes.
 
 ## CLI
 
@@ -267,6 +267,16 @@ foundry:
         - api:ontologies-read
         - api:ontologies-write
         - offline_access
+  compute_modules:
+    deployed_apps:
+      - deployed_app_rid: ri.foundry.main.deployed-app.agent-loop
+        branch: master
+        runtime_id: agent-loop
+        display_name: Agent Loop
+        active: true
+    runtimes:
+      - runtime_id: agent-loop
+        module_auth_token: local-module-auth-token
 
 aws:
   region: us-east-1
@@ -402,6 +412,24 @@ foundry:
 ```
 
 When no `oauth_clients` are configured, Foundry accepts any `client_id`. With clients configured, strict validation is enforced for `client_id`, `client_secret`, `redirect_uri`, grant type, and requested scopes.
+
+### Foundry Compute Modules
+
+```yaml
+foundry:
+  compute_modules:
+    deployed_apps:
+      - deployed_app_rid: ri.foundry.main.deployed-app.agent-loop
+        branch: master
+        runtime_id: agent-loop
+        display_name: Agent Loop
+        active: true
+    runtimes:
+      - runtime_id: agent-loop
+        module_auth_token: local-module-auth-token
+```
+
+No compute-module state is seeded by default. Use either `compute_modules` in the seed config or `POST /_emulate/foundry/compute-modules/runtimes` to provision a runtime session for tests.
 
 ## Vercel API
 
@@ -659,13 +687,26 @@ Microsoft Entra ID (Azure AD) v2.0 OAuth 2.0 and OpenID Connect emulation with a
 - `GET /oauth2/v2.0/logout` - end session / logout
 - `POST /oauth2/v2.0/revoke` - token revocation
 
-## Foundry OAuth
+## Foundry
 
-Palantir Foundry OAuth 2.0 emulation with authorization code, PKCE, refresh token rotation, client credentials, and current user lookup.
+Palantir Foundry emulation with OAuth 2.0, current-user lookup, and compute-module runtime plus contour job routes.
+
+### OAuth and current user
 
 - `GET /multipass/api/oauth2/authorize` - authorization endpoint (shows user picker)
 - `POST /multipass/api/oauth2/token` - token exchange (authorization code, refresh token, client credentials)
 - `GET /api/v2/admin/users/getCurrent` - current user lookup
+
+### Compute modules
+
+- `POST /_emulate/foundry/compute-modules/runtimes` - create or reset a runtime session and return runtime URLs plus `Module-Auth-Token`
+- `GET /_emulate/foundry/compute-modules/runtimes/:runtimeId/job` - runtime poll route that returns `computeModuleJobV1` or `204`
+- `POST /_emulate/foundry/compute-modules/runtimes/:runtimeId/schemas` - runtime schema upload
+- `POST /_emulate/foundry/compute-modules/runtimes/:runtimeId/results/:jobId` - runtime result upload with exact raw body preservation
+- `POST /contour-backend-multiplexer/api/module-group-multiplexer/compute-modules/jobs/execute` - sync contour execute route
+- `POST /contour-backend-multiplexer/api/module-group-multiplexer/deployed-apps/jobs` - async contour submit route
+- `GET /contour-backend-multiplexer/api/module-group-multiplexer/jobs/:jobId/status` - async contour status route
+- `PUT /contour-backend-multiplexer/api/module-group-multiplexer/jobs/result/v2` - async contour raw result fetch
 
 Behavior notes:
 
@@ -673,6 +714,8 @@ Behavior notes:
 - `offline_access` returns refresh tokens and refresh rotates them
 - `client_credentials` creates a service principal whose username matches `client_id`
 - `getCurrent` requires the `api:admin-read` scope
+- Runtime routes require the exact `Module-Auth-Token` header returned by the control route
+- Contour routes require bearer auth and return raw `application/octet-stream` bodies for both single JSON and streaming outputs
 
 ## AWS
 
@@ -831,7 +874,7 @@ packages/
     slack/          # Slack Web API, OAuth v2, incoming webhooks
     apple/          # Apple Sign In / OIDC
     microsoft/      # Microsoft Entra ID OAuth 2.0 / OIDC + Graph /me
-    foundry/        # Foundry OAuth 2.0 + current user
+    foundry/        # Foundry OAuth 2.0 + compute modules + current user
     aws/            # AWS S3, SQS, IAM, STS
 apps/
   web/              # Documentation site (Next.js)
@@ -855,6 +898,6 @@ Tokens are configured in the seed config and map to users. Pass them as `Authori
 
 **Microsoft**: OIDC authorization code flow with PKCE support. Also supports client credentials grants. Microsoft Graph `/v1.0/me` available.
 
-**Foundry**: OAuth 2.0 authorization code, refresh token, and client credentials flows. `GET /api/v2/admin/users/getCurrent` requires `api:admin-read`.
+**Foundry**: OAuth 2.0 authorization code, refresh token, and client credentials flows, plus compute-module runtime and contour job routes. `GET /api/v2/admin/users/getCurrent` requires `api:admin-read`.
 
 **AWS**: Bearer tokens or IAM access key credentials. Default key pair always seeded: `AKIAIOSFODNN7EXAMPLE` / `wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY`.

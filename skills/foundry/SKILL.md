@@ -1,12 +1,12 @@
 ---
 name: foundry
-description: Emulated Palantir Foundry OAuth 2.0 and current-user API for local development and testing. Use when the user needs to test Foundry OAuth locally, emulate authorization code or client credentials flows, configure Foundry OAuth clients, validate PKCE behavior, rotate refresh tokens, or call the current user endpoint without hitting a real Foundry stack.
+description: Emulated Palantir Foundry OAuth 2.0, current-user, and compute-module APIs for local development and testing. Use when the user needs to test Foundry OAuth locally, emulate authorization code or client credentials flows, configure Foundry OAuth clients, validate PKCE behavior, rotate refresh tokens, call the current user endpoint, or run compute-module containers and contour job flows without hitting a real Foundry stack.
 allowed-tools: Bash(npx emulate:*), Bash(emulate:*), Bash(curl:*)
 ---
 
-# Foundry OAuth Emulator
+# Foundry Emulator
 
-Palantir Foundry OAuth 2.0 emulation with authorization code flow, PKCE with `S256`, refresh token rotation, client credentials, and `GET /api/v2/admin/users/getCurrent`.
+Palantir Foundry emulation with OAuth 2.0, current-user lookup, and compute-module runtime plus contour job routes.
 
 ## Start
 
@@ -42,6 +42,10 @@ FOUNDRY_EMULATOR_URL=http://localhost:4000
 | `https://<stack>/multipass/api/oauth2/authorize` | `$FOUNDRY_EMULATOR_URL/multipass/api/oauth2/authorize` |
 | `https://<stack>/multipass/api/oauth2/token` | `$FOUNDRY_EMULATOR_URL/multipass/api/oauth2/token` |
 | `https://<stack>/api/v2/admin/users/getCurrent` | `$FOUNDRY_EMULATOR_URL/api/v2/admin/users/getCurrent` |
+| `https://<stack>/contour-backend-multiplexer/api/module-group-multiplexer/compute-modules/jobs/execute` | `$FOUNDRY_EMULATOR_URL/contour-backend-multiplexer/api/module-group-multiplexer/compute-modules/jobs/execute` |
+| `https://<stack>/contour-backend-multiplexer/api/module-group-multiplexer/deployed-apps/jobs` | `$FOUNDRY_EMULATOR_URL/contour-backend-multiplexer/api/module-group-multiplexer/deployed-apps/jobs` |
+| `https://<stack>/contour-backend-multiplexer/api/module-group-multiplexer/jobs/:jobId/status` | `$FOUNDRY_EMULATOR_URL/contour-backend-multiplexer/api/module-group-multiplexer/jobs/:jobId/status` |
+| `https://<stack>/contour-backend-multiplexer/api/module-group-multiplexer/jobs/result/v2` | `$FOUNDRY_EMULATOR_URL/contour-backend-multiplexer/api/module-group-multiplexer/jobs/result/v2` |
 
 ## Seed Config
 
@@ -71,9 +75,21 @@ foundry:
         - api:ontologies-read
         - api:ontologies-write
         - offline_access
+  compute_modules:
+    deployed_apps:
+      - deployed_app_rid: ri.foundry.main.deployed-app.agent-loop
+        branch: master
+        runtime_id: agent-loop
+        display_name: Agent Loop
+        active: true
+    runtimes:
+      - runtime_id: agent-loop
+        module_auth_token: local-module-auth-token
 ```
 
 When no `oauth_clients` are configured, the emulator accepts any `client_id`. With clients configured, strict validation is enforced for `client_id`, `client_secret`, `redirect_uri`, grant type, and requested scopes.
+
+No compute-module state is seeded by default. Use either `compute_modules` in the seed config or `POST /_emulate/foundry/compute-modules/runtimes` to provision a runtime session for tests.
 
 ## Authorization Code Flow
 
@@ -149,3 +165,43 @@ curl http://localhost:4000/api/v2/admin/users/getCurrent \
 ```
 
 `getCurrent` requires the `api:admin-read` scope. Auth code and refresh tokens resolve to seeded human users. Client credentials tokens resolve to the service principal.
+
+## Compute Modules
+
+Create a runtime session for a real container or a local integration test:
+
+```bash
+curl -X POST http://localhost:4000/_emulate/foundry/compute-modules/runtimes \
+  -H "Content-Type: application/json" \
+  -d '{
+    "runtimeId": "agent-loop",
+    "deployedAppRid": "ri.foundry.main.deployed-app.agent-loop",
+    "branch": "master",
+    "displayName": "Agent Loop"
+  }'
+```
+
+The response returns:
+
+- `moduleAuthToken`
+- `getJobUri`
+- `postSchemaUri`
+- `postResultUri`
+
+Point a real `@palantir/compute-module` container at those URLs, send `Module-Auth-Token` on runtime routes, and use the contour routes for app-facing execution:
+
+```bash
+curl -X POST http://localhost:4000/contour-backend-multiplexer/api/module-group-multiplexer/compute-modules/jobs/execute \
+  -H "Authorization: Bearer contour-token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "deployedAppRid": "ri.foundry.main.deployed-app.agent-loop",
+    "deployedAppBranch": "master",
+    "queryType": "run_stream",
+    "query": {
+      "prompt": "hello"
+    }
+  }'
+```
+
+Sync execute and async result fetches return raw `application/octet-stream` bodies. Streaming outputs remain concatenated JSON values with no delimiter rewriting.

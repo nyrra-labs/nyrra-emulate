@@ -1,6 +1,6 @@
 ---
 name: emulate
-description: Local drop-in API emulator for Vercel, GitHub, Google, Slack, Apple, Microsoft, AWS, and Foundry. Use when the user needs to start emulated services, configure seed data, write tests against local APIs, set up CI without network access, or work with the emulate CLI or programmatic API. Triggers include "start the emulator", "emulate services", "mock API locally", "create emulator config", "test against local API", "npx emulate", or any task requiring local service emulation.
+description: Local drop-in API emulator for Vercel, GitHub, Google, Slack, Apple, Microsoft, AWS, and Foundry. Foundry currently covers OAuth, current-user lookup, and compute-module routes. Use when the user needs to start emulated services, configure seed data, write tests against local APIs, set up CI without network access, or work with the emulate CLI or programmatic API. Triggers include "start the emulator", "emulate services", "mock API locally", "create emulator config", "test against local API", "npx emulate", or any task requiring local service emulation.
 allowed-tools: Bash(npx emulate:*), Bash(emulate:*)
 ---
 
@@ -26,7 +26,7 @@ The default startup set starts with sensible defaults:
 | Microsoft | 4005        |
 | AWS       | 4006        |
 
-Foundry is opt-in. Start it explicitly with `npx emulate --service foundry`, or include `foundry:` in the seed config so service inference enables it.
+Foundry is opt-in. Start it explicitly with `npx emulate --service foundry`, or include `foundry:` in the seed config so service inference enables it. The current Foundry slice covers OAuth, current-user lookup, and compute-module runtime plus contour routes.
 
 ## CLI
 
@@ -259,6 +259,16 @@ foundry:
         - api:ontologies-read
         - api:ontologies-write
         - offline_access
+  compute_modules:
+    deployed_apps:
+      - deployed_app_rid: ri.foundry.main.deployed-app.agent-loop
+        branch: master
+        runtime_id: agent-loop
+        display_name: Agent Loop
+        active: true
+    runtimes:
+      - runtime_id: agent-loop
+        module_auth_token: local-module-auth-token
 
 aws:
   region: us-east-1
@@ -350,7 +360,7 @@ packages/
     slack/           # Slack Web API, OAuth, incoming webhooks plugin
     apple/           # Sign in with Apple / OIDC plugin
     microsoft/       # Microsoft Entra ID OAuth 2.0 / OIDC plugin
-    foundry/         # Foundry OAuth 2.0 + current user plugin
+    foundry/         # Foundry OAuth 2.0 + compute modules + current user plugin
     aws/             # AWS S3, SQS, IAM, STS plugin
 ```
 

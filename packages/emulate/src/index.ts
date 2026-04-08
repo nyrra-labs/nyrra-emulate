@@ -20,7 +20,7 @@ program
   .description("Start the emulator server")
   .option("-p, --port <port>", "Base port", defaultPort)
   .option("-s, --service <services>", "Comma-separated services to enable (for example: github,foundry)")
-  .option("--seed <file>", "Path to seed config file")
+  .option("--seed <file>", "Path to seed config file, including service-specific blocks such as foundry.compute_modules")
   .action(async (opts) => {
     const port = parseInt(opts.port, 10);
     if (Number.isNaN(port) || port < 1 || port > 65535) {
@@ -37,7 +37,7 @@ program
 program
   .command("init")
   .description("Generate a starter config file")
-  .option("-s, --service <service>", "Service to generate config for (for example: foundry)", "all")
+  .option("-s, --service <service>", "Service to generate config for (for example: foundry with oauth_clients or compute_modules)", "all")
   .action((opts) => {
     initCommand({ service: opts.service });
   });
