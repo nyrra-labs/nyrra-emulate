@@ -1,10 +1,7 @@
 import type { Hono } from "hono";
 import type { AppEnv, RouteContext, ServicePlugin, Store, TokenMap, WebhookDispatcher } from "@emulators/core";
 import type { FoundryOAuthGrantType, FoundryPrincipalType } from "./entities.js";
-import {
-  bindComputeModuleDeployedApp,
-  ensureComputeModuleRuntime,
-} from "./compute-modules/helpers.js";
+import { bindComputeModuleDeployedApp, ensureComputeModuleRuntime } from "./compute-modules/helpers.js";
 import { getFoundryStore } from "./store.js";
 import { oauthRoutes } from "./routes/oauth.js";
 import { adminRoutes } from "./routes/admin.js";

@@ -17,11 +17,7 @@ export function foundryOauthError(
   );
 }
 
-export function foundryPermissionDenied(
-  c: Context<AppEnv>,
-  errorName: string,
-  errorDescription: string,
-): Response {
+export function foundryPermissionDenied(c: Context<AppEnv>, errorName: string, errorDescription: string): Response {
   return c.json(
     {
       errorCode: "PERMISSION_DENIED",

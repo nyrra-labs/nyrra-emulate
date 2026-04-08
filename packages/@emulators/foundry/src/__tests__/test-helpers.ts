@@ -73,7 +73,7 @@ export async function createRuntimeSession(
     }),
   });
 
-  return await res.json() as {
+  return (await res.json()) as {
     runtimeId: string;
     moduleAuthToken: string;
     getJobUri: string;

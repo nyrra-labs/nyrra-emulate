@@ -58,9 +58,8 @@ export function computeModuleRuntimeRoutes({ app, store, baseUrl }: RouteContext
       return computeModuleBadRequest(c, "The runtimeId field is required.");
     }
 
-    const deployedAppRid = typeof body.deployedAppRid === "string" && body.deployedAppRid.trim()
-      ? body.deployedAppRid.trim()
-      : null;
+    const deployedAppRid =
+      typeof body.deployedAppRid === "string" && body.deployedAppRid.trim() ? body.deployedAppRid.trim() : null;
     const branch = typeof body.branch === "string" && body.branch.trim() ? body.branch.trim() : null;
     const displayName = typeof body.displayName === "string" && body.displayName.trim() ? body.displayName : null;
 

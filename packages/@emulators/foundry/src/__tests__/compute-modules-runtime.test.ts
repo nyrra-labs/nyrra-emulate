@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { getFoundryStore, seedFromConfig } from "../index.js";
-import {
-  enqueueComputeModuleJob,
-  resolveComputeModuleDeployedApp,
-} from "../compute-modules/helpers.js";
+import { enqueueComputeModuleJob, resolveComputeModuleDeployedApp } from "../compute-modules/helpers.js";
 import { authHeader, base, createFoundryTestApp, createRuntimeSession } from "./test-helpers.js";
 
 describe("Foundry compute-module runtime routes", () => {
@@ -97,7 +94,7 @@ describe("Foundry compute-module runtime routes", () => {
     });
 
     expect(res.status).toBe(200);
-    const body = await res.json() as {
+    const body = (await res.json()) as {
       type: string;
       computeModuleJobV1: { jobId: string; queryType: string; query: unknown };
     };
@@ -116,19 +113,22 @@ describe("Foundry compute-module runtime routes", () => {
       source: "runtime-direct",
     });
 
-    const schemaRes = await app.request(`${base}/_emulate/foundry/compute-modules/runtimes/${runtime.runtimeId}/schemas`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Module-Auth-Token": runtime.moduleAuthToken,
-      },
-      body: JSON.stringify({
-        run_stream: {
-          inputSchema: { type: "object" },
-          outputSchema: { type: "string" },
+    const schemaRes = await app.request(
+      `${base}/_emulate/foundry/compute-modules/runtimes/${runtime.runtimeId}/schemas`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Module-Auth-Token": runtime.moduleAuthToken,
         },
-      }),
-    });
+        body: JSON.stringify({
+          run_stream: {
+            inputSchema: { type: "object" },
+            outputSchema: { type: "string" },
+          },
+        }),
+      },
+    );
     expect(schemaRes.status).toBe(200);
 
     const pollRes = await app.request(`${base}/_emulate/foundry/compute-modules/runtimes/${runtime.runtimeId}/job`, {
@@ -136,7 +136,7 @@ describe("Foundry compute-module runtime routes", () => {
     });
     expect(pollRes.status).toBe(200);
 
-    const rawResult = "{\"chunk\":1}{\"chunk\":2}";
+    const rawResult = '{"chunk":1}{"chunk":2}';
     const resultRes = await app.request(
       `${base}/_emulate/foundry/compute-modules/runtimes/${runtime.runtimeId}/results/${job.job_id}`,
       {
@@ -157,7 +157,7 @@ describe("Foundry compute-module runtime routes", () => {
       },
     );
     expect(inspectRes.status).toBe(200);
-    const inspection = await inspectRes.json() as {
+    const inspection = (await inspectRes.json()) as {
       job: { status: string; result_body_utf8: string };
       schemas: Array<{ function_name: string }>;
     };

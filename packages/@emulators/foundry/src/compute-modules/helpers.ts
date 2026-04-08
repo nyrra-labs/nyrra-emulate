@@ -60,13 +60,14 @@ function deleteCollectionItems<T extends { id: number }>(items: T[], deleter: (i
 function extractNamedSchemaEntries(value: unknown): SchemaEntry[] {
   if (!isRecord(value)) return [];
 
-  const functionName = typeof value.functionName === "string"
-    ? value.functionName
-    : typeof value.function_name === "string"
-      ? value.function_name
-      : typeof value.name === "string"
-        ? value.name
-        : null;
+  const functionName =
+    typeof value.functionName === "string"
+      ? value.functionName
+      : typeof value.function_name === "string"
+        ? value.function_name
+        : typeof value.name === "string"
+          ? value.name
+          : null;
 
   if (!functionName) return [];
 
@@ -198,11 +199,14 @@ export function createOrResetComputeModuleRuntimeSession(
   const existingRuntime = fs.computeModuleRuntimes.findOneBy("runtime_id", input.runtimeId);
   const moduleAuthToken = input.moduleAuthToken ?? nextModuleAuthToken();
 
-  deleteCollectionItems(fs.computeModuleJobs.findBy("runtime_id", input.runtimeId), (id) => fs.computeModuleJobs.delete(id));
-  deleteCollectionItems(fs.computeModuleSchemas.findBy("runtime_id", input.runtimeId), (id) => fs.computeModuleSchemas.delete(id));
-  deleteCollectionItems(
-    fs.computeModuleDeployedApps.findBy("runtime_id", input.runtimeId),
-    (id) => fs.computeModuleDeployedApps.delete(id),
+  deleteCollectionItems(fs.computeModuleJobs.findBy("runtime_id", input.runtimeId), (id) =>
+    fs.computeModuleJobs.delete(id),
+  );
+  deleteCollectionItems(fs.computeModuleSchemas.findBy("runtime_id", input.runtimeId), (id) =>
+    fs.computeModuleSchemas.delete(id),
+  );
+  deleteCollectionItems(fs.computeModuleDeployedApps.findBy("runtime_id", input.runtimeId), (id) =>
+    fs.computeModuleDeployedApps.delete(id),
   );
 
   const runtime = existingRuntime
@@ -379,7 +383,10 @@ export async function waitForComputeModuleJob(
   return getComputeModuleJob(store, jobId);
 }
 
-export function buildComputeModuleRuntimeUrls(baseUrl: string, runtimeId: string): {
+export function buildComputeModuleRuntimeUrls(
+  baseUrl: string,
+  runtimeId: string,
+): {
   getJobUri: string;
   postResultUri: string;
   postSchemaUri: string;

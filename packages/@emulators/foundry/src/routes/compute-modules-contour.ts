@@ -63,9 +63,10 @@ function parseExecuteRequest(payload: unknown): ExecuteRequest | null {
 
   return {
     deployedAppRid,
-    deployedAppBranch: typeof payload.deployedAppBranch === "string" && payload.deployedAppBranch.trim()
-      ? payload.deployedAppBranch.trim()
-      : null,
+    deployedAppBranch:
+      typeof payload.deployedAppBranch === "string" && payload.deployedAppBranch.trim()
+        ? payload.deployedAppBranch.trim()
+        : null,
     queryType,
     query: "query" in payload ? payload.query : {},
   };
@@ -178,9 +179,7 @@ export function computeModuleContourRoutes({ app, store }: RouteContext): void {
       return contourBadRequest(c, "Request body must be a JSON object.");
     }
 
-    const jobId = typeof body.id === "string"
-      ? body.id
-      : parseComputeModuleAsyncJobHandle(body.jobHandle)?.jobId;
+    const jobId = typeof body.id === "string" ? body.id : parseComputeModuleAsyncJobHandle(body.jobHandle)?.jobId;
     if (!jobId) {
       return contourBadRequest(c, "Request body must include an id or a valid jobHandle.");
     }
