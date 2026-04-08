@@ -1,6 +1,6 @@
 ---
 name: emulate
-description: Local drop-in API emulator for Vercel, GitHub, Google, Slack, Apple, Microsoft, AWS, and Foundry. Use when the user needs to start emulated services, configure seed data, write tests against local APIs, set up CI without network access, or work with the emulate CLI or programmatic API. Triggers include "start the emulator", "emulate services", "mock API locally", "create emulator config", "test against local API", "npx emulate", or any task requiring local service emulation.
+description: Local drop-in API emulator for Vercel, GitHub, Google, Slack, Apple, Microsoft, AWS, and Foundry. Foundry currently covers OAuth, current-user lookup, and compute-module routes. Use when the user needs to start emulated services, configure seed data, write tests against local APIs, set up CI without network access, or work with the emulate CLI or programmatic API. Triggers include "start the emulator", "emulate services", "mock API locally", "create emulator config", "test against local API", "npx emulate", or any task requiring local service emulation.
 allowed-tools: Bash(npx emulate:*), Bash(emulate:*)
 ---
 
@@ -26,7 +26,7 @@ The default startup set starts with sensible defaults:
 | Microsoft | 4005        |
 | AWS       | 4006        |
 
-Foundry is opt-in. Start it explicitly with `npx emulate --service foundry`, or include `foundry:` in the seed config so service inference enables it.
+Foundry is opt-in. Start it explicitly with `npx emulate --service foundry`, or include `foundry:` in the seed config so service inference enables it. The current Foundry slice covers OAuth, current-user lookup, and compute-module runtime plus contour routes.
 
 ## CLI
 
@@ -116,8 +116,8 @@ beforeAll(async () => {
     createEmulator({ service: 'github', port: 4001 }),
     createEmulator({ service: 'vercel', port: 4002 }),
   ])
-  process.env.GITHUB_URL = github.url
-  process.env.VERCEL_URL = vercel.url
+  process.env.GITHUB_EMULATOR_URL = github.url
+  process.env.VERCEL_EMULATOR_URL = vercel.url
 })
 
 afterEach(() => { github.reset(); vercel.reset() })
@@ -259,6 +259,16 @@ foundry:
         - api:ontologies-read
         - api:ontologies-write
         - offline_access
+  compute_modules:
+    deployed_apps:
+      - deployed_app_rid: ri.foundry.main.deployed-app.agent-loop
+        branch: master
+        runtime_id: agent-loop
+        display_name: Agent Loop
+        active: true
+    runtimes:
+      - runtime_id: agent-loop
+        module_auth_token: local-module-auth-token
 
 aws:
   region: us-east-1
@@ -306,6 +316,36 @@ FOUNDRY_EMULATOR_URL=http://localhost:4000
 
 Then use these in your app to construct API and OAuth URLs. See each service's skill for SDK-specific override instructions.
 
+## Next.js Integration (Embedded Mode)
+
+The `@emulators/adapter-next` package embeds emulators directly into a Next.js app on the same origin. See the **next** skill (`skills/next/SKILL.md`) for full setup, Auth.js configuration, persistence, and font tracing details.
+
+## Persistence
+
+By default, all emulator state is in-memory. For persistence across process restarts and serverless cold starts, use a `PersistenceAdapter`.
+
+### Built-in file persistence
+
+```typescript
+import { filePersistence } from '@emulators/core'
+
+// CLI or local dev: persists to a JSON file
+const adapter = filePersistence('.emulate/state.json')
+```
+
+### Custom adapters
+
+```typescript
+import type { PersistenceAdapter } from '@emulators/core'
+
+const kvAdapter: PersistenceAdapter = {
+  async load() { return await kv.get('emulate-state') },
+  async save(data) { await kv.set('emulate-state', data) },
+}
+```
+
+State is loaded on cold start and saved after every mutating request (POST, PUT, PATCH, DELETE). Saves are serialized to prevent race conditions.
+
 ## Architecture
 
 ```
@@ -313,13 +353,14 @@ packages/
   emulate/           # CLI entry point + programmatic API
   @emulators/
     core/            # HTTP server (Hono), Store, plugin interface, middleware
+    adapter-next/    # Next.js App Router integration
     vercel/          # Vercel API service plugin
     github/          # GitHub API service plugin
     google/          # Google OAuth 2.0 / OIDC plugin
     slack/           # Slack Web API, OAuth, incoming webhooks plugin
     apple/           # Sign in with Apple / OIDC plugin
     microsoft/       # Microsoft Entra ID OAuth 2.0 / OIDC plugin
-    foundry/         # Foundry OAuth 2.0 + current user plugin
+    foundry/         # Foundry OAuth 2.0 + compute modules + current user plugin
     aws/             # AWS S3, SQS, IAM, STS plugin
 ```
 

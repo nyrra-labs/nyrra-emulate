@@ -1,13 +1,17 @@
 import type { Hono } from "hono";
 import type { AppEnv, RouteContext, ServicePlugin, Store, TokenMap, WebhookDispatcher } from "@emulators/core";
 import type { FoundryOAuthGrantType, FoundryPrincipalType } from "./entities.js";
+import { bindComputeModuleDeployedApp, ensureComputeModuleRuntime } from "./compute-modules/helpers.js";
 import { getFoundryStore } from "./store.js";
 import { oauthRoutes } from "./routes/oauth.js";
 import { adminRoutes } from "./routes/admin.js";
+import { computeModuleRuntimeRoutes } from "./routes/compute-modules-runtime.js";
+import { computeModuleContourRoutes } from "./routes/compute-modules-contour.js";
 import { DEFAULT_ORGANIZATION_RID, DEFAULT_REALM, foundryUserId } from "./helpers.js";
 
 export { getFoundryStore, type FoundryStore } from "./store.js";
 export * from "./entities.js";
+export * from "./compute-modules/entities.js";
 
 export interface FoundrySeedConfig {
   port?: number;
@@ -32,6 +36,19 @@ export interface FoundrySeedConfig {
     grant_types?: FoundryOAuthGrantType[];
     allowed_scopes?: string[];
   }>;
+  compute_modules?: {
+    deployed_apps?: Array<{
+      deployed_app_rid: string;
+      branch?: string;
+      runtime_id: string;
+      display_name?: string;
+      active?: boolean;
+    }>;
+    runtimes?: Array<{
+      runtime_id: string;
+      module_auth_token?: string;
+    }>;
+  };
 }
 
 function seedDefaults(store: Store, _baseUrl: string): void {
@@ -95,6 +112,25 @@ export function seedFromConfig(store: Store, _baseUrl: string, config: FoundrySe
       });
     }
   }
+
+  if (config.compute_modules?.runtimes) {
+    for (const runtime of config.compute_modules.runtimes) {
+      ensureComputeModuleRuntime(store, runtime.runtime_id, runtime.module_auth_token);
+    }
+  }
+
+  if (config.compute_modules?.deployed_apps) {
+    for (const deployedApp of config.compute_modules.deployed_apps) {
+      ensureComputeModuleRuntime(store, deployedApp.runtime_id);
+      bindComputeModuleDeployedApp(store, {
+        deployedAppRid: deployedApp.deployed_app_rid,
+        branch: deployedApp.branch,
+        runtimeId: deployedApp.runtime_id,
+        displayName: deployedApp.display_name,
+        active: deployedApp.active,
+      });
+    }
+  }
 }
 
 export const foundryPlugin: ServicePlugin = {
@@ -103,6 +139,8 @@ export const foundryPlugin: ServicePlugin = {
     const ctx: RouteContext = { app, store, webhooks, baseUrl, tokenMap };
     oauthRoutes(ctx);
     adminRoutes(ctx);
+    computeModuleRuntimeRoutes(ctx);
+    computeModuleContourRoutes(ctx);
   },
   seed(store: Store, baseUrl: string): void {
     seedDefaults(store, baseUrl);

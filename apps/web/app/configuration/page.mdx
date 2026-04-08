@@ -284,9 +284,21 @@ foundry:
         - api:ontologies-read
         - api:ontologies-write
         - offline_access
+  compute_modules:
+    deployed_apps:
+      - deployed_app_rid: ri.foundry.main.deployed-app.agent-loop
+        branch: master
+        runtime_id: agent-loop
+        display_name: Agent Loop
+        active: true
+    runtimes:
+      - runtime_id: agent-loop
+        module_auth_token: local-module-auth-token
 ```
 
 When no `oauth_clients` are configured, Foundry accepts any `client_id`. With clients configured, strict validation is enforced for `client_id`, `client_secret`, `redirect_uri`, grant type, and requested scopes.
+
+No compute-module state is seeded by default. Use `compute_modules` when you want contour routes to resolve a deployed app to a runtime session immediately on startup.
 
 ## AWS Seed Config
 
@@ -315,3 +327,64 @@ aws:
 ```
 
 Default seed (always created): S3 bucket `emulate-default`, SQS queue `emulate-default-queue`, IAM user `admin` with access key pair.
+
+## Okta Seed Config
+
+```yaml
+okta:
+  users:
+    - login: testuser@example.com
+      email: testuser@example.com
+      firstName: Test
+      lastName: User
+  groups:
+    - name: Everyone
+      description: All users
+  apps:
+    - name: My App
+      label: My App
+  authorization_servers:
+    - name: default
+      audiences: ["api://default"]
+```
+
+## MongoDB Atlas Seed Config
+
+```yaml
+mongoatlas:
+  projects:
+    - name: my-project
+  clusters:
+    - project: my-project
+      name: my-cluster
+  database_users:
+    - project: my-project
+      username: app-user
+```
+
+## Resend Seed Config
+
+```yaml
+resend:
+  domains:
+    - name: example.com
+  api_keys:
+    - name: default
+```
+
+## Stripe Seed Config
+
+```yaml
+stripe:
+  customers:
+    - name: Test Customer
+      email: test@example.com
+  products:
+    - name: Pro Plan
+  prices:
+    - product: Pro Plan
+      unit_amount: 2000
+      currency: usd
+      recurring:
+        interval: month
+```

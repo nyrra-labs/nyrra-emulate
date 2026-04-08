@@ -94,11 +94,7 @@ function renderOauthError(title: string, message: string): string {
   return renderErrorPage(title, message, SERVICE_LABEL);
 }
 
-function ensureServiceUser(
-  fs: ReturnType<typeof getFoundryStore>,
-  clientId: string,
-  clientName: string,
-): FoundryUser {
+function ensureServiceUser(fs: ReturnType<typeof getFoundryStore>, clientId: string, clientName: string): FoundryUser {
   const existing = fs.users.findOneBy("username", clientId);
   if (existing) return existing;
 
@@ -147,7 +143,10 @@ export function oauthRoutes({ app, store, tokenMap }: RouteContext): void {
       return c.html(renderOauthError("Invalid request", "The redirect_uri parameter is required."), 400);
     }
     if (client && !matchesRedirectUri(redirectUri, client.redirect_uris)) {
-      return c.html(renderOauthError("Redirect URI mismatch", "The redirect_uri is not registered for this application."), 400);
+      return c.html(
+        renderOauthError("Redirect URI mismatch", "The redirect_uri is not registered for this application."),
+        400,
+      );
     }
 
     const requestedScopes = splitScopes(scope);
@@ -181,9 +180,7 @@ export function oauthRoutes({ app, store, tokenMap }: RouteContext): void {
       )
       .join("\n");
 
-    const body = users.length === 0
-      ? '<p class="empty">No users in the emulator store.</p>'
-      : userButtons;
+    const body = users.length === 0 ? '<p class="empty">No users in the emulator store.</p>' : userButtons;
 
     return c.html(renderCardPage("Sign in to Foundry", subtitleText, body, SERVICE_LABEL));
   });
@@ -212,7 +209,10 @@ export function oauthRoutes({ app, store, tokenMap }: RouteContext): void {
       return c.html(renderOauthError("Invalid request", "The redirect_uri parameter is required."), 400);
     }
     if (client && !matchesRedirectUri(redirectUri, client.redirect_uris)) {
-      return c.html(renderOauthError("Redirect URI mismatch", "The redirect_uri is not registered for this application."), 400);
+      return c.html(
+        renderOauthError("Redirect URI mismatch", "The redirect_uri is not registered for this application."),
+        400,
+      );
     }
 
     const requestedScopes = splitScopes(scope);
@@ -293,7 +293,12 @@ export function oauthRoutes({ app, store, tokenMap }: RouteContext): void {
       }
       if (pending.redirectUri && redirect_uri && pending.redirectUri !== redirect_uri) {
         pendingCodes.delete(code);
-        return foundryOauthError(c, 400, "invalid_grant", "The redirect_uri does not match the one used during authorization.");
+        return foundryOauthError(
+          c,
+          400,
+          "invalid_grant",
+          "The redirect_uri does not match the one used during authorization.",
+        );
       }
 
       if (pending.codeChallenge != null) {

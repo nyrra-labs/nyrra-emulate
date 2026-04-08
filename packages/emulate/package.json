@@ -1,6 +1,6 @@
 {
   "name": "emulate",
-  "version": "0.3.0",
+  "version": "0.4.1",
   "description": "Local drop-in replacement services for CI and no-network sandboxes",
   "license": "Apache-2.0",
   "type": "module",
@@ -47,7 +47,9 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "test": "vitest run",
-    "clean": "rm -rf dist .turbo"
+    "clean": "rm -rf dist .turbo",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src"
   },
   "dependencies": {
     "@hono/node-server": "^1",
@@ -69,6 +71,7 @@
     "@emulators/vercel": "workspace:*",
     "@emulators/resend": "workspace:*",
     "@emulators/stripe": "workspace:*",
+    "@emulators/clerk": "workspace:*",
     "tsup": "^8",
     "typescript": "^5.7"
   }

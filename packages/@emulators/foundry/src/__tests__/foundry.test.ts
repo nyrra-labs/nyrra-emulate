@@ -148,7 +148,7 @@ describe("Foundry auth slice", () => {
 
     const tokenRes = await exchangeCode(app, code, { client_secret: "foundry-secret" });
     expect(tokenRes.status).toBe(200);
-    const body = await tokenRes.json() as Record<string, unknown>;
+    const body = (await tokenRes.json()) as Record<string, unknown>;
     expect((body.access_token as string).startsWith("foundry_")).toBe(true);
     expect((body.refresh_token as string).startsWith("foundry_refresh_")).toBe(true);
     expect(body.token_type).toBe("Bearer");
@@ -187,14 +187,14 @@ describe("Foundry auth slice", () => {
       code_verifier: "wrong-verifier",
     });
     expect(badRes.status).toBe(400);
-    const body = await badRes.json() as Record<string, unknown>;
+    const body = (await badRes.json()) as Record<string, unknown>;
     expect(body.error).toBe("invalid_grant");
   });
 
   it("rotates refresh tokens", async () => {
     const { code } = await getAuthCode(app);
     const tokenRes = await exchangeCode(app, code, { client_secret: "foundry-secret" });
-    const tokenBody = await tokenRes.json() as Record<string, unknown>;
+    const tokenBody = (await tokenRes.json()) as Record<string, unknown>;
     const refreshToken = tokenBody.refresh_token as string;
 
     const refreshForm = new URLSearchParams({
@@ -210,7 +210,7 @@ describe("Foundry auth slice", () => {
     });
 
     expect(refreshRes.status).toBe(200);
-    const refreshBody = await refreshRes.json() as Record<string, unknown>;
+    const refreshBody = (await refreshRes.json()) as Record<string, unknown>;
     expect((refreshBody.access_token as string).startsWith("foundry_")).toBe(true);
     expect(refreshBody.refresh_token).not.toBe(refreshToken);
   });
@@ -230,7 +230,7 @@ describe("Foundry auth slice", () => {
     });
 
     expect(res.status).toBe(200);
-    const body = await res.json() as Record<string, unknown>;
+    const body = (await res.json()) as Record<string, unknown>;
     expect((body.access_token as string).startsWith("foundry_")).toBe(true);
     expect(body.refresh_token).toBeUndefined();
 
@@ -243,7 +243,7 @@ describe("Foundry auth slice", () => {
   it("returns the current human principal for an authorization_code token", async () => {
     const { code } = await getAuthCode(app, { scope: "api:admin-read offline_access" });
     const tokenRes = await exchangeCode(app, code, { client_secret: "foundry-secret" });
-    const tokenBody = await tokenRes.json() as Record<string, unknown>;
+    const tokenBody = (await tokenRes.json()) as Record<string, unknown>;
     const accessToken = tokenBody.access_token as string;
 
     const res = await app.request(`${base}/api/v2/admin/users/getCurrent`, {
@@ -251,7 +251,7 @@ describe("Foundry auth slice", () => {
     });
 
     expect(res.status).toBe(200);
-    const body = await res.json() as Record<string, unknown>;
+    const body = (await res.json()) as Record<string, unknown>;
     expect(body.username).toBe("jane");
     expect(body.givenName).toBe("Jane");
     expect(body.familyName).toBe("Smith");
@@ -274,14 +274,14 @@ describe("Foundry auth slice", () => {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: form.toString(),
     });
-    const tokenBody = await tokenRes.json() as Record<string, unknown>;
+    const tokenBody = (await tokenRes.json()) as Record<string, unknown>;
 
     const res = await app.request(`${base}/api/v2/admin/users/getCurrent`, {
       headers: { Authorization: `Bearer ${tokenBody.access_token as string}` },
     });
 
     expect(res.status).toBe(200);
-    const body = await res.json() as Record<string, unknown>;
+    const body = (await res.json()) as Record<string, unknown>;
     expect(body.username).toBe("foundry-web");
     expect(body.organization).toBe("");
     expect(body.email).toBeUndefined();
@@ -290,21 +290,21 @@ describe("Foundry auth slice", () => {
   it("returns permission denied when api:admin-read is missing", async () => {
     const { code } = await getAuthCode(app, { scope: "api:ontologies-read" });
     const tokenRes = await exchangeCode(app, code, { client_secret: "foundry-secret" });
-    const tokenBody = await tokenRes.json() as Record<string, unknown>;
+    const tokenBody = (await tokenRes.json()) as Record<string, unknown>;
 
     const res = await app.request(`${base}/api/v2/admin/users/getCurrent`, {
       headers: { Authorization: `Bearer ${tokenBody.access_token as string}` },
     });
 
     expect(res.status).toBe(403);
-    const body = await res.json() as Record<string, unknown>;
+    const body = (await res.json()) as Record<string, unknown>;
     expect(body.errorCode).toBe("PERMISSION_DENIED");
   });
 
   it("requires authentication for getCurrent when no bearer token is provided", async () => {
     const res = await app.request(`${base}/api/v2/admin/users/getCurrent`);
     expect(res.status).toBe(401);
-    const body = await res.json() as Record<string, unknown>;
+    const body = (await res.json()) as Record<string, unknown>;
     expect(body.message).toBe("Requires authentication");
   });
 
@@ -323,14 +323,14 @@ describe("Foundry auth slice", () => {
     });
 
     expect(res.status).toBe(400);
-    const body = await res.json() as Record<string, unknown>;
+    const body = (await res.json()) as Record<string, unknown>;
     expect(body.error).toBe("invalid_scope");
   });
 
   it("stores access tokens in the shared token map", async () => {
     const { code } = await getAuthCode(app);
     const tokenRes = await exchangeCode(app, code, { client_secret: "foundry-secret" });
-    const tokenBody = await tokenRes.json() as Record<string, unknown>;
+    const tokenBody = (await tokenRes.json()) as Record<string, unknown>;
     expect(tokenMap.has(tokenBody.access_token as string)).toBe(true);
   });
 });

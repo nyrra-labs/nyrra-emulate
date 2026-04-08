@@ -114,6 +114,8 @@ The current test suite covers:
 
 The next useful Foundry slices are:
 
+- compute modules
+- see `COMPUTE_MODULE_SLICE_PLAN.md` for the concrete route, store, and test plan
 - ontology discovery routes
 - object reads
 - action execution
