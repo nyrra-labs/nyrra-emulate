@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en" class="dark">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="icon" href="%sveltekit.assets%/favicon.ico" />
+		<script>
+			// Mirrors apps/web's next-themes setup: defaultTheme=dark, enableSystem.
+			// Order of precedence: explicit localStorage value -> prefers-color-scheme:
+			// light -> default dark. Runs synchronously before <body> renders so
+			// Tailwind dark: variants pick up the correct class on first paint.
+			(function () {
+				var stored = localStorage.getItem('theme');
+				var theme;
+				if (stored === 'light' || stored === 'dark') {
+					theme = stored;
+				} else if (
+					typeof window !== 'undefined' &&
+					window.matchMedia &&
+					window.matchMedia('(prefers-color-scheme: light)').matches
+				) {
+					theme = 'light';
+				} else {
+					theme = 'dark';
+				}
+				document.documentElement.classList.toggle('dark', theme === 'dark');
+			})();
+		</script>
+		%sveltekit.head%
+	</head>
+	<body class="bg-white text-neutral-900 antialiased dark:bg-neutral-950 dark:text-neutral-100" data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>
