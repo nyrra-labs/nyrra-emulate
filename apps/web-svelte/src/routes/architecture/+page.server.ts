@@ -1,5 +1,5 @@
-import type { PageServerLoad } from './$types';
-import { highlightAll, type SupportedLang } from '$lib/code-highlight.server';
+import type { PageServerLoad } from "./$types";
+import { highlightAll, type SupportedLang } from "$lib/code-highlight.server";
 
 export const prerender = true;
 
@@ -7,9 +7,9 @@ export const prerender = true;
 // in the source MDX. apps/web's mdx-components.tsx defaults `lang` to
 // "typescript" in that case, so we mirror that here for token coloring parity.
 const codes = {
-	directoryTree: {
-		lang: 'typescript' as SupportedLang,
-		code: `packages/
+  directoryTree: {
+    lang: "typescript" as SupportedLang,
+    code: `packages/
   emulate/          # CLI entry point (commander)
   @emulators/
     core/           # HTTP server, in-memory store, plugin interface, middleware
@@ -26,11 +26,11 @@ const codes = {
     resend/         # Resend email API
     stripe/         # Stripe billing and payments API
 apps/
-  web/              # Documentation site (Next.js)`
-	}
+  web/              # Documentation site (Next.js)`,
+  },
 };
 
 export const load: PageServerLoad = async () => {
-	const codeBlocks = await highlightAll(codes);
-	return { codeBlocks };
+  const codeBlocks = await highlightAll(codes);
+  return { codeBlocks };
 };

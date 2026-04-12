@@ -8,39 +8,39 @@
  * package matches the source-of-truth content from the Next.js docs MDX files.
  */
 export function mdxToCleanMarkdown(raw: string): string {
-	const lines = raw.split('\n');
-	const out: string[] = [];
-	let inJsxBlock = false;
-	let jsxDepth = 0;
+  const lines = raw.split("\n");
+  const out: string[] = [];
+  let inJsxBlock = false;
+  let jsxDepth = 0;
 
-	for (const line of lines) {
-		const trimmed = line.trim();
+  for (const line of lines) {
+    const trimmed = line.trim();
 
-		if (trimmed.startsWith('export ') || trimmed.startsWith('import ')) {
-			continue;
-		}
+    if (trimmed.startsWith("export ") || trimmed.startsWith("import ")) {
+      continue;
+    }
 
-		if (!inJsxBlock && trimmed.startsWith('<div ') && trimmed.includes('className=')) {
-			inJsxBlock = true;
-			jsxDepth = 1;
-			continue;
-		}
+    if (!inJsxBlock && trimmed.startsWith("<div ") && trimmed.includes("className=")) {
+      inJsxBlock = true;
+      jsxDepth = 1;
+      continue;
+    }
 
-		if (inJsxBlock) {
-			const opens = (line.match(/<div[\s>]/g) || []).length;
-			const closes = (line.match(/<\/div>/g) || []).length;
-			jsxDepth += opens - closes;
-			if (jsxDepth <= 0) {
-				inJsxBlock = false;
-				jsxDepth = 0;
-			}
-			continue;
-		}
+    if (inJsxBlock) {
+      const opens = (line.match(/<div[\s>]/g) || []).length;
+      const closes = (line.match(/<\/div>/g) || []).length;
+      jsxDepth += opens - closes;
+      if (jsxDepth <= 0) {
+        inJsxBlock = false;
+        jsxDepth = 0;
+      }
+      continue;
+    }
 
-		out.push(line);
-	}
+    out.push(line);
+  }
 
-	let result = out.join('\n');
-	result = result.replace(/^\n+/, '\n').trim();
-	return result;
+  let result = out.join("\n");
+  result = result.replace(/^\n+/, "\n").trim();
+  return result;
 }

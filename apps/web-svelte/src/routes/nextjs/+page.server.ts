@@ -1,16 +1,16 @@
-import type { PageServerLoad } from './$types';
-import { highlightAll } from '$lib/code-highlight.server';
+import type { PageServerLoad } from "./$types";
+import { highlightAll } from "$lib/code-highlight.server";
 
 export const prerender = true;
 
 const codes = {
-	install: {
-		lang: 'bash' as const,
-		code: `npm install @emulators/adapter-next @emulators/github @emulators/google`
-	},
-	routeHandler: {
-		lang: 'typescript' as const,
-		code: `// app/emulate/[...path]/route.ts
+  install: {
+    lang: "bash" as const,
+    code: `npm install @emulators/adapter-next @emulators/github @emulators/google`,
+  },
+  routeHandler: {
+    lang: "typescript" as const,
+    code: `// app/emulate/[...path]/route.ts
 import { createEmulateHandler } from '@emulators/adapter-next'
 import * as github from '@emulators/github'
 import * as google from '@emulators/google'
@@ -31,11 +31,11 @@ export const { GET, POST, PUT, PATCH, DELETE } = createEmulateHandler({
       },
     },
   },
-})`
-	},
-	authjs: {
-		lang: 'typescript' as const,
-		code: `import GitHub from 'next-auth/providers/github'
+})`,
+  },
+  authjs: {
+    lang: "typescript" as const,
+    code: `import GitHub from 'next-auth/providers/github'
 
 const baseUrl = process.env.VERCEL_URL
   ? \`https://\${process.env.VERCEL_URL}\`
@@ -47,24 +47,24 @@ GitHub({
   authorization: { url: \`\${baseUrl}/emulate/github/login/oauth/authorize\` },
   token: { url: \`\${baseUrl}/emulate/github/login/oauth/access_token\` },
   userinfo: { url: \`\${baseUrl}/emulate/github/user\` },
-})`
-	},
-	withEmulateBasic: {
-		lang: 'typescript' as const,
-		code: `// next.config.mjs
+})`,
+  },
+  withEmulateBasic: {
+    lang: "typescript" as const,
+    code: `// next.config.mjs
 import { withEmulate } from '@emulators/adapter-next'
 
 export default withEmulate({
   // your normal Next.js config
-})`
-	},
-	withEmulateRoutePrefix: {
-		lang: 'typescript' as const,
-		code: `export default withEmulate(nextConfig, { routePrefix: '/api/emulate' })`
-	},
-	kvAdapter: {
-		lang: 'typescript' as const,
-		code: `import { createEmulateHandler } from '@emulators/adapter-next'
+})`,
+  },
+  withEmulateRoutePrefix: {
+    lang: "typescript" as const,
+    code: `export default withEmulate(nextConfig, { routePrefix: '/api/emulate' })`,
+  },
+  kvAdapter: {
+    lang: "typescript" as const,
+    code: `import { createEmulateHandler } from '@emulators/adapter-next'
 import * as github from '@emulators/github'
 
 const kvAdapter = {
@@ -75,18 +75,18 @@ const kvAdapter = {
 export const { GET, POST, PUT, PATCH, DELETE } = createEmulateHandler({
   services: { github: { emulator: github } },
   persistence: kvAdapter,
-})`
-	},
-	filePersistence: {
-		lang: 'typescript' as const,
-		code: `import { filePersistence } from '@emulators/core'
+})`,
+  },
+  filePersistence: {
+    lang: "typescript" as const,
+    code: `import { filePersistence } from '@emulators/core'
 
 // persists to a JSON file
-persistence: filePersistence('.emulate/state.json'),`
-	}
+persistence: filePersistence('.emulate/state.json'),`,
+  },
 };
 
 export const load: PageServerLoad = async () => {
-	const codeBlocks = await highlightAll(codes);
-	return { codeBlocks };
+  const codeBlocks = await highlightAll(codes);
+  return { codeBlocks };
 };

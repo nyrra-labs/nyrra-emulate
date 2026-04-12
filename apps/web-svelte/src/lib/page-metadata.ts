@@ -39,19 +39,19 @@
  * same fonts (Geist-Regular.ttf, GeistPixel-Square.ttf) copied byte-for-byte
  * from `apps/web/public/`.
  */
-import { PAGE_TITLES } from './page-titles';
+import { PAGE_TITLES } from "./page-titles";
 
-const SITE_NAME = 'emulate';
-const BASE_URL = 'https://emulate.dev';
+const SITE_NAME = "emulate";
+const BASE_URL = "https://emulate.dev";
 
 /**
  * Root page title and description. Mirrors `apps/web/app/layout.tsx` exactly,
  * including the literal `&` (not "and") in "CI & Sandboxes" and the trailing
  * "Not mocks." sentence in the description.
  */
-const ROOT_TITLE = 'emulate | Local API Emulation for CI & Sandboxes';
+const ROOT_TITLE = "emulate | Local API Emulation for CI & Sandboxes";
 const ROOT_DESCRIPTION =
-	'Local drop-in replacement services for CI and no-network sandboxes. Fully stateful, production-fidelity API emulation. Not mocks.';
+  "Local drop-in replacement services for CI and no-network sandboxes. Fully stateful, production-fidelity API emulation. Not mocks.";
 
 /**
  * Description for every non-root page. Mirrors `apps/web/lib/page-metadata.ts`
@@ -60,103 +60,103 @@ const ROOT_DESCRIPTION =
  * (root) and the per-page metadata (non-root).
  */
 const PAGE_DESCRIPTION =
-	'Local drop-in replacement services for CI and no-network sandboxes. Fully stateful, production-fidelity API emulation.';
+  "Local drop-in replacement services for CI and no-network sandboxes. Fully stateful, production-fidelity API emulation.";
 
 export type PageMetadata = {
-	title: string;
-	description: string;
-	openGraph: {
-		type: 'website';
-		locale: 'en_US';
-		siteName: string;
-		title: string;
-		description: string;
-		url: string;
-		image: {
-			url: string;
-			width: 1200;
-			height: 630;
-			alt: string;
-		};
-	};
-	twitter: {
-		card: 'summary_large_image';
-		title: string;
-		description: string;
-		image: string;
-	};
+  title: string;
+  description: string;
+  openGraph: {
+    type: "website";
+    locale: "en_US";
+    siteName: string;
+    title: string;
+    description: string;
+    url: string;
+    image: {
+      url: string;
+      width: 1200;
+      height: 630;
+      alt: string;
+    };
+  };
+  twitter: {
+    card: "summary_large_image";
+    title: string;
+    description: string;
+    image: string;
+  };
 };
 
 export function pageMetadata(slug: string): PageMetadata | null {
-	if (slug === '') {
-		// Root page: render the layout default values verbatim. apps/web's
-		// `openGraph.url` for the root has no trailing slash, so we mirror
-		// that exactly. The root OG image is served from `/og`, mirroring
-		// `apps/web/app/og/route.tsx`.
-		const rootImageUrl = `${BASE_URL}/og`;
-		return {
-			title: ROOT_TITLE,
-			description: ROOT_DESCRIPTION,
-			openGraph: {
-				type: 'website',
-				locale: 'en_US',
-				siteName: SITE_NAME,
-				title: ROOT_TITLE,
-				description: ROOT_DESCRIPTION,
-				url: BASE_URL,
-				image: {
-					url: rootImageUrl,
-					width: 1200,
-					height: 630,
-					alt: 'emulate'
-				}
-			},
-			twitter: {
-				card: 'summary_large_image',
-				title: ROOT_TITLE,
-				description: ROOT_DESCRIPTION,
-				image: rootImageUrl
-			}
-		};
-	}
+  if (slug === "") {
+    // Root page: render the layout default values verbatim. apps/web's
+    // `openGraph.url` for the root has no trailing slash, so we mirror
+    // that exactly. The root OG image is served from `/og`, mirroring
+    // `apps/web/app/og/route.tsx`.
+    const rootImageUrl = `${BASE_URL}/og`;
+    return {
+      title: ROOT_TITLE,
+      description: ROOT_DESCRIPTION,
+      openGraph: {
+        type: "website",
+        locale: "en_US",
+        siteName: SITE_NAME,
+        title: ROOT_TITLE,
+        description: ROOT_DESCRIPTION,
+        url: BASE_URL,
+        image: {
+          url: rootImageUrl,
+          width: 1200,
+          height: 630,
+          alt: "emulate",
+        },
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: ROOT_TITLE,
+        description: ROOT_DESCRIPTION,
+        image: rootImageUrl,
+      },
+    };
+  }
 
-	const title = PAGE_TITLES[slug];
-	if (title === undefined) return null;
+  const title = PAGE_TITLES[slug];
+  if (title === undefined) return null;
 
-	const displayTitle = title.replace(/\n/g, ' ');
-	// Pre-expand the apps/web title.template = "%s | emulate" so the rendered
-	// document <title> matches what Next.js produces (e.g.
-	// "Programmatic API | emulate"), not the bare displayTitle.
-	const fullTitle = `${displayTitle} | ${SITE_NAME}`;
-	const url = `${BASE_URL}/${slug}`;
-	// Per-page OG image is served from `/og/${slug}`, mirroring
-	// `apps/web/app/og/[...slug]/route.tsx`.
-	const imageUrl = `${BASE_URL}/og/${slug}`;
+  const displayTitle = title.replace(/\n/g, " ");
+  // Pre-expand the apps/web title.template = "%s | emulate" so the rendered
+  // document <title> matches what Next.js produces (e.g.
+  // "Programmatic API | emulate"), not the bare displayTitle.
+  const fullTitle = `${displayTitle} | ${SITE_NAME}`;
+  const url = `${BASE_URL}/${slug}`;
+  // Per-page OG image is served from `/og/${slug}`, mirroring
+  // `apps/web/app/og/[...slug]/route.tsx`.
+  const imageUrl = `${BASE_URL}/og/${slug}`;
 
-	return {
-		title: fullTitle,
-		description: PAGE_DESCRIPTION,
-		openGraph: {
-			type: 'website',
-			locale: 'en_US',
-			siteName: SITE_NAME,
-			title: fullTitle,
-			description: PAGE_DESCRIPTION,
-			url,
-			image: {
-				url: imageUrl,
-				width: 1200,
-				height: 630,
-				alt: `${displayTitle} - ${SITE_NAME}`
-			}
-		},
-		twitter: {
-			card: 'summary_large_image',
-			title: fullTitle,
-			description: PAGE_DESCRIPTION,
-			image: imageUrl
-		}
-	};
+  return {
+    title: fullTitle,
+    description: PAGE_DESCRIPTION,
+    openGraph: {
+      type: "website",
+      locale: "en_US",
+      siteName: SITE_NAME,
+      title: fullTitle,
+      description: PAGE_DESCRIPTION,
+      url,
+      image: {
+        url: imageUrl,
+        width: 1200,
+        height: 630,
+        alt: `${displayTitle} - ${SITE_NAME}`,
+      },
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: fullTitle,
+      description: PAGE_DESCRIPTION,
+      image: imageUrl,
+    },
+  };
 }
 
 /**
@@ -164,6 +164,6 @@ export function pageMetadata(slug: string): PageMetadata | null {
  * `PageMetadata` instance, or `null` if the route is not in `PAGE_TITLES`.
  */
 export function pageMetadataForPathname(pathname: string): PageMetadata | null {
-	const slug = pathname === '/' ? '' : pathname.replace(/^\/+/, '').replace(/\/+$/, '');
-	return pageMetadata(slug);
+  const slug = pathname === "/" ? "" : pathname.replace(/^\/+/, "").replace(/\/+$/, "");
+  return pageMetadata(slug);
 }

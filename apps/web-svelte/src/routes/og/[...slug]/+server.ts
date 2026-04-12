@@ -1,7 +1,7 @@
-import { error } from '@sveltejs/kit';
-import type { RequestHandler } from './$types';
-import { renderOgImage } from '$lib/og-image.server';
-import { getPageTitle } from '$lib/page-titles';
+import { error } from "@sveltejs/kit";
+import type { RequestHandler } from "./$types";
+import { renderOgImage } from "$lib/og-image.server";
+import { getPageTitle } from "$lib/page-titles";
 
 /**
  * GET /og/:slug — per-page social card.
@@ -12,19 +12,19 @@ import { getPageTitle } from '$lib/page-titles';
  * exist today, but the catch-all is preserved for parity) work correctly.
  */
 export const GET: RequestHandler = async ({ params }) => {
-	const slug = params.slug ?? '';
-	const title = getPageTitle(slug);
+  const slug = params.slug ?? "";
+  const title = getPageTitle(slug);
 
-	if (title === null) {
-		throw error(404, `No OG image for slug: ${slug}`);
-	}
+  if (title === null) {
+    throw error(404, `No OG image for slug: ${slug}`);
+  }
 
-	const png = await renderOgImage(title);
+  const png = await renderOgImage(title);
 
-	return new Response(png as BlobPart, {
-		headers: {
-			'Content-Type': 'image/png',
-			'Cache-Control': 'public, max-age=3600, s-maxage=86400'
-		}
-	});
+  return new Response(png as BlobPart, {
+    headers: {
+      "Content-Type": "image/png",
+      "Cache-Control": "public, max-age=3600, s-maxage=86400",
+    },
+  });
 };

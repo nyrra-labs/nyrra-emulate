@@ -21,59 +21,59 @@
  * the client. The TTF buffers and the satori/resvg packages stay
  * server-side only.
  */
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
-import { Resvg } from '@resvg/resvg-js';
-import satori from 'satori';
-import { html as toReactNode } from 'satori-html';
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+import { Resvg } from "@resvg/resvg-js";
+import satori from "satori";
+import { html as toReactNode } from "satori-html";
 
 let fontCache: { geistRegular: Buffer; geistPixelSquare: Buffer } | null = null;
 
 async function loadFonts() {
-	if (fontCache) return fontCache;
+  if (fontCache) return fontCache;
 
-	// `process.cwd()` is the package directory (`apps/web-svelte/`) under
-	// `vite preview`, `vite dev`, and `vite build`. SvelteKit's `static/`
-	// folder lives next to `src/`, so the absolute path is stable.
-	const fontsDir = join(process.cwd(), 'static', 'fonts');
-	const [geistRegular, geistPixelSquare] = await Promise.all([
-		readFile(join(fontsDir, 'Geist-Regular.ttf')),
-		readFile(join(fontsDir, 'GeistPixel-Square.ttf'))
-	]);
+  // `process.cwd()` is the package directory (`apps/web-svelte/`) under
+  // `vite preview`, `vite dev`, and `vite build`. SvelteKit's `static/`
+  // folder lives next to `src/`, so the absolute path is stable.
+  const fontsDir = join(process.cwd(), "static", "fonts");
+  const [geistRegular, geistPixelSquare] = await Promise.all([
+    readFile(join(fontsDir, "Geist-Regular.ttf")),
+    readFile(join(fontsDir, "GeistPixel-Square.ttf")),
+  ]);
 
-	fontCache = { geistRegular, geistPixelSquare };
-	return fontCache;
+  fontCache = { geistRegular, geistPixelSquare };
+  return fontCache;
 }
 
 function renderTitleLines(title: string): string {
-	return title
-		.split('\n')
-		.map(
-			(line) =>
-				`<span style="font-size:72px;font-family:Geist;font-weight:400;color:white;letter-spacing:-0.02em;text-align:center;line-height:1.2;">${escapeHtml(
-					line
-				)}</span>`
-		)
-		.join('');
+  return title
+    .split("\n")
+    .map(
+      (line) =>
+        `<span style="font-size:72px;font-family:Geist;font-weight:400;color:white;letter-spacing:-0.02em;text-align:center;line-height:1.2;">${escapeHtml(
+          line,
+        )}</span>`,
+    )
+    .join("");
 }
 
 function escapeHtml(value: string): string {
-	return value
-		.replace(/&/g, '&amp;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;')
-		.replace(/"/g, '&quot;')
-		.replace(/'/g, '&#39;');
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 export async function renderOgImage(title: string): Promise<Uint8Array> {
-	const { geistRegular, geistPixelSquare } = await loadFonts();
+  const { geistRegular, geistPixelSquare } = await loadFonts();
 
-	// HTML markup mirrors apps/web/app/og/og-image.tsx exactly: black
-	// background, 60px top/bottom + 80px left/right padding, brand bar with
-	// the Vercel triangle SVG + slash + "emulate" pixel-font wordmark, then
-	// a centered flex column with the title rendered one span per line.
-	const markup = `
+  // HTML markup mirrors apps/web/app/og/og-image.tsx exactly: black
+  // background, 60px top/bottom + 80px left/right padding, brand bar with
+  // the Vercel triangle SVG + slash + "emulate" pixel-font wordmark, then
+  // a centered flex column with the title rendered one span per line.
+  const markup = `
 		<div style="width:100%;height:100%;display:flex;flex-direction:column;background-color:black;padding:60px 80px;">
 			<div style="display:flex;align-items:center;gap:16px;">
 				<svg width="36" height="36" viewBox="0 0 16 16" fill="white">
@@ -88,36 +88,36 @@ export async function renderOgImage(title: string): Promise<Uint8Array> {
 		</div>
 	`;
 
-	// satori-html returns its own `VNode` shape that is structurally
-	// compatible with satori's element tree but typed differently. The
-	// satori + satori-html pairing is the documented pattern for using
-	// satori without JSX, so the runtime is correct even though the types
-	// do not line up. Cast through `Parameters<typeof satori>[0]` so the
-	// type system accepts the call.
-	const svg = await satori(toReactNode(markup) as Parameters<typeof satori>[0], {
-		width: 1200,
-		height: 630,
-		fonts: [
-			{
-				name: 'Geist',
-				data: geistRegular,
-				style: 'normal',
-				weight: 400
-			},
-			{
-				name: 'GeistPixelSquare',
-				data: geistPixelSquare,
-				style: 'normal',
-				weight: 400
-			}
-		]
-	});
+  // satori-html returns its own `VNode` shape that is structurally
+  // compatible with satori's element tree but typed differently. The
+  // satori + satori-html pairing is the documented pattern for using
+  // satori without JSX, so the runtime is correct even though the types
+  // do not line up. Cast through `Parameters<typeof satori>[0]` so the
+  // type system accepts the call.
+  const svg = await satori(toReactNode(markup) as Parameters<typeof satori>[0], {
+    width: 1200,
+    height: 630,
+    fonts: [
+      {
+        name: "Geist",
+        data: geistRegular,
+        style: "normal",
+        weight: 400,
+      },
+      {
+        name: "GeistPixelSquare",
+        data: geistPixelSquare,
+        style: "normal",
+        weight: 400,
+      },
+    ],
+  });
 
-	const png = new Resvg(svg, {
-		fitTo: { mode: 'width', value: 1200 }
-	})
-		.render()
-		.asPng();
+  const png = new Resvg(svg, {
+    fitTo: { mode: "width", value: 1200 },
+  })
+    .render()
+    .asPng();
 
-	return png;
+  return png;
 }

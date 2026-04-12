@@ -1,12 +1,12 @@
-import type { PageServerLoad } from './$types';
-import { highlightAll } from '$lib/code-highlight.server';
+import type { PageServerLoad } from "./$types";
+import { highlightAll } from "$lib/code-highlight.server";
 
 export const prerender = true;
 
 const codes = {
-	tokens: {
-		lang: 'yaml' as const,
-		code: `tokens:
+  tokens: {
+    lang: "yaml" as const,
+    code: `tokens:
   gho_test_token_admin:
     login: admin
     scopes:
@@ -18,11 +18,11 @@ const codes = {
     login: octocat
     scopes:
       - repo
-      - user`
-	},
-	vercelSeed: {
-		lang: 'yaml' as const,
-		code: `vercel:
+      - user`,
+  },
+  vercelSeed: {
+    lang: "yaml" as const,
+    code: `vercel:
   users:
     - username: developer
       name: Developer
@@ -37,21 +37,21 @@ const codes = {
       envVars:
         - key: DATABASE_URL
           value: postgres://localhost
-          target: [production, preview]`
-	},
-	vercelIntegrations: {
-		lang: 'yaml' as const,
-		code: `vercel:
+          target: [production, preview]`,
+  },
+  vercelIntegrations: {
+    lang: "yaml" as const,
+    code: `vercel:
   integrations:
     - client_id: "oac_abc123"
       client_secret: "secret_abc123"
       name: "My Vercel App"
       redirect_uris:
-        - "http://localhost:3000/api/auth/callback/vercel"`
-	},
-	githubSeed: {
-		lang: 'yaml' as const,
-		code: `github:
+        - "http://localhost:3000/api/auth/callback/vercel"`,
+  },
+  githubSeed: {
+    lang: "yaml" as const,
+    code: `github:
   users:
     - login: octocat
       name: The Octocat
@@ -76,21 +76,21 @@ const codes = {
       name: org-repo
       description: An organization repository
       language: TypeScript
-      auto_init: true`
-	},
-	githubOauthApps: {
-		lang: 'yaml' as const,
-		code: `github:
+      auto_init: true`,
+  },
+  githubOauthApps: {
+    lang: "yaml" as const,
+    code: `github:
   oauth_apps:
     - client_id: "Iv1.abc123"
       client_secret: "secret_abc123"
       name: "My Web App"
       redirect_uris:
-        - "http://localhost:3000/api/auth/callback/github"`
-	},
-	githubApps: {
-		lang: 'yaml' as const,
-		code: `github:
+        - "http://localhost:3000/api/auth/callback/github"`,
+  },
+  githubApps: {
+    lang: "yaml" as const,
+    code: `github:
   apps:
     - app_id: 12345
       slug: "my-github-app"
@@ -108,11 +108,11 @@ const codes = {
           account: my-org
           repository_selection: all
           permissions:
-            contents: read`
-	},
-	googleSeed: {
-		lang: 'yaml' as const,
-		code: `google:
+            contents: read`,
+  },
+  googleSeed: {
+    lang: "yaml" as const,
+    code: `google:
   users:
     - email: testuser@example.com
       name: Test User
@@ -150,11 +150,11 @@ const codes = {
       user_email: testuser@example.com
       name: Docs
       mime_type: application/vnd.google-apps.folder
-      parent_ids: [root]`
-	},
-	slackSeed: {
-		lang: 'yaml' as const,
-		code: `slack:
+      parent_ids: [root]`,
+  },
+  slackSeed: {
+    lang: "yaml" as const,
+    code: `slack:
   team:
     name: My Workspace
     domain: my-workspace
@@ -180,11 +180,11 @@ const codes = {
   incoming_webhooks:
     - channel: general
       label: CI Notifications
-  signing_secret: my_signing_secret`
-	},
-	appleSeed: {
-		lang: 'yaml' as const,
-		code: `apple:
+  signing_secret: my_signing_secret`,
+  },
+  appleSeed: {
+    lang: "yaml" as const,
+    code: `apple:
   users:
     - email: testuser@icloud.com
       name: Test User
@@ -198,11 +198,11 @@ const codes = {
       team_id: TEAM001
       name: My Apple App
       redirect_uris:
-        - http://localhost:3000/api/auth/callback/apple`
-	},
-	microsoftSeed: {
-		lang: 'yaml' as const,
-		code: `microsoft:
+        - http://localhost:3000/api/auth/callback/apple`,
+  },
+  microsoftSeed: {
+    lang: "yaml" as const,
+    code: `microsoft:
   users:
     - email: testuser@outlook.com
       name: Test User
@@ -215,11 +215,11 @@ const codes = {
       name: My Microsoft App
       redirect_uris:
         - http://localhost:3000/api/auth/callback/microsoft-entra-id
-      tenant_id: 9188040d-6c67-4c5b-b112-36a304b66dad`
-	},
-	foundrySeed: {
-		lang: 'yaml' as const,
-		code: `foundry:
+      tenant_id: 9188040d-6c67-4c5b-b112-36a304b66dad`,
+  },
+  foundrySeed: {
+    lang: "yaml" as const,
+    code: `foundry:
   users:
     - username: jane
       display_name: Jane Smith
@@ -253,11 +253,11 @@ const codes = {
         active: true
     runtimes:
       - runtime_id: agent-loop
-        module_auth_token: local-module-auth-token`
-	},
-	awsSeed: {
-		lang: 'yaml' as const,
-		code: `aws:
+        module_auth_token: local-module-auth-token`,
+  },
+  awsSeed: {
+    lang: "yaml" as const,
+    code: `aws:
   region: us-east-1
   s3:
     buckets:
@@ -277,11 +277,11 @@ const codes = {
         create_access_key: true
     roles:
       - role_name: lambda-execution-role
-        description: Role for Lambda function execution`
-	},
-	oktaSeed: {
-		lang: 'yaml' as const,
-		code: `okta:
+        description: Role for Lambda function execution`,
+  },
+  oktaSeed: {
+    lang: "yaml" as const,
+    code: `okta:
   users:
     - login: testuser@example.com
       email: testuser@example.com
@@ -295,11 +295,11 @@ const codes = {
       label: My App
   authorization_servers:
     - name: default
-      audiences: ["api://default"]`
-	},
-	mongoatlasSeed: {
-		lang: 'yaml' as const,
-		code: `mongoatlas:
+      audiences: ["api://default"]`,
+  },
+  mongoatlasSeed: {
+    lang: "yaml" as const,
+    code: `mongoatlas:
   projects:
     - name: my-project
   clusters:
@@ -307,19 +307,19 @@ const codes = {
       name: my-cluster
   database_users:
     - project: my-project
-      username: app-user`
-	},
-	resendSeed: {
-		lang: 'yaml' as const,
-		code: `resend:
+      username: app-user`,
+  },
+  resendSeed: {
+    lang: "yaml" as const,
+    code: `resend:
   domains:
     - name: example.com
   api_keys:
-    - name: default`
-	},
-	stripeSeed: {
-		lang: 'yaml' as const,
-		code: `stripe:
+    - name: default`,
+  },
+  stripeSeed: {
+    lang: "yaml" as const,
+    code: `stripe:
   customers:
     - name: Test Customer
       email: test@example.com
@@ -330,11 +330,11 @@ const codes = {
       unit_amount: 2000
       currency: usd
       recurring:
-        interval: month`
-	}
+        interval: month`,
+  },
 };
 
 export const load: PageServerLoad = async () => {
-	const codeBlocks = await highlightAll(codes);
-	return { codeBlocks };
+  const codeBlocks = await highlightAll(codes);
+  return { codeBlocks };
 };

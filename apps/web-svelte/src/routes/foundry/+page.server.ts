@@ -1,12 +1,12 @@
-import type { PageServerLoad } from './$types';
-import { highlightAll } from '$lib/code-highlight.server';
+import type { PageServerLoad } from "./$types";
+import { highlightAll } from "$lib/code-highlight.server";
 
 export const prerender = true;
 
 const codes = {
-	computeModulesSeed: {
-		lang: 'yaml' as const,
-		code: `foundry:
+  computeModulesSeed: {
+    lang: "yaml" as const,
+    code: `foundry:
   compute_modules:
     deployed_apps:
       - deployed_app_rid: ri.foundry.main.deployed-app.agent-loop
@@ -16,11 +16,11 @@ const codes = {
         active: true
     runtimes:
       - runtime_id: agent-loop
-        module_auth_token: local-module-auth-token`
-	}
+        module_auth_token: local-module-auth-token`,
+  },
 };
 
 export const load: PageServerLoad = async () => {
-	const codeBlocks = await highlightAll(codes);
-	return { codeBlocks };
+  const codeBlocks = await highlightAll(codes);
+  return { codeBlocks };
 };
