@@ -13,3 +13,7 @@ packages/emulate/README.md
 
 # opensrc - source code for packages
 opensrc/
+
+# Claude Code local settings (hooks, per-machine state). The Claude-facing
+# repo guidance lives in the tracked CLAUDE.md at the repo root, not here.
+/.claude/
