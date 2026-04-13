@@ -33,7 +33,7 @@
  * future upstream rename or removal that orphans an override aborts
  * the build with a precise error.
  *
- * The non-root entries mirror the names in `apps/web/lib/docs-navigation.ts`
+ * The non-root entries mirror the names in `apps/web/lib/docs-pages.ts`
  * directly via this derivation, so search hits read the same as the
  * Next.js docs ("Vercel API" rather than "Vercel", "Microsoft Entra ID"
  * rather than "Microsoft").
@@ -76,7 +76,7 @@ for (const overrideSlug of Object.keys(PAGE_TITLE_OVERRIDES)) {
   if (!upstreamSlugs.has(overrideSlug)) {
     throw new Error(
       `page-titles: PAGE_TITLE_OVERRIDES has an entry for slug ${JSON.stringify(overrideSlug)} ` +
-        `that is not in the upstream apps/web/lib/docs-navigation.ts catalog. ` +
+        `that is not in the upstream apps/web/lib/docs-pages.ts catalog. ` +
         `Either the upstream docs page was removed/renamed or the override is stale; ` +
         `update the upstream catalog or remove the override from page-titles.ts.`,
     );
