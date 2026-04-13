@@ -924,6 +924,8 @@ The visible shell branding and per-page metadata also live in a small set of sha
 
 Per-route components are intentionally thin and should not carry brand strings of their own.
 
+Deploy wiring status: this README currently documents only the Cloudflare adapter build artifact path (`apps/web-svelte/.svelte-kit/cloudflare/`). There is no checked-in `wrangler.toml`, deploy script, or CI workflow that uploads that artifact to Cloudflare Workers; how the artifact is shipped is intentionally left to a future slice. If a deploy wrapper does land, or if the production docs domain changes from the value currently encoded in `apps/web-svelte/src/lib/page-metadata.ts`, this README section and `apps/web-svelte/src/lib/page-metadata.ts` must be updated together so the documented build path, the deployed hostname, and the metadata `BASE_URL` stay in lockstep.
+
 ## Auth
 
 Tokens are configured in the seed config and map to users. Pass them as `Authorization: Bearer <token>` or `Authorization: token <token>`.
