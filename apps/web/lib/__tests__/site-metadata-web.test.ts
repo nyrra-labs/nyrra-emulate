@@ -21,18 +21,18 @@ import {
   VERCEL_ATTRIBUTION_URL,
   ogImageAlt,
   suffixWithSiteName,
-} from "../../../../../apps/web/lib/site-metadata";
+} from "../site-metadata";
 import {
   FOUNDRYCI_BRAND,
   FOUNDRYCI_SITE_NAME,
   NYRRA_PARENT_LABEL,
   NYRRA_URL,
-} from "../foundryci-branding";
+} from "../../../web-svelte/src/lib/foundryci-branding";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-// apps/web-svelte/src/lib/__tests__ → repo root is 5 levels up.
-const REPO_ROOT = resolve(__dirname, "../../../../..");
+// apps/web/lib/__tests__ → repo root is 4 levels up.
+const REPO_ROOT = resolve(__dirname, "../../../..");
 const APPS_WEB_LAYOUT_PATH = resolve(REPO_ROOT, "apps/web/app/layout.tsx");
 const APPS_WEB_PAGE_METADATA_PATH = resolve(REPO_ROOT, "apps/web/lib/page-metadata.ts");
 const APPS_WEB_SITE_METADATA_PATH = resolve(REPO_ROOT, "apps/web/lib/site-metadata.ts");
@@ -813,11 +813,18 @@ describe("apps/web-svelte/src/lib/page-metadata.ts delegates FoundryCI branding 
   });
 
   it("runtime pageMetadata still produces the exact pre-refactor FoundryCI brand strings for / and /foundry", async () => {
-    // This is the runtime behavior-preservation check: the helper's
-    // template-literal interpolations must produce byte-identical
-    // output to the pre-refactor literals. Any typo in the
-    // FOUNDRYCI_SITE_NAME derivation would surface here.
-    const { pageMetadata } = await import("../page-metadata");
+    // This is the runtime behavior-preservation check: the Svelte
+    // helper's template-literal interpolations must produce byte-
+    // identical output to the pre-refactor literals. Any typo in
+    // the FOUNDRYCI_SITE_NAME derivation would surface here.
+    //
+    // Imports the Svelte page-metadata.ts via a cross-workspace
+    // relative path because this test covers the Svelte
+    // foundryci-branding delegation contract, not the Next.js
+    // metadata helper.
+    const { pageMetadata } = await import(
+      "../../../web-svelte/src/lib/page-metadata"
+    );
     const root = pageMetadata("");
     expect(root).not.toBeNull();
     expect(root!.title).toBe("FoundryCI by Nyrra | Local Foundry Emulation");

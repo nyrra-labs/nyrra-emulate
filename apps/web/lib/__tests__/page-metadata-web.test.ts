@@ -2,17 +2,14 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { allDocsPages } from "../../../../../apps/web/lib/docs-navigation";
-import { pageMetadata } from "../../../../../apps/web/lib/page-metadata";
-import {
-  getPageTitle,
-  PAGE_TITLES,
-} from "../../../../../apps/web/lib/page-titles";
+import { allDocsPages } from "../docs-navigation";
+import { pageMetadata } from "../page-metadata";
+import { getPageTitle, PAGE_TITLES } from "../page-titles";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-// apps/web-svelte/src/lib/__tests__ → repo root is 5 levels up.
-const REPO_ROOT = resolve(__dirname, "../../../../..");
+// apps/web/lib/__tests__ → repo root is 4 levels up.
+const REPO_ROOT = resolve(__dirname, "../../../..");
 const OG_ROOT_ROUTE_PATH = resolve(REPO_ROOT, "apps/web/app/og/route.tsx");
 const OG_SLUG_ROUTE_PATH = resolve(REPO_ROOT, "apps/web/app/og/[...slug]/route.tsx");
 const OG_IMAGE_PATH = resolve(REPO_ROOT, "apps/web/app/og/og-image.tsx");

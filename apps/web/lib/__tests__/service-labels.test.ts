@@ -3,13 +3,19 @@ import {
   STARTUP_LABEL_OVERRIDES,
   formatServiceLabelsProse,
   resolveServiceLabel,
-} from "../../../../../apps/web/lib/service-labels";
-import { STARTUP_LABEL_OVERRIDES as docsChatOverrides } from "../../../../../apps/web/lib/docs-chat-summary";
-import { STARTUP_LABEL_OVERRIDES as svelteOverrides } from "../default-services.server";
+} from "../service-labels";
+import { STARTUP_LABEL_OVERRIDES as docsChatOverrides } from "../docs-chat-summary";
+// Cross-workspace import: the Svelte default-services.server.ts
+// re-exports the same underlying STARTUP_LABEL_OVERRIDES reference
+// via its own import from apps/web/lib/service-labels.ts. The
+// identity-equality guard below proves both re-exports resolve to
+// the same object, catching any regression that reintroduces a
+// parallel literal on either side.
+import { STARTUP_LABEL_OVERRIDES as svelteOverrides } from "../../../web-svelte/src/lib/default-services.server";
 import {
   DEFAULT_SERVICE_NAMES,
   SERVICE_NAMES,
-} from "../../../../../packages/emulate/src/registry";
+} from "../../../../packages/emulate/src/registry";
 
 describe("STARTUP_LABEL_OVERRIDES canonical shape", () => {
   it("contains exactly the three brand-sensitive service name overrides", () => {
@@ -120,7 +126,7 @@ describe("formatServiceLabelsProse produces Oxford-comma English prose", () => {
 describe("shared helper drives docs-chat-summary and default-services with byte-identical output", () => {
   it("docs-chat-summary supportedServicesProse contains the canonical brand-sensitive labels", async () => {
     const { supportedServicesProse, supportedServiceLabels } = await import(
-      "../../../../../apps/web/lib/docs-chat-summary"
+      "../docs-chat-summary"
     );
     // The full 13-service list for the docs-chat path — includes Foundry.
     expect(supportedServicesProse).toContain("GitHub");
@@ -135,20 +141,20 @@ describe("shared helper drives docs-chat-summary and default-services with byte-
 
   it("docs-chat-summary preserves the upstream SERVICE_NAMES source order in its prose", async () => {
     const { supportedServiceLabels } = await import(
-      "../../../../../apps/web/lib/docs-chat-summary"
+      "../docs-chat-summary"
     );
     const expected = SERVICE_NAMES.map(resolveServiceLabel);
     expect(supportedServiceLabels).toEqual(expected);
   });
 
   it("default-services.server defaultStartupServices labels match resolveServiceLabel on DEFAULT_SERVICE_NAMES", async () => {
-    const { defaultStartupServices } = await import("../default-services.server");
+    const { defaultStartupServices } = await import("../../../web-svelte/src/lib/default-services.server");
     const expected = DEFAULT_SERVICE_NAMES.map((name) => resolveServiceLabel(name));
     expect(defaultStartupServices.map((s) => s.label)).toEqual(expected);
   });
 
   it("default-services.server defaultStartupServices contains 'GitHub', 'AWS', 'MongoDB Atlas' (brand-sensitive)", async () => {
-    const { defaultStartupServices } = await import("../default-services.server");
+    const { defaultStartupServices } = await import("../../../web-svelte/src/lib/default-services.server");
     const labels = defaultStartupServices.map((s) => s.label);
     expect(labels).toContain("GitHub");
     expect(labels).toContain("AWS");
@@ -156,7 +162,7 @@ describe("shared helper drives docs-chat-summary and default-services with byte-
   });
 
   it("default-services.server supportedServicesProse includes the brand-sensitive labels and ends with Clerk (Foundry filtered)", async () => {
-    const { supportedServicesProse } = await import("../default-services.server");
+    const { supportedServicesProse } = await import("../../../web-svelte/src/lib/default-services.server");
     expect(supportedServicesProse).toContain("GitHub");
     expect(supportedServicesProse).toContain("AWS");
     expect(supportedServicesProse).toContain("MongoDB Atlas");
@@ -178,8 +184,8 @@ describe("shared helper drives docs-chat-summary and default-services with byte-
     // formatter with the same resolveServiceLabel output for every
     // non-foundry name.
     const [docsChatModule, svelteModule] = await Promise.all([
-      import("../../../../../apps/web/lib/docs-chat-summary"),
-      import("../default-services.server"),
+      import("../docs-chat-summary"),
+      import("../../../web-svelte/src/lib/default-services.server"),
     ]);
     const docsChatProse = docsChatModule.supportedServicesProse;
     const svelteProse = svelteModule.supportedServicesProse;

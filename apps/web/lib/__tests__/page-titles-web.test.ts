@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { allDocsPages } from "../../../../../apps/web/lib/docs-navigation";
-import {
-  getPageTitle,
-  PAGE_TITLE_OVERRIDES,
-  PAGE_TITLES,
-} from "../../../../../apps/web/lib/page-titles";
+import { allDocsPages } from "../docs-navigation";
+import { getPageTitle, PAGE_TITLE_OVERRIDES, PAGE_TITLES } from "../page-titles";
 
 /**
  * Apps/web `PAGE_TITLES` derivation parity test.

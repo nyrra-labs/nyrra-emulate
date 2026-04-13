@@ -11,17 +11,17 @@ import {
   STARTUP_LABEL_OVERRIDES,
   supportedServiceLabels,
   supportedServicesProse,
-} from "../../../../../apps/web/lib/docs-chat-summary";
+} from "../docs-chat-summary";
 import {
   DEFAULT_SERVICE_NAMES,
   SERVICE_NAMES,
-} from "../../../../../packages/emulate/src/registry";
+} from "../../../../packages/emulate/src/registry";
 import { mdxToCleanMarkdown } from "../mdx-to-markdown";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-// apps/web-svelte/src/lib/__tests__ → repo root is 5 levels up.
-const REPO_ROOT = resolve(__dirname, "../../../../..");
+// apps/web/lib/__tests__ → repo root is 4 levels up.
+const REPO_ROOT = resolve(__dirname, "../../../..");
 const PROGRAMMATIC_API_MDX_PATH = resolve(REPO_ROOT, "apps/web/app/programmatic-api/page.mdx");
 const NEXTJS_MDX_PATH = resolve(REPO_ROOT, "apps/web/app/nextjs/page.mdx");
 
