@@ -31,6 +31,8 @@ const APPS_WEB_LAYOUT_PATH = resolve(REPO_ROOT, "apps/web/app/layout.tsx");
 const APPS_WEB_PAGE_METADATA_PATH = resolve(REPO_ROOT, "apps/web/lib/page-metadata.ts");
 const APPS_WEB_SITE_METADATA_PATH = resolve(REPO_ROOT, "apps/web/lib/site-metadata.ts");
 const APPS_WEB_OG_IMAGE_PATH = resolve(REPO_ROOT, "apps/web/app/og/og-image.tsx");
+const APPS_WEB_DOCS_CHAT_PATH = resolve(REPO_ROOT, "apps/web/components/docs-chat.tsx");
+const APPS_WEB_DOCS_CHAT_SUMMARY_PATH = resolve(REPO_ROOT, "apps/web/lib/docs-chat-summary.ts");
 
 describe("site-metadata.ts constant values", () => {
   it("SITE_NAME is 'emulate'", () => {
@@ -370,6 +372,83 @@ describe("apps/web/app/og/og-image.tsx delegates the wordmark to SITE_NAME", () 
     // survives the wordmark refactor and did not get accidentally
     // collapsed into the SITE_NAME interpolation.
     expect(src).toMatch(/>\s*\/\s*</);
+  });
+});
+
+describe("apps/web/components/docs-chat.tsx delegates product-name branding to SITE_NAME", () => {
+  it("imports SITE_NAME from @/lib/site-metadata", () => {
+    const src = readFileSync(APPS_WEB_DOCS_CHAT_PATH, "utf-8");
+    expect(src).toContain('import { SITE_NAME } from "@/lib/site-metadata"');
+  });
+
+  it("the SUGGESTIONS list interpolates SITE_NAME in the 'What is ...' suggestion", () => {
+    const src = readFileSync(APPS_WEB_DOCS_CHAT_PATH, "utf-8");
+    expect(src).toContain("`What is ${SITE_NAME}?`");
+    // The bare-literal form must be gone.
+    expect(src).not.toContain('"What is emulate?"');
+  });
+
+  it("the chat panel label interpolates SITE_NAME as '${SITE_NAME} docs'", () => {
+    const src = readFileSync(APPS_WEB_DOCS_CHAT_PATH, "utf-8");
+    expect(src).toContain("`${SITE_NAME} docs`");
+    // The bare-literal form must be gone.
+    expect(src).not.toContain('"emulate docs"');
+    expect(src).not.toContain(">emulate docs<");
+  });
+
+  it("the SUGGESTIONS list preserves the four non-branding suggestion copy strings (behavior preservation)", () => {
+    const src = readFileSync(APPS_WEB_DOCS_CHAT_PATH, "utf-8");
+    // These suggestions contain no product-name interpolation and
+    // must survive the refactor unchanged.
+    expect(src).toContain('"How do I start the server?"');
+    expect(src).toContain('"What GitHub APIs are supported?"');
+    expect(src).toContain('"How do I configure OAuth?"');
+    expect(src).toContain("\"What's the architecture?\"");
+  });
+});
+
+describe("apps/web/lib/docs-chat-summary.ts delegates product-name branding to SITE_NAME", () => {
+  it("imports SITE_NAME from ./site-metadata", () => {
+    const src = readFileSync(APPS_WEB_DOCS_CHAT_SUMMARY_PATH, "utf-8");
+    expect(src).toContain('import { SITE_NAME } from "./site-metadata"');
+  });
+
+  it("buildDocsChatOpeningSummary interpolates SITE_NAME for the 'for X, a local drop-in' phrase", () => {
+    const src = readFileSync(APPS_WEB_DOCS_CHAT_SUMMARY_PATH, "utf-8");
+    expect(src).toContain("documentation assistant for ${SITE_NAME}");
+    // The bare form must be absent from the runtime body.
+    expect(src).not.toContain("documentation assistant for emulate,");
+  });
+
+  it("buildDocsChatOpeningSummary interpolates SITE_NAME for the 'X provides' phrase", () => {
+    const src = readFileSync(APPS_WEB_DOCS_CHAT_SUMMARY_PATH, "utf-8");
+    expect(src).toContain("${SITE_NAME} provides fully stateful");
+    expect(src).not.toContain("emulate provides fully stateful");
+  });
+
+  it("buildDocsChatOpeningSummary interpolates SITE_NAME for the quoted '\"X\" npm package' phrase", () => {
+    const src = readFileSync(APPS_WEB_DOCS_CHAT_SUMMARY_PATH, "utf-8");
+    expect(src).toContain('"${SITE_NAME}" npm package');
+    expect(src).not.toContain('"emulate" npm package');
+  });
+
+  it("buildDocsChatOpeningSummary interpolates SITE_NAME for the 'npx X' and 'just \"X\"' CLI phrases", () => {
+    const src = readFileSync(APPS_WEB_DOCS_CHAT_SUMMARY_PATH, "utf-8");
+    expect(src).toContain('"npx ${SITE_NAME}"');
+    expect(src).toContain('just "${SITE_NAME}"');
+    expect(src).not.toContain('"npx emulate"');
+    expect(src).not.toContain('just "emulate"');
+  });
+
+  it("the non-branding framing phrases are preserved verbatim (behavior preservation)", () => {
+    const src = readFileSync(APPS_WEB_DOCS_CHAT_SUMMARY_PATH, "utf-8");
+    expect(src).toContain("documentation assistant for");
+    expect(src).toContain("a local drop-in replacement");
+    expect(src).toContain("fully stateful, production-fidelity API emulation, not mocks");
+    expect(src).toContain("used in CI and no-network sandboxes");
+    expect(src).toContain("programmatic API via");
+    expect(src).toContain("Next.js adapter");
+    expect(src).toContain("embedding emulators in your app");
   });
 });
 

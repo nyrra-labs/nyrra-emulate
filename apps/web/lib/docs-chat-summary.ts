@@ -38,10 +38,13 @@
  *      if upstream renames the adapter package.
  *
  * The editorial phrases ("fully stateful, production-fidelity API
- * emulation, not mocks", "installed as the 'emulate' npm package and
- * run via 'npx emulate'") remain literal — they are not drift-prone
+ * emulation, not mocks") remain literal — they are not drift-prone
  * and their copy is deliberate framing that upstream docs do not own
- * verbatim.
+ * verbatim. The product-name occurrences (the bare wordmark, the
+ * `npx` CLI invocation, the quoted `"X" npm package` form, and the
+ * `just "X"` bare binary form) all now derive from `SITE_NAME` in
+ * `./site-metadata.ts` so a future product rename touches one
+ * constant instead of five runtime strings.
  *
  * Only relative imports are used so this helper can be loaded from
  * both Next.js's webpack build (via the `@/lib/docs-chat-summary`
@@ -49,6 +52,7 @@
  * a cross-package relative path in the regression test).
  */
 import { SERVICE_NAMES } from "../../../packages/emulate/src/registry";
+import { SITE_NAME } from "./site-metadata";
 
 /**
  * Display-label overrides for runtime service names whose default
@@ -180,12 +184,12 @@ export function buildDocsChatOpeningSummary(
   }
 
   return (
-    `You are a helpful documentation assistant for emulate, a local drop-in replacement ` +
+    `You are a helpful documentation assistant for ${SITE_NAME}, a local drop-in replacement ` +
     `for ${supportedServicesProse} APIs used in CI and no-network sandboxes.\n` +
     `\n` +
-    `emulate provides fully stateful, production-fidelity API emulation, not mocks. ` +
-    `The CLI is installed as the "emulate" npm package and run via "npx emulate" or ` +
-    `just "emulate". It also supports a programmatic API via ${PROGRAMMATIC_API_TOKEN} ` +
+    `${SITE_NAME} provides fully stateful, production-fidelity API emulation, not mocks. ` +
+    `The CLI is installed as the "${SITE_NAME}" npm package and run via "npx ${SITE_NAME}" or ` +
+    `just "${SITE_NAME}". It also supports a programmatic API via ${PROGRAMMATIC_API_TOKEN} ` +
     `and a Next.js adapter (${NEXTJS_ADAPTER_PACKAGE}) for embedding emulators in your app.`
   );
 }
