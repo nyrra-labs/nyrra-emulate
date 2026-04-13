@@ -877,7 +877,8 @@ packages/
     foundry/        # Foundry OAuth 2.0 + compute modules + current user
     aws/            # AWS S3, SQS, IAM, STS
 apps/
-  web/              # Documentation site (Next.js)
+  web-svelte/       # Deployable docs site (SvelteKit + Cloudflare adapter)
+  web/              # Upstream Next.js docs / content source (not deployed)
 ```
 
 The core provides a generic `Store` with typed `Collection<T>` instances supporting CRUD, indexing, filtering, and pagination. Each service plugin registers its routes on the shared Hono app and uses the store for state.
