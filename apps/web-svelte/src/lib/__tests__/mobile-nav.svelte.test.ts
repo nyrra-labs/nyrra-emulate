@@ -51,6 +51,17 @@ describe("MobileNav.svelte SSR closed trigger", () => {
     const body = renderMobileNav("/this-route-does-not-exist");
     expect(body).toMatch(/<span[^>]*>\s*Overview\s*<\/span>/);
   });
+
+  it("uses the NAV_LABEL_OVERRIDES shortened label for an override service like /apple", () => {
+    // /apple's PAGE_TITLES value is "Apple Sign In", but the nav label
+    // in NAV_LABEL_OVERRIDES is just "Apple". The mobile-nav trigger
+    // reads from `currentPage.label` (the resolved nav label, not the
+    // PAGE_TITLES value), so the trigger should show "Apple" and NOT
+    // the unshortened "Apple Sign In".
+    const body = renderMobileNav("/apple");
+    expect(body).toMatch(/<span[^>]*>\s*Apple\s*<\/span>/);
+    expect(body).not.toMatch(/<span[^>]*>\s*Apple Sign In\s*<\/span>/);
+  });
 });
 
 describe("MobileNav.svelte SSR closed-state drawer absence", () => {

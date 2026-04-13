@@ -48,11 +48,33 @@ describe("Sidebar.svelte SSR section structure", () => {
     expect(body).toContain(">Configuration<");
     expect(body).toContain(">Next.js Integration<");
     expect(body).toContain(">Foundry<");
+    // Service shortenings via NAV_LABEL_OVERRIDES: the document
+    // titles are "Vercel API" / "GitHub API" / "Google API" /
+    // "Slack API" / "Apple Sign In", but the nav labels strip the
+    // suffix. The override map in nav.ts is the only place this
+    // shortening is encoded; this assertion locks it in at the
+    // rendered surface.
     expect(body).toContain(">Vercel<");
     expect(body).toContain(">GitHub<");
+    expect(body).toContain(">Google<");
+    expect(body).toContain(">Slack<");
+    expect(body).toContain(">Apple<");
     expect(body).toContain(">Microsoft Entra ID<");
     expect(body).toContain(">Authentication<");
     expect(body).toContain(">Architecture<");
+  });
+
+  it("does NOT render the unshortened document-title forms for the override services", () => {
+    const body = renderSidebar("/foundry");
+    // Negative assertions: the nav must NOT show the document-title
+    // forms for any of the shortened services. A regression that
+    // dropped the override map and started using PAGE_TITLES verbatim
+    // for these slugs would surface here.
+    expect(body).not.toContain(">Vercel API<");
+    expect(body).not.toContain(">GitHub API<");
+    expect(body).not.toContain(">Google API<");
+    expect(body).not.toContain(">Slack API<");
+    expect(body).not.toContain(">Apple Sign In<");
   });
 });
 
