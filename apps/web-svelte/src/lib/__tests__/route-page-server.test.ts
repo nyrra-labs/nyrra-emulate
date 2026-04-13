@@ -1,82 +1,87 @@
 import { describe, expect, it } from "vitest";
 import { docsSources } from "../docs-source";
+import * as slugRoute from "../../routes/[slug]/+page.server";
 
 /**
- * Discovers every migrated docs route's +page.server.ts under
- * src/routes/<slug>/+page.server.ts using a Vite eager glob. The single
- * `*` in the pattern matches exactly one path segment, so the root
- * `src/routes/+page.server.ts` is excluded automatically. The api/search
- * directory is also excluded because it ships +server.ts, not
- * +page.server.ts.
+ * Tests for the generic non-root docs route at
+ * src/routes/[slug]/+page.server.ts. This single dynamic route replaces
+ * the old per-slug `+page.server.ts` wrappers, and its EntryGenerator
+ * is the source of truth for which non-root slugs SvelteKit prerenders
+ * at build time.
+ *
+ * The contract checks are still table-driven across the full
+ * implemented non-root docs slug set so a regression in any single
+ * slug's render path is caught with a precise per-slug failure
+ * message.
  */
-const routeModules = import.meta.glob<{
-  prerender: boolean;
-  load: (event: unknown) => Promise<unknown>;
-}>("../../routes/*/+page.server.ts", { eager: true });
+const expectedSlugs = docsSources
+  .filter((source) => source.href !== "/")
+  .map((source) => source.href.slice(1))
+  .sort();
 
-type RouteCase = {
-  slug: string;
-  modulePath: string;
-  mod: { prerender: boolean; load: (event: unknown) => Promise<unknown> };
-};
+const cases = expectedSlugs.map((slug) => ({ slug }));
 
+type LoadEvent = Parameters<typeof slugRoute.load>[0];
 type RouteLoadData = { html: string };
 
-const cases: RouteCase[] = Object.entries(routeModules)
-  .map(([modulePath, mod]) => {
-    const slugMatch = modulePath.match(/^\.\.\/\.\.\/routes\/([^/]+)\/\+page\.server\.ts$/);
-    if (!slugMatch) {
-      throw new Error(
-        `route-page-server.test: unexpected glob key ${modulePath}; expected ../../routes/<slug>/+page.server.ts`,
-      );
-    }
-    return { slug: slugMatch[1], modulePath, mod };
-  })
-  .sort((a, b) => a.slug.localeCompare(b.slug));
-
-async function callLoad(loader: RouteCase["mod"]["load"]): Promise<RouteLoadData> {
-  const data = await loader({} as Parameters<typeof loader>[0]);
+async function callLoad(slug: string): Promise<RouteLoadData> {
+  const event = { params: { slug } } as unknown as LoadEvent;
+  const data = await slugRoute.load(event);
   return data as RouteLoadData;
 }
 
-describe("migrated docs route +page.server.ts discovery", () => {
-  it("finds at least one route module via the import.meta.glob discovery", () => {
-    expect(cases.length).toBeGreaterThan(0);
+describe("generic [slug] route +page.server.ts shape", () => {
+  it("exports prerender = true so SvelteKit bakes static HTML for every entry", () => {
+    expect(slugRoute.prerender).toBe(true);
   });
 
-  it("covers every implemented docsSources entry except the root /", () => {
-    // docsSources includes the root /, which has its own root +page.server.ts
-    // outside this glob. Every other implemented docs route must have a
-    // matching +page.server.ts under src/routes/<slug>/.
-    const expectedSlugs = docsSources
-      .filter((s) => s.href !== "/")
-      .map((s) => s.href.slice(1))
-      .sort();
-    expect(cases.map((c) => c.slug)).toEqual(expectedSlugs);
+  it("exports an entries() generator that returns one { slug } per non-root docsSources entry", () => {
+    const generated = slugRoute.entries();
+    expect(Array.isArray(generated)).toBe(true);
+    const slugs = (generated as Array<{ slug: string }>).map((e) => e.slug).sort();
+    expect(slugs).toEqual(expectedSlugs);
+  });
+
+  it("entries() produces the same slug set as docsSources excluding the root /", () => {
+    const generated = slugRoute.entries() as Array<{ slug: string }>;
+    expect(generated.length).toBe(expectedSlugs.length);
+    expect(generated.length).toBe(docsSources.length - 1);
+    for (const entry of generated) {
+      expect(Object.keys(entry).sort()).toEqual(["slug"]);
+      expect(typeof entry.slug).toBe("string");
+      expect(entry.slug.length).toBeGreaterThan(0);
+      // No leading slash; the load function prepends it before calling
+      // renderDocsHtmlByHref(`/${slug}`).
+      expect(entry.slug.startsWith("/")).toBe(false);
+    }
   });
 });
 
-describe("migrated docs route +page.server.ts contract", () => {
-  it.each(cases)("$slug exports prerender = true", ({ mod }) => {
-    expect(mod.prerender).toBe(true);
-  });
-
-  it.each(cases)("$slug load() returns a non-empty html string", async ({ mod }) => {
-    const data = await callLoad(mod.load);
+describe("generic [slug] route +page.server.ts contract", () => {
+  it.each(cases)("$slug load() returns a non-empty html string", async ({ slug }) => {
+    const data = await callLoad(slug);
     expect(typeof data.html).toBe("string");
     expect(data.html.length).toBeGreaterThan(100);
   });
 
-  it.each(cases)("$slug load() returns rendered docs HTML with H1 and paragraph markers", async ({ mod }) => {
-    const { html } = await callLoad(mod.load);
+  it.each(cases)("$slug load() returns rendered docs HTML with H1 and paragraph markers", async ({ slug }) => {
+    const { html } = await callLoad(slug);
     expect(html).toContain('<h1 class="');
     expect(html).toContain('<p class="');
   });
 
-  it.each(cases)("$slug load() does not leak raw MDX residue (import/export/className)", async ({ mod }) => {
-    const { html } = await callLoad(mod.load);
+  it.each(cases)("$slug load() does not leak raw MDX residue (import/export/className)", async ({ slug }) => {
+    const { html } = await callLoad(slug);
     expect(html).not.toMatch(/^import /m);
     expect(html).not.toMatch(/^export /m);
     expect(html).not.toContain("className=");
+  });
+});
+
+describe("generic [slug] route +page.server.ts unknown slug", () => {
+  it("propagates the renderDocsHtmlByHref loud-failure error for an unregistered slug", async () => {
+    await expect(callLoad("this-route-does-not-exist")).rejects.toThrow(
+      /no docs-source registry entry for href \/this-route-does-not-exist/,
+    );
   });
 });

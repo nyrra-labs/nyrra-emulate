@@ -935,15 +935,13 @@ If upstream drift breaks the Svelte site, the fix usually belongs in one of thes
 - `apps/web-svelte/src/lib/render-docs.server.ts` when upstream uses a markdown construct or fence language the renderer does not yet cover.
 - The route and title metadata files (`apps/web-svelte/src/lib/page-titles.ts`, `apps/web-svelte/src/lib/nav.ts`) only when the upstream slug set changes and a new route needs to be implemented; the Phase 7 nav contract in `nav.ts` will fail the build at module init if any of these surfaces drift apart.
 
-Adding a new upstream-backed route: when upstream lands a new `apps/web/app/<slug>/page.mdx` that the Svelte app does not yet surface, the minimum set of edits is:
+Adding a new upstream-backed route: every non-root upstream-backed page is served by a single generic dynamic route at `apps/web-svelte/src/routes/[slug]/+page.svelte` plus its `+page.server.ts` loader, so adding a new page no longer requires a new route directory. When upstream lands a new `apps/web/app/<slug>/page.mdx` that the Svelte app does not yet surface, the minimum set of edits is:
 
-- `apps/web-svelte/src/routes/<slug>/+page.server.ts`: thin loader that calls `renderDocsHtmlByHref("/<slug>")`, returns `{ html }`, and sets `prerender = true`. Use `apps/web-svelte/src/routes/foundry/+page.server.ts` as the pattern.
-- `apps/web-svelte/src/routes/<slug>/+page.svelte`: thin `{@html data.html}` wrapper inside a `<div class="docs-content">`. Use `apps/web-svelte/src/routes/foundry/+page.svelte` as the pattern.
-- `apps/web-svelte/src/lib/docs-source.ts`: add an `HREF_TITLES` entry. The registry fails at module init if the implemented route has no matching title.
+- `apps/web-svelte/src/lib/docs-source.ts`: add an `HREF_TITLES` entry. The registry fails at module init if the implemented href has no matching upstream MDX file at `apps/web/app/<slug>/page.mdx`. The generic `[slug]` route's `EntryGenerator` reads from this registry, so adding the entry here is what tells SvelteKit to prerender a static HTML file for the new slug at build time.
 - `apps/web-svelte/src/lib/page-titles.ts`: add a `PAGE_TITLES` entry so per-page metadata can resolve the slug.
 - `apps/web-svelte/src/lib/nav.ts`: add the new href to the appropriate section, or add the bare slug to `INTENTIONALLY_HIDDEN` in the same file if the route should be reachable via direct URL but not visible in the sidebar / mobile-nav.
 
-Then rerun `pnpm --filter web-svelte type-check`, `pnpm --filter web-svelte build`, and `pnpm --filter web-svelte lint`. The Phase 7 nav contract and the docs-source registry validation both fire at module init if any of these surfaces are missing.
+No new files under `apps/web-svelte/src/routes/` are needed for an upstream-backed page; the generic `[slug]` route picks up the new entry automatically. Then rerun `pnpm --filter web-svelte type-check`, `pnpm --filter web-svelte build`, and `pnpm --filter web-svelte lint`. The Phase 7 nav contract and the docs-source registry validation both fire at module init if any of these surfaces are missing.
 
 Search indexing: there is no separate search page list to maintain. Once a new upstream-backed slug is wired through the shared docs-source registry and route flow above, both the in-app search index and the search-result name catalog are derived automatically:
 
