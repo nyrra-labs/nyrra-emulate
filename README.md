@@ -947,7 +947,7 @@ Then rerun `pnpm --filter web-svelte type-check`, `pnpm --filter web-svelte buil
 
 Search indexing: there is no separate search page list to maintain. Once a new upstream-backed slug is wired through the shared docs-source registry and route flow above, both the in-app search index and the search-result name catalog are derived automatically:
 
-- `apps/web-svelte/src/lib/search-index.ts` builds the bundled index by iterating `docsSources` at build time, running each upstream MDX raw through `mdxToCleanMarkdown` plus a small markdown-stripping pass, and caching the result.
+- `apps/web-svelte/src/lib/search-index.ts` derives the search index from the bundled `docsSources` content. The upstream MDX raw strings are inlined at build time via the `?raw` glob in `docs-source.ts`, but `getSearchIndex()` itself runs lazily on first call (typically from `/api/search`), pipes each MDX raw through `mdxToCleanMarkdown` plus a small markdown-stripping pass, and caches the result in-module so subsequent calls reuse it.
 - `apps/web-svelte/src/lib/docs-search-pages.ts` is a thin adapter over the same `docsSources` registry; it exists so any future consumer that wants the lightweight `{ name, href }` projection still has it.
 - `apps/web-svelte/src/routes/api/search/+server.ts` serves results via `getSearchIndex()`, scoring title matches above content matches and returning short snippets around the first matched term.
 
