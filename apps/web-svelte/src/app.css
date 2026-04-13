@@ -117,3 +117,28 @@ button {
 	color: var(--shiki-dark) !important;
 	background-color: var(--shiki-dark-bg) !important;
 }
+
+/*
+ * Docs-content wrapper override for shared-renderer Shiki output. Each
+ * renderer-migrated route wraps `{@html data.html}` in `<div class="docs-content">`,
+ * and the shared docs renderer (`render-docs.server.ts`) emits each fenced
+ * code block inside `<div class="code-block-shiki ...">`, matching the
+ * historical `CodeBlock.svelte` markup. These rules force the inner `<pre>`,
+ * `<code>`, and `.shiki` backgrounds transparent so the wrapping div's
+ * neutral-50/900 Tailwind background shows through, preserving the bespoke
+ * code-block look. Consolidated here so route wrappers no longer carry
+ * duplicated `<style>` blocks.
+ */
+.docs-content .code-block-shiki pre {
+	background: transparent !important;
+	margin: 0 !important;
+	padding: 1rem !important;
+}
+
+.docs-content .code-block-shiki code {
+	background: transparent !important;
+}
+
+.docs-content .code-block-shiki .shiki {
+	background: transparent !important;
+}

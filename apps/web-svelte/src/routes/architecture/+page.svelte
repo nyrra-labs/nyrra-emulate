@@ -21,19 +21,3 @@
 	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 	{@html data.html}
 </div>
-
-<style>
-	.docs-content :global(.code-block-shiki pre) {
-		background: transparent !important;
-		margin: 0 !important;
-		padding: 1rem !important;
-	}
-
-	.docs-content :global(.code-block-shiki code) {
-		background: transparent !important;
-	}
-
-	.docs-content :global(.code-block-shiki .shiki) {
-		background: transparent !important;
-	}
-</style>
