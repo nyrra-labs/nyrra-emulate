@@ -12,7 +12,7 @@ import {
   supportedServiceLabels,
   supportedServicesProse,
 } from "../docs-chat-summary";
-import { DEFAULT_SERVICE_NAMES, SERVICE_NAMES } from "../../../../packages/emulate/src/registry";
+import { DEFAULT_SERVICE_NAMES, SERVICE_NAMES } from "../../../../packages/emulate/src/service-names";
 import { mdxToCleanMarkdown } from "../mdx-to-markdown";
 
 const __filename = fileURLToPath(import.meta.url);

@@ -6,7 +6,7 @@ import {
   supportedServices,
   supportedServicesProse,
 } from "../default-services.server";
-import { DEFAULT_SERVICE_NAMES, SERVICE_NAMES } from "../../../../../packages/emulate/src/registry";
+import { DEFAULT_SERVICE_NAMES, SERVICE_NAMES } from "../../../../../packages/emulate/src/service-names";
 
 describe("defaultStartupServices derivation", () => {
   it("matches DEFAULT_SERVICE_NAMES in exact order and length", () => {

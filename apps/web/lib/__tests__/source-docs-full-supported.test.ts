@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { SERVICE_NAMES } from "../../../../packages/emulate/src/registry";
+import { SERVICE_NAMES } from "../../../../packages/emulate/src/service-names";
 import { resolveServiceLabel } from "../service-labels";
 
 const __filename = fileURLToPath(import.meta.url);

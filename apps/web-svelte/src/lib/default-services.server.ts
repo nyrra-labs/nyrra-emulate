@@ -19,7 +19,7 @@
  * build-time prerender, so the relative cross-package import never
  * ships to the browser.
  */
-import { DEFAULT_SERVICE_NAMES, SERVICE_NAMES } from "../../../../packages/emulate/src/registry";
+import { DEFAULT_SERVICE_NAMES, SERVICE_NAMES } from "../../../../packages/emulate/src/service-names";
 import { formatServiceLabelsProse, resolveServiceLabel } from "../../../../apps/web/lib/service-labels";
 
 /**

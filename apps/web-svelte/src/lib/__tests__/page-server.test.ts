@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { load, prerender } from "../../routes/+page.server";
 import { rootCodeBlocks } from "../root-code-blocks.server";
-import { DEFAULT_SERVICE_NAMES, SERVICE_NAMES } from "../../../../../packages/emulate/src/registry";
+import { DEFAULT_SERVICE_NAMES, SERVICE_NAMES } from "../../../../../packages/emulate/src/service-names";
 
 const SHIKI_THEMES_CLASS = 'class="shiki shiki-themes vercel-light vercel-dark"';
 

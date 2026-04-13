@@ -8,7 +8,7 @@ import { STARTUP_LABEL_OVERRIDES as docsChatOverrides } from "../docs-chat-summa
 // the same object, catching any regression that reintroduces a
 // parallel literal on either side.
 import { STARTUP_LABEL_OVERRIDES as svelteOverrides } from "../../../web-svelte/src/lib/default-services.server";
-import { DEFAULT_SERVICE_NAMES, SERVICE_NAMES } from "../../../../packages/emulate/src/registry";
+import { DEFAULT_SERVICE_NAMES, SERVICE_NAMES } from "../../../../packages/emulate/src/service-names";
 
 describe("STARTUP_LABEL_OVERRIDES canonical shape", () => {
   it("contains exactly the three brand-sensitive service name overrides", () => {

@@ -51,7 +51,7 @@
  * alias from `route.ts`) and from the Svelte app's Vitest suite (via
  * a cross-package relative path in the regression test).
  */
-import { SERVICE_NAMES } from "../../../packages/emulate/src/registry";
+import { SERVICE_NAMES } from "../../../packages/emulate/src/service-names";
 import { formatServiceLabelsProse, resolveServiceLabel } from "./service-labels";
 import { SITE_NAME } from "./site-metadata";
 
