@@ -2,13 +2,13 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { STARTUP_LABEL_OVERRIDES } from "../default-services.server";
-import { SERVICE_NAMES } from "../../../../../packages/emulate/src/registry";
+import { SERVICE_NAMES } from "../../../../packages/emulate/src/registry";
+import { resolveServiceLabel } from "../service-labels";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-// apps/web-svelte/src/lib/__tests__ → repo root is 5 levels up.
-const REPO_ROOT = resolve(__dirname, "../../../../..");
+// apps/web/lib/__tests__ → repo root is 4 levels up.
+const REPO_ROOT = resolve(__dirname, "../../../..");
 
 const PAGE_MDX_PATH = resolve(REPO_ROOT, "apps/web/app/page.mdx");
 
@@ -17,31 +17,21 @@ const PAGE_MDX_PATH = resolve(REPO_ROOT, "apps/web/app/page.mdx");
 // surface was removed: the docs-chat opening summary now derives its
 // service list at request time via
 // `apps/web/lib/docs-chat-summary.ts`'s `buildDocsChatOpeningSummary`,
-// which funnels the runtime `SERVICE_NAMES` constant through the same
-// `STARTUP_LABEL_OVERRIDES` map this file uses. Helper-level
-// correctness is covered by `docs-chat-summary.test.ts`; this file
-// keeps its page.mdx parity surface as the last remaining hand-
-// authored full supported list in the repo.
-
-/**
- * Resolves a runtime service name to its human-visible label using the
- * same convention as `default-services.server.ts`:
- * `STARTUP_LABEL_OVERRIDES[name]` wins, otherwise capitalize the first
- * character. Recomputed locally rather than imported from the helper
- * because the helper's `resolveLabel` is a private function and the
- * override map is the only exported part of that chain.
- */
-function resolveLabel(name: string): string {
-  return STARTUP_LABEL_OVERRIDES[name] ?? name.charAt(0).toUpperCase() + name.slice(1);
-}
+// which funnels the runtime `SERVICE_NAMES` constant through the
+// shared `resolveServiceLabel` helper this file also uses. Helper-
+// level correctness is covered by `docs-chat-summary.test.ts`; this
+// file keeps its page.mdx parity surface as the last remaining
+// hand-authored full supported list in the repo.
 
 /**
  * Expected full supported-service label sequence derived from the
- * runtime `SERVICE_NAMES` constant. This is the 13-entry ordering
- * (12 default services + foundry) that `apps/web/app/page.mdx`
- * references in its full-support intro prose sentence.
+ * runtime `SERVICE_NAMES` constant via the shared
+ * `resolveServiceLabel` helper in `apps/web/lib/service-labels.ts`.
+ * This is the 13-entry ordering (12 default services + foundry)
+ * that `apps/web/app/page.mdx` references in its full-support
+ * intro prose sentence.
  */
-const expectedFullSupportedLabels: string[] = SERVICE_NAMES.map(resolveLabel);
+const expectedFullSupportedLabels: string[] = SERVICE_NAMES.map(resolveServiceLabel);
 
 /**
  * Parses the full supported-service list out of a docs file's text

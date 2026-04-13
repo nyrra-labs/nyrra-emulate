@@ -2,15 +2,27 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { defaultStartupServices } from "../default-services.server";
+import { DEFAULT_SERVICE_NAMES } from "../../../../packages/emulate/src/registry";
+import { resolveServiceLabel } from "../service-labels";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-// apps/web-svelte/src/lib/__tests__ → repo root is 5 levels up.
-const REPO_ROOT = resolve(__dirname, "../../../../..");
+// apps/web/lib/__tests__ → repo root is 4 levels up.
+const REPO_ROOT = resolve(__dirname, "../../../..");
 
 const PAGE_MDX_PATH = resolve(REPO_ROOT, "apps/web/app/page.mdx");
 const README_PATH = resolve(REPO_ROOT, "README.md");
+
+/**
+ * Base port the CLI uses when starting the default startup set.
+ * Matches the `defaultPort = "4000"` literal in
+ * `packages/emulate/src/index.ts` and the `basePort + i` allocation
+ * in `packages/emulate/src/commands/start.ts`. Inlined here rather
+ * than imported from `apps/web-svelte`'s `default-services.server.ts`
+ * (which owns the same constant) so this apps/web-native test has
+ * no cross-workspace dependency on the Svelte helper layer.
+ */
+const BASE_PORT = 4000;
 
 type StartupBullet = { label: string; port: number };
 
@@ -35,9 +47,19 @@ function parseStartupBullets(text: string): StartupBullet[] {
   return bullets;
 }
 
-const expectedBullets: StartupBullet[] = defaultStartupServices.map(({ label, port }) => ({
-  label,
-  port,
+/**
+ * Expected startup bullet list, derived from the runtime
+ * `DEFAULT_SERVICE_NAMES` registry plus the shared
+ * `resolveServiceLabel` helper plus the local `BASE_PORT`
+ * constant. Produces the same `{ label, port }` tuples that
+ * `apps/web-svelte/src/lib/default-services.server.ts`'s
+ * `defaultStartupServices` builds — the two derivations share the
+ * same SERVICE_NAMES source, the same resolver, and the same port
+ * formula (`basePort + i`).
+ */
+const expectedBullets: StartupBullet[] = DEFAULT_SERVICE_NAMES.map((name, i) => ({
+  label: resolveServiceLabel(name),
+  port: BASE_PORT + i,
 }));
 
 describe("source docs default startup list parity", () => {
@@ -81,7 +103,7 @@ describe("source docs default startup list parity", () => {
     for (const path of [PAGE_MDX_PATH, README_PATH]) {
       const text = readFileSync(path, "utf-8");
       const bullets = parseStartupBullets(text);
-      expect(bullets.length).toBe(defaultStartupServices.length);
+      expect(bullets.length).toBe(DEFAULT_SERVICE_NAMES.length);
     }
   });
 });
