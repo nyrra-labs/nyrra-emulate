@@ -43,7 +43,7 @@
 import { PAGE_TITLES } from "./page-titles";
 
 const SITE_NAME = "emulate";
-const BASE_URL = "https://emulate.dev";
+const BASE_URL = "https://foundryci.com";
 const OG_IMAGE_PATH = "/og-default.png";
 const OG_IMAGE_URL = `${BASE_URL}${OG_IMAGE_PATH}`;
 
