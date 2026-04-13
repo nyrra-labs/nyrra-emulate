@@ -4,8 +4,9 @@ import Page from "../../routes/+page.svelte";
 
 // SvelteKit's auto-generated PageData for the root route does not
 // declare `codeBlocks`, `defaultStartupServices`, `supportedServices`,
-// or `supportedServicesProse`, so synthetic test data is cast at the
-// test boundary to the concrete runtime shape the route component reads.
+// `supportedServicesProse`, or `rootLowerHalfHtml`, so synthetic test
+// data is cast at the test boundary to the concrete runtime shape the
+// route component reads.
 type SyntheticStartupService = { name: string; label: string; port: number };
 type SyntheticSupportedService = { name: string; label: string };
 type SyntheticPageData = {
@@ -14,6 +15,7 @@ type SyntheticPageData = {
     defaultStartupServices: readonly SyntheticStartupService[];
     supportedServices: readonly SyntheticSupportedService[];
     supportedServicesProse: string;
+    rootLowerHalfHtml: string;
   };
 };
 
@@ -56,6 +58,23 @@ const SYNTHETIC_SUPPORTED_PROSE = new Intl.ListFormat("en", {
   type: "conjunction",
 }).format(SYNTHETIC_SUPPORTED.map((s) => s.label));
 
+// Synthetic pre-rendered HTML mirroring the shape the real
+// `rootLowerHalfHtml` helper produces from the upstream `## Options`
+// slice — an Options H2 + the flags table + an env-var codespan + the
+// Programmatic API section with a /programmatic-api link + the Next.js
+// Integration section with a /nextjs link. The route template pastes
+// this blob verbatim via `{@html data.rootLowerHalfHtml}`, so the
+// substrings the existing landing-copy assertions rely on ("Options",
+// "Programmatic API", "Next.js Integration", "href=\"/programmatic-api\"",
+// "href=\"/nextjs\"") must live here rather than in the template.
+const SYNTHETIC_LOWER_HALF_HTML =
+  '<h2 class="text-lg">Options</h2>' +
+  "<table><tr><td><code>-p, --port</code></td><td>Base port</td></tr></table>" +
+  '<h2 class="text-lg">Programmatic API</h2>' +
+  '<p>See the <a href="/programmatic-api">Programmatic API</a> docs for <code class="bg-neutral-100">createEmulator</code>.</p>' +
+  '<h2 class="text-lg">Next.js Integration</h2>' +
+  '<p>See the <a href="/nextjs">Next.js Integration</a> docs for same-origin setup instructions.</p>';
+
 function renderRoot(): { body: string } {
   const props: SyntheticPageData = {
     data: {
@@ -63,6 +82,7 @@ function renderRoot(): { body: string } {
       defaultStartupServices: SYNTHETIC_STARTUP,
       supportedServices: SYNTHETIC_SUPPORTED,
       supportedServicesProse: SYNTHETIC_SUPPORTED_PROSE,
+      rootLowerHalfHtml: SYNTHETIC_LOWER_HALF_HTML,
     },
   };
   return render(Page, { props: props as Parameters<typeof render>[1] });

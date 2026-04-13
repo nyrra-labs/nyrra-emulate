@@ -6,10 +6,17 @@ import {
   supportedServicesProse,
 } from "$lib/default-services.server";
 import { rootCodeBlocks } from "$lib/root-code-blocks.server";
+import { rootLowerHalfHtml } from "$lib/root-lower-half.server";
 
 export const prerender = true;
 
 export const load: PageServerLoad = async () => {
   const codeBlocks = await highlightAll(rootCodeBlocks);
-  return { codeBlocks, defaultStartupServices, supportedServices, supportedServicesProse };
+  return {
+    codeBlocks,
+    defaultStartupServices,
+    supportedServices,
+    supportedServicesProse,
+    rootLowerHalfHtml,
+  };
 };

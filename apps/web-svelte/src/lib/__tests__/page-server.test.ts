@@ -19,10 +19,10 @@ function isShikiHtml(html: string): boolean {
 
 // SvelteKit's auto-generated `PageServerLoad` types the load return as
 // `void | Omit<App.PageData, ...>`, and `App.PageData` does not declare
-// the `codeBlocks` / `defaultStartupServices` fields this load returns
-// at runtime. Asserting the concrete runtime shape at the test boundary
-// is the cleanest way to keep the assertions readable without widening
-// the global type.
+// the `codeBlocks` / `defaultStartupServices` / `rootLowerHalfHtml`
+// fields this load returns at runtime. Asserting the concrete runtime
+// shape at the test boundary is the cleanest way to keep the assertions
+// readable without widening the global type.
 type StartupService = { name: string; label: string; port: number };
 type SupportedSvc = { name: string; label: string };
 type RootLoadData = {
@@ -30,6 +30,7 @@ type RootLoadData = {
   defaultStartupServices: readonly StartupService[];
   supportedServices: readonly SupportedSvc[];
   supportedServicesProse: string;
+  rootLowerHalfHtml: string;
 };
 
 async function callLoad(): Promise<RootLoadData> {
@@ -110,6 +111,41 @@ describe("root +page.server.ts", () => {
     expect(data.supportedServicesProse).toContain("Clerk");
     expect(data.supportedServicesProse).not.toContain("Foundry");
     expect(data.supportedServicesProse).toContain(", and ");
+  });
+
+  it("load() exposes rootLowerHalfHtml as a non-empty string starting with the rendered Options H2", async () => {
+    const data = await callLoad();
+    expect(typeof data.rootLowerHalfHtml).toBe("string");
+    expect(data.rootLowerHalfHtml.length).toBeGreaterThan(100);
+    expect(data.rootLowerHalfHtml.trimStart().startsWith("<h2")).toBe(true);
+  });
+
+  it("load()'s rootLowerHalfHtml contains the rendered Options / Programmatic API / Next.js Integration sections sourced from upstream", async () => {
+    // Pins the upstream→helper→load()→prerender chain end-to-end. If
+    // `root-lower-half.server.ts` ever stopped pulling from the upstream
+    // `apps/web/app/page.mdx` slice, these load-bearing tokens would
+    // disappear from the rendered output.
+    const data = await callLoad();
+    // Options H2 + table pass-through + env-var codespan prose.
+    expect(data.rootLowerHalfHtml).toMatch(/<h2[^>]*>Options<\/h2>/);
+    expect(data.rootLowerHalfHtml).toContain("<code>-p, --port</code>");
+    expect(data.rootLowerHalfHtml).toContain("<code>-s, --service</code>");
+    expect(data.rootLowerHalfHtml).toContain("<code>--seed</code>");
+    expect(data.rootLowerHalfHtml).toContain("EMULATE_PORT");
+    expect(data.rootLowerHalfHtml).toContain("PORT");
+    // Programmatic API section with createEmulator codespan + link.
+    expect(data.rootLowerHalfHtml).toMatch(/<h2[^>]*>Programmatic API<\/h2>/);
+    expect(data.rootLowerHalfHtml).toContain('href="/programmatic-api"');
+    expect(data.rootLowerHalfHtml).toContain("createEmulator");
+    // Next.js Integration section with /nextjs link + load-bearing prose.
+    expect(data.rootLowerHalfHtml).toMatch(/<h2[^>]*>Next\.js Integration<\/h2>/);
+    expect(data.rootLowerHalfHtml).toContain('href="/nextjs"');
+    expect(data.rootLowerHalfHtml).toContain("same origin");
+    // Nothing from the hero / Quick Start / CLI sections (above `## Options`)
+    // should leak into the lower-half slice's rendered output.
+    expect(data.rootLowerHalfHtml).not.toContain("Getting Started");
+    expect(data.rootLowerHalfHtml).not.toContain("Quick Start");
+    expect(data.rootLowerHalfHtml).not.toContain("# Start the default startup set");
   });
 
   it("load()'s rendered codeBlocks contain the upstream-derived rootCodeBlocks source after HTML tag stripping", async () => {
