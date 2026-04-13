@@ -8,13 +8,17 @@
  *
  * Source of truth and discovery strategy:
  *
- *   - `PAGE_TITLES` in `./page-titles.ts` is the single hand-maintained
- *     map of every implemented docs slug to its human-visible title.
- *     Mirrors the names in `apps/web/lib/docs-navigation.ts` so search
- *     hits read the same as the Next.js docs ("Vercel API" rather than
- *     "Vercel", "Microsoft Entra ID" rather than "Microsoft"). The
- *     metadata module (`page-metadata.ts`) and the nav contract
- *     (`nav.ts`) both already consume this map directly.
+ *   - `PAGE_TITLES` in `./page-titles.ts` is the single source of
+ *     truth for every implemented docs slug → human-visible title.
+ *     It is itself derived from the upstream
+ *     `apps/web/lib/docs-navigation.ts` `allDocsPages` catalog with
+ *     one explicit local override for the root label (the Svelte
+ *     shell uses "Overview" instead of upstream's "Getting Started").
+ *     Search hits therefore read the same as the Next.js docs
+ *     ("Vercel API" rather than "Vercel", "Microsoft Entra ID"
+ *     rather than "Microsoft") for free, with no second list to keep
+ *     in lockstep. The metadata module (`page-metadata.ts`) and the
+ *     nav contract (`nav.ts`) both already consume this map directly.
  *
  *   - `docsSources` below derives from `PAGE_TITLES` by converting each
  *     bare slug to a docs href (`""` -> `"/"`, `"foundry"` -> `"/foundry"`),
