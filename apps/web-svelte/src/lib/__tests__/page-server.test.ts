@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { load, prerender } from "../../routes/+page.server";
+import { rootCodeBlocks } from "../root-code-blocks.server";
 import {
   DEFAULT_SERVICE_NAMES,
   SERVICE_NAMES,
@@ -109,5 +110,30 @@ describe("root +page.server.ts", () => {
     expect(data.supportedServicesProse).toContain("Clerk");
     expect(data.supportedServicesProse).not.toContain("Foundry");
     expect(data.supportedServicesProse).toContain(", and ");
+  });
+
+  it("load()'s rendered codeBlocks contain the upstream-derived rootCodeBlocks source after HTML tag stripping", async () => {
+    // Pins the source→rendered-HTML pipeline end-to-end: whatever
+    // `rootCodeBlocks` exposes from apps/web/app/page.mdx must make
+    // it through `highlightAll()` into the prerendered HTML. A
+    // regression that broke the wiring (e.g. re-hardcoding a local
+    // constant) would let `rootCodeBlocks` and `codeBlocks` drift.
+    // Shiki splits each source line into multiple <span> elements
+    // for per-token colors, so substring matches on the raw HTML
+    // can't find "npx emulate" because the space straddles a
+    // </span><span> boundary. Stripping all HTML tags reassembles
+    // the plain text content, which then contains the source
+    // verbatim (line by line for multi-line blocks).
+    const data = await callLoad();
+    const stripHtmlTags = (html: string): string => html.replace(/<[^>]+>/g, "");
+
+    const quickStartText = stripHtmlTags(data.codeBlocks.quickStart);
+    expect(quickStartText).toContain(rootCodeBlocks.quickStart.code);
+
+    const cliText = stripHtmlTags(data.codeBlocks.cli);
+    for (const line of rootCodeBlocks.cli.code.split("\n")) {
+      if (line.trim() === "") continue;
+      expect(cliText).toContain(line);
+    }
   });
 });
