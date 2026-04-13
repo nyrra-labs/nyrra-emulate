@@ -32,35 +32,20 @@
  * await so `+page.server.ts`'s `load()` just reads the pre-baked
  * string rather than re-running the docs renderer on every call.
  */
-import { docsSources } from "./docs-source";
 import { renderDocsHtml } from "./render-docs.server";
+import { sliceRootPageSection } from "./root-page-source.server";
 
 const OPTIONS_MARKER = "## Options";
 
-const rootSource = docsSources.find((source) => source.href === "/");
-if (!rootSource) {
-  throw new Error(
-    "root-lower-half: docsSources is missing the root '/' entry. " +
-      "Check apps/web-svelte/src/lib/docs-source.ts and apps/web-svelte/src/lib/page-titles.ts.",
-  );
-}
-
-const optionsIdx = rootSource.raw.indexOf(OPTIONS_MARKER);
-if (optionsIdx === -1) {
-  throw new Error(
-    `root-lower-half: upstream apps/web/app/page.mdx does not contain the ` +
-      `${JSON.stringify(OPTIONS_MARKER)} heading anchor. The root Svelte page's ` +
-      `Options / Programmatic API / Next.js Integration sections are derived from ` +
-      `everything after this marker; removing or renaming it breaks the root page.`,
-  );
-}
-
 /**
  * Raw MDX slice starting at the `## Options` heading and running to
- * the end of the upstream `apps/web/app/page.mdx` file. Exported for
- * test verification; consumers should read `rootLowerHalfHtml` below.
+ * the end of the upstream `apps/web/app/page.mdx` file. Delegates to
+ * the shared `sliceRootPageSection` helper, which throws a precise
+ * error at module init if the `## Options` anchor is missing from
+ * upstream. Exported for test verification; consumers should read
+ * `rootLowerHalfHtml` below.
  */
-export const rootLowerHalfMdx: string = rootSource.raw.slice(optionsIdx);
+export const rootLowerHalfMdx: string = sliceRootPageSection(OPTIONS_MARKER);
 
 /**
  * Pre-rendered HTML for the root page's lower half, baked at module

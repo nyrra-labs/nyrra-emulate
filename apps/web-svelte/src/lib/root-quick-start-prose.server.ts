@@ -54,43 +54,22 @@
  * pre-baked values rather than re-running the docs renderer on every
  * prerender call.
  */
-import { docsSources } from "./docs-source";
 import { renderDocsHtml } from "./render-docs.server";
+import { sliceRootPageSection } from "./root-page-source.server";
 
 const QUICK_START_HEADING = "## Quick Start";
 const CLI_HEADING = "## CLI";
 const LIST_ITEM_PREFIX = "- ";
 
-const rootSource = docsSources.find((source) => source.href === "/");
-if (!rootSource) {
-  throw new Error(
-    "root-quick-start-prose: docsSources is missing the root '/' entry. " +
-      "Check apps/web-svelte/src/lib/docs-source.ts and apps/web-svelte/src/lib/page-titles.ts.",
-  );
-}
-
-const qsIdx = rootSource.raw.indexOf(QUICK_START_HEADING);
-if (qsIdx === -1) {
-  throw new Error(
-    `root-quick-start-prose: upstream apps/web/app/page.mdx does not contain ` +
-      `the ${JSON.stringify(QUICK_START_HEADING)} heading. The root Svelte page's ` +
-      `Quick Start intro + post-list paragraphs are derived from everything ` +
-      `between this heading and ${JSON.stringify(CLI_HEADING)}; removing or ` +
-      `renaming it breaks the root page.`,
-  );
-}
-
-const cliIdx = rootSource.raw.indexOf(CLI_HEADING, qsIdx + QUICK_START_HEADING.length);
-if (cliIdx === -1) {
-  throw new Error(
-    `root-quick-start-prose: upstream apps/web/app/page.mdx does not contain ` +
-      `the ${JSON.stringify(CLI_HEADING)} heading after the ` +
-      `${JSON.stringify(QUICK_START_HEADING)} heading. The Quick Start section ` +
-      `needs both anchors to slice its body deterministically.`,
-  );
-}
-
-const quickStartBody = rootSource.raw.slice(qsIdx + QUICK_START_HEADING.length, cliIdx);
+// The shared `sliceRootPageSection` helper throws a precise error
+// at module init if either heading anchor is missing from the
+// upstream MDX, so this helper inherits that loud-fail behavior
+// without duplicating the docsSources lookup or the per-marker
+// precondition checks. The returned slice is start-marker-inclusive;
+// the fence-finding step below anchors on the next line beginning
+// with ```` ``` ```` so the included heading is a no-op for the rest
+// of the pipeline.
+const quickStartBody = sliceRootPageSection(QUICK_START_HEADING, CLI_HEADING);
 
 // The Quick Start section contains exactly one fenced code block (the
 // `npx emulate` example). Find the first fence and split the body
