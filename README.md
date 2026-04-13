@@ -945,6 +945,14 @@ Adding a new upstream-backed route: when upstream lands a new `apps/web/app/<slu
 
 Then rerun `pnpm --filter web-svelte type-check`, `pnpm --filter web-svelte build`, and `pnpm --filter web-svelte lint`. The Phase 7 nav contract and the docs-source registry validation both fire at module init if any of these surfaces are missing.
 
+Search indexing: there is no separate search page list to maintain. Once a new upstream-backed slug is wired through the shared docs-source registry and route flow above, both the in-app search index and the search-result name catalog are derived automatically:
+
+- `apps/web-svelte/src/lib/search-index.ts` builds the bundled index by iterating `docsSources` at build time, running each upstream MDX raw through `mdxToCleanMarkdown` plus a small markdown-stripping pass, and caching the result.
+- `apps/web-svelte/src/lib/docs-search-pages.ts` is a thin adapter over the same `docsSources` registry; it exists so any future consumer that wants the lightweight `{ name, href }` projection still has it.
+- `apps/web-svelte/src/routes/api/search/+server.ts` serves results via `getSearchIndex()`, scoring title matches above content matches and returning short snippets around the first matched term.
+
+If upstream MDX changes cause bad search snippets or missing search hits, the fix usually belongs in `apps/web-svelte/src/lib/mdx-to-markdown.ts` (when MDX-only artifacts leak into the search content and need stripping) or `apps/web-svelte/src/lib/search-index.ts` (when the markdown-stripping or snippet-extraction pass needs adjusting), not in any per-route component.
+
 ## Auth
 
 Tokens are configured in the seed config and map to users. Pass them as `Authorization: Bearer <token>` or `Authorization: token <token>`.
