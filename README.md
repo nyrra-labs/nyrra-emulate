@@ -926,6 +926,15 @@ Per-route components are intentionally thin and should not carry brand strings o
 
 Deploy wiring status: this README currently documents only the Cloudflare adapter build artifact path (`apps/web-svelte/.svelte-kit/cloudflare/`). There is no checked-in `wrangler.toml`, deploy script, or CI workflow that uploads that artifact to Cloudflare Workers; how the artifact is shipped is intentionally left to a future slice. If a deploy wrapper does land, or if the production docs domain changes from the value currently encoded in `apps/web-svelte/src/lib/page-metadata.ts`, this README section and `apps/web-svelte/src/lib/page-metadata.ts` must be updated together so the documented build path, the deployed hostname, and the metadata `BASE_URL` stay in lockstep.
 
+Upstream docs sync: the upstream `apps/web/app/**/page.mdx` content lives in the `upstream` remote (`git@github.com:vercel-labs/emulate.git`), and the canonical branch is `upstream/main`. To pull upstream docs changes into the current branch, run `git fetch upstream` and then bring the relevant `apps/web` docs changes from `upstream/main` into the current branch (merge, cherry-pick, or hand-apply, whichever fits the change). After the merge, rerun `pnpm --filter web-svelte type-check`, `pnpm --filter web-svelte build`, and `pnpm --filter web-svelte lint` to verify the Svelte site still renders.
+
+If upstream drift breaks the Svelte site, the fix usually belongs in one of these shared files:
+
+- `apps/web-svelte/src/lib/docs-source.ts` when the upstream slug set or directory layout changes.
+- `apps/web-svelte/src/lib/mdx-to-markdown.ts` when upstream introduces new MDX-only artifacts that need stripping.
+- `apps/web-svelte/src/lib/render-docs.server.ts` when upstream uses a markdown construct or fence language the renderer does not yet cover.
+- The route and title metadata files (`apps/web-svelte/src/lib/page-titles.ts`, `apps/web-svelte/src/lib/nav.ts`) only when the upstream slug set changes and a new route needs to be implemented; the Phase 7 nav contract in `nav.ts` will fail the build at module init if any of these surfaces drift apart.
+
 ## Auth
 
 Tokens are configured in the seed config and map to users. Pass them as `Authorization: Bearer <token>` or `Authorization: token <token>`.
