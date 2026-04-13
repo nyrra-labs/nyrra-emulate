@@ -6,25 +6,72 @@
 </script>
 
 <h1 class="mb-6 text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100">
-	Getting Started
+	Local Foundry Emulation
 </h1>
 
 <p class="mb-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
-	Local drop-in replacement for Vercel, GitHub, Google, Slack, Apple, Microsoft, AWS, Okta,
-	MongoDB Atlas, Resend, Stripe, Clerk, and Foundry APIs. Built for CI and no-network sandboxes.
-	Fully stateful, production-fidelity API emulation. Not mocks.
+	FoundryCI is a Nyrra project that runs Palantir Foundry locally for CI and no-network
+	sandboxes. It emulates the OAuth 2.0, current-user, and compute-module routes Foundry clients
+	depend on, with production-fidelity state instead of mocks. FoundryCI is built on
+	<a
+		class="text-neutral-900 underline decoration-neutral-300 underline-offset-2 hover:decoration-neutral-900 dark:text-neutral-100 dark:decoration-neutral-700 dark:hover:decoration-neutral-100"
+		href="https://github.com/vercel-labs/emulate"
+		target="_blank"
+		rel="noopener noreferrer">emulate by Vercel Labs</a
+	>, so the same process can also stand in for Vercel, GitHub, Google, Slack, Apple, Microsoft,
+	AWS, Okta, MongoDB Atlas, Resend, and Stripe inside your test runs.
 </p>
 
 <h2
 	class="mb-4 mt-12 text-lg font-semibold text-neutral-900 first:mt-0 dark:text-neutral-100"
 >
+	Start with Foundry
+</h2>
+
+<p class="mb-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
+	Two docs pages cover everything you need to run Foundry locally:
+</p>
+
+<ul class="mb-4 list-disc space-y-1 pl-5 text-sm">
+	<li class="text-neutral-600 dark:text-neutral-400">
+		<a
+			class="text-neutral-900 underline decoration-neutral-300 underline-offset-2 hover:decoration-neutral-900 dark:text-neutral-100 dark:decoration-neutral-700 dark:hover:decoration-neutral-100"
+			href="/foundry">Foundry</a
+		>
+		covers the OAuth 2.0 endpoints, current-user lookup, compute-module runtime, and contour job routes.
+	</li>
+	<li class="text-neutral-600 dark:text-neutral-400">
+		<a
+			class="text-neutral-900 underline decoration-neutral-300 underline-offset-2 hover:decoration-neutral-900 dark:text-neutral-100 dark:decoration-neutral-700 dark:hover:decoration-neutral-100"
+			href="/configuration">Configuration</a
+		>
+		shows the seed config for users, OAuth clients, deployed apps, and compute-module runtimes.
+	</li>
+</ul>
+
+<p class="mb-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
+	Bring up the Foundry emulator with
+	<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
+		>emulate --service foundry</code
+	>
+	or include
+	<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
+		>foundry:</code
+	> in the seed config.
+</p>
+
+<h2 class="mb-4 mt-12 text-lg font-semibold text-neutral-900 dark:text-neutral-100">
 	Quick Start
 </h2>
 
 <CodeBlock html={data.codeBlocks.quickStart} />
 
 <p class="mb-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
-	The default startup set starts with sensible defaults. No config file needed:
+	<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
+		>npx emulate</code
+	>
+	boots the supporting emulator stack with sensible defaults. No config file is needed for the supporting
+	services:
 </p>
 
 <ul class="mb-4 list-disc space-y-1 pl-5 text-sm">
@@ -96,21 +143,6 @@
 		>
 	</li>
 </ul>
-
-<p class="mb-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
-	Palantir <a
-		class="text-neutral-900 underline decoration-neutral-300 underline-offset-2 hover:decoration-neutral-900 dark:text-neutral-100 dark:decoration-neutral-700 dark:hover:decoration-neutral-100"
-		href="/foundry">Foundry</a
-	> is a first-class emulator covering OAuth 2.0, current-user lookup, and compute-module runtime plus
-	contour job routes. Start it with
-	<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
-		>emulate --service foundry</code
-	>
-	or include
-	<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
-		>foundry:</code
-	> in the seed config.
-</p>
 
 <h2 class="mb-4 mt-12 text-lg font-semibold text-neutral-900 dark:text-neutral-100">CLI</h2>
 
