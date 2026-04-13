@@ -72,6 +72,34 @@ const ROOT_SITE_NAME = "FoundryCI by Nyrra";
 const PAGE_DESCRIPTION =
   "Local drop-in replacement services for CI and no-network sandboxes. Fully stateful, production-fidelity API emulation.";
 
+/**
+ * Per-page FoundryCI metadata overrides. Pages keyed in this map opt out of
+ * the generic `${displayTitle} | emulate` upstream-mirroring path and instead
+ * ship FoundryCI-branded title/description/siteName/OG-image-alt that match
+ * the root metadata's FoundryCI by Nyrra positioning. Other non-root pages
+ * (vercel, github, google, ...) still expand into the generic suffix via
+ * `SITE_NAME` so per-service titles stay aligned with the upstream Next.js
+ * docs and the search index continues to mirror the upstream display names.
+ *
+ * Add an entry here only when a page is FoundryCI-critical enough to deserve
+ * brand-leading metadata. Today that is `/foundry` (the actual Foundry docs)
+ * and `/configuration` (the seed config reference, which leads with Foundry
+ * users / OAuth clients / runtimes even though it also covers the supporting
+ * emulate base layer).
+ */
+const FOUNDRYCI_PAGE_METADATA: Record<string, { title: string; description: string }> = {
+  foundry: {
+    title: "Foundry | FoundryCI by Nyrra",
+    description:
+      "Local Palantir Foundry emulation: OAuth 2.0, current-user lookup, and compute-module runtime. FoundryCI by Nyrra, built on emulate by Vercel Labs.",
+  },
+  configuration: {
+    title: "Configuration | FoundryCI by Nyrra",
+    description:
+      "Seed config for FoundryCI: Foundry users, OAuth clients, runtimes, and the supporting emulate services. By Nyrra, built on emulate by Vercel Labs.",
+  },
+};
+
 export type PageMetadata = {
   title: string;
   description: string;
@@ -132,11 +160,45 @@ export function pageMetadata(slug: string): PageMetadata | null {
   if (title === undefined) return null;
 
   const displayTitle = title.replace(/\n/g, " ");
+  const url = `${BASE_URL}/${slug}`;
+
+  const foundryciOverride = FOUNDRYCI_PAGE_METADATA[slug];
+  if (foundryciOverride !== undefined) {
+    // FoundryCI-critical page: lead with the FoundryCI brand in every
+    // metadata surface. The OG image alt text uses the bare displayTitle
+    // plus the FoundryCI site name so screen readers describe the card
+    // as "<page> - FoundryCI by Nyrra" rather than "<page> - emulate".
+    const { title: foundryTitle, description: foundryDescription } = foundryciOverride;
+    return {
+      title: foundryTitle,
+      description: foundryDescription,
+      openGraph: {
+        type: "website",
+        locale: "en_US",
+        siteName: ROOT_SITE_NAME,
+        title: foundryTitle,
+        description: foundryDescription,
+        url,
+        image: {
+          url: OG_IMAGE_URL,
+          width: 1200,
+          height: 630,
+          alt: `${displayTitle} - ${ROOT_SITE_NAME}`,
+        },
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: foundryTitle,
+        description: foundryDescription,
+        image: OG_IMAGE_URL,
+      },
+    };
+  }
+
   // Pre-expand the apps/web title.template = "%s | emulate" so the rendered
   // document <title> matches what Next.js produces (e.g.
   // "Programmatic API | emulate"), not the bare displayTitle.
   const fullTitle = `${displayTitle} | ${SITE_NAME}`;
-  const url = `${BASE_URL}/${slug}`;
 
   return {
     title: fullTitle,
