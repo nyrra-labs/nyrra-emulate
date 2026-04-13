@@ -882,6 +882,26 @@ apps/
 
 The core provides a generic `Store` with typed `Collection<T>` instances supporting CRUD, indexing, filtering, and pagination. Each service plugin registers its routes on the shared Hono app and uses the store for state.
 
+## Docs Site
+
+The deployable docs app in this repo is `apps/web-svelte`. Build it with:
+
+```bash
+pnpm --filter web-svelte build
+```
+
+The build emits a Cloudflare adapter output under `apps/web-svelte/.svelte-kit/cloudflare/`, containing the prerendered HTML for every docs route, the worker entry, and the static assets.
+
+`apps/web` is still in the repo as the upstream Next.js docs source. It is not the deployed docs app, but its MDX files under `apps/web/app/**/page.mdx` remain the single source of truth for docs page content. The Svelte app pulls them at build time through the shared registry at `apps/web-svelte/src/lib/docs-source.ts`, which uses Vite's eager `?raw` glob to inline every upstream MDX file as a build-time string.
+
+To update docs content, edit the relevant `apps/web/app/<slug>/page.mdx` file, then re-verify the Svelte build:
+
+```bash
+pnpm --filter web-svelte type-check
+pnpm --filter web-svelte build
+pnpm --filter web-svelte lint
+```
+
 ## Auth
 
 Tokens are configured in the seed config and map to users. Pass them as `Authorization: Bearer <token>` or `Authorization: token <token>`.
