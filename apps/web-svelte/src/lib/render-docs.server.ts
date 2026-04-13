@@ -61,15 +61,19 @@ const CODE_BLOCK_INNER_CLASS = "code-block-shiki overflow-x-auto";
 
 /**
  * Maps a fenced code block's language hint onto the `SupportedLang`
- * union the existing Shiki helper accepts. Unknown languages fall back
- * to bash so the syntax-light cases (shell snippets without a hint)
- * still render.
+ * union the existing Shiki helper accepts. Unlabeled fences default to
+ * typescript, matching `apps/web/mdx-components.tsx`'s upstream default
+ * so the architecture page's unlabeled directory-tree fence (the only
+ * unlabeled fence in the upstream corpus today) preserves its
+ * typescript-tinted token coloring through the migration. Unknown
+ * languages fall back to bash so untagged shell snippets still render.
  */
 function mapLang(lang: string | undefined): SupportedLang {
   switch ((lang ?? "").toLowerCase()) {
     case "ts":
     case "tsx":
     case "typescript":
+    case "":
       return "typescript";
     case "yaml":
     case "yml":
@@ -77,7 +81,6 @@ function mapLang(lang: string | undefined): SupportedLang {
     case "bash":
     case "sh":
     case "shell":
-    case "":
       return "bash";
     default:
       return "bash";
