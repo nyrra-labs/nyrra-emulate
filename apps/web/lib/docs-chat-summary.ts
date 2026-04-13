@@ -52,29 +52,22 @@
  * a cross-package relative path in the regression test).
  */
 import { SERVICE_NAMES } from "../../../packages/emulate/src/registry";
+import {
+  formatServiceLabelsProse,
+  resolveServiceLabel,
+} from "./service-labels";
 import { SITE_NAME } from "./site-metadata";
 
 /**
- * Display-label overrides for runtime service names whose default
- * capitalize-first-letter transform reads incorrectly. Kept small and
- * obvious; the Svelte root-page hero uses its own copy of the same
- * three entries in `apps/web-svelte/src/lib/default-services.server.ts`,
- * and both copies are validated against runtime parity via focused
- * tests so adding a new awkwardly-cased service must update both.
+ * Re-export of the shared `STARTUP_LABEL_OVERRIDES` map from
+ * `./service-labels`. The map used to live inline in this file
+ * alongside a parallel copy in
+ * `apps/web-svelte/src/lib/default-services.server.ts`; the
+ * extraction collapsed both into one source of truth. Keeping the
+ * re-export here so existing test imports against
+ * `docs-chat-summary.ts` continue to resolve unchanged.
  */
-export const STARTUP_LABEL_OVERRIDES: Readonly<Record<string, string>> = {
-  github: "GitHub",
-  aws: "AWS",
-  mongoatlas: "MongoDB Atlas",
-};
-
-function capitalize(name: string): string {
-  return name.charAt(0).toUpperCase() + name.slice(1);
-}
-
-function resolveLabel(name: string): string {
-  return STARTUP_LABEL_OVERRIDES[name] ?? capitalize(name);
-}
+export { STARTUP_LABEL_OVERRIDES } from "./service-labels";
 
 /**
  * Ordered display labels for every supported service, derived from
@@ -83,20 +76,18 @@ function resolveLabel(name: string): string {
  * ending with `"foundry"`). Consumed by `supportedServicesProse`
  * below and exported for test verification.
  */
-export const supportedServiceLabels: readonly string[] = SERVICE_NAMES.map(resolveLabel);
+export const supportedServiceLabels: readonly string[] =
+  SERVICE_NAMES.map(resolveServiceLabel);
 
 /**
  * Oxford-comma English prose form of the full supported-service
  * label list, e.g. "Vercel, GitHub, Google, ..., Clerk, and Foundry".
- * Composed via `Intl.ListFormat` at module init so the final string
- * is a plain constant the route handler can splice into the opening
- * summary without re-formatting on every request.
+ * Composed via the shared `formatServiceLabelsProse` helper at
+ * module init so the final string is a plain constant the route
+ * handler can splice into the opening summary without re-formatting
+ * on every request.
  */
-const LIST_FORMATTER = new Intl.ListFormat("en", {
-  style: "long",
-  type: "conjunction",
-});
-export const supportedServicesProse: string = LIST_FORMATTER.format(supportedServiceLabels);
+export const supportedServicesProse: string = formatServiceLabelsProse(supportedServiceLabels);
 
 /**
  * Load-bearing programmatic-API entry point token. The opening

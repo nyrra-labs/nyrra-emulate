@@ -20,6 +20,10 @@
  * ships to the browser.
  */
 import { DEFAULT_SERVICE_NAMES, SERVICE_NAMES } from "../../../../packages/emulate/src/registry";
+import {
+  formatServiceLabelsProse,
+  resolveServiceLabel,
+} from "../../../../apps/web/lib/service-labels";
 
 /**
  * Base port the CLI uses when starting the default startup set. Matches
@@ -30,30 +34,18 @@ import { DEFAULT_SERVICE_NAMES, SERVICE_NAMES } from "../../../../packages/emula
 const BASE_PORT = 4000;
 
 /**
- * Display-label overrides for the docs-site root-page service lists.
- * The default is to capitalize the bare service name, so this map only
- * carries the small set of names whose capitalized form reads
- * incorrectly ("GitHub" not "Github", "AWS" not "Aws", "MongoDB Atlas"
- * not "Mongoatlas"). Both `defaultStartupServices` (Quick Start <ul>)
- * and `supportedServices` (intro hero prose) funnel through the same
- * label resolver below, so this map is the single source of truth for
- * homepage display labels. Keep it small and obvious. A future service
- * whose capitalized form reads incorrectly on the homepage should get
- * an entry here with a comment explaining why.
+ * Re-export of the shared `STARTUP_LABEL_OVERRIDES` map from
+ * `apps/web/lib/service-labels.ts`. The map used to live inline in
+ * this file alongside a parallel copy in
+ * `apps/web/lib/docs-chat-summary.ts`; the extraction collapsed both
+ * into one source of truth so a future awkwardly-cased service only
+ * needs one entry added to the shared helper. Keeping the re-export
+ * here so existing test imports against `default-services.server`
+ * continue to resolve unchanged, and so consumers that grep for
+ * "STARTUP_LABEL_OVERRIDES" on this side of the monorepo still
+ * find the binding.
  */
-export const STARTUP_LABEL_OVERRIDES: Readonly<Record<string, string>> = {
-  github: "GitHub",
-  aws: "AWS",
-  mongoatlas: "MongoDB Atlas",
-};
-
-function capitalize(name: string): string {
-  return name.charAt(0).toUpperCase() + name.slice(1);
-}
-
-function resolveLabel(name: string): string {
-  return STARTUP_LABEL_OVERRIDES[name] ?? capitalize(name);
-}
+export { STARTUP_LABEL_OVERRIDES } from "../../../../apps/web/lib/service-labels";
 
 export type DefaultStartupService = {
   name: string;
@@ -76,7 +68,7 @@ export type SupportedService = {
 export const defaultStartupServices: readonly DefaultStartupService[] = DEFAULT_SERVICE_NAMES.map(
   (name, i) => ({
     name,
-    label: resolveLabel(name),
+    label: resolveServiceLabel(name),
     port: BASE_PORT + i,
   }),
 );
@@ -97,22 +89,20 @@ export const defaultStartupServices: readonly DefaultStartupService[] = DEFAULT_
  */
 export const supportedServices: readonly SupportedService[] = SERVICE_NAMES.filter(
   (name) => name !== "foundry",
-).map((name) => ({ name, label: resolveLabel(name) }));
+).map((name) => ({ name, label: resolveServiceLabel(name) }));
 
 /**
  * Pre-formatted Oxford-comma English prose form of `supportedServices`,
- * computed at module init via `Intl.ListFormat` so the docs-site
- * prerender bakes the final string into the static HTML. Renders as
- * "Vercel, GitHub, Google, ..., Stripe, MongoDB Atlas, and Clerk" (with
- * "and " before the last entry). The root-page hero paragraph drops
- * this string into the "...so the same process can also stand in for
+ * computed at module init via the shared `formatServiceLabelsProse`
+ * helper so the docs-site prerender bakes the final string into the
+ * static HTML. Renders as "Vercel, GitHub, Google, ..., Stripe,
+ * MongoDB Atlas, and Clerk" (with "and " before the last entry,
+ * Foundry filtered out because the FoundryCI hero mentions it in
+ * its preceding sentences). The root-page hero paragraph drops this
+ * string into the "...so the same process can also stand in for
  * <X> inside your test runs." sentence so the entire supporting list
  * stays in lockstep with the runtime registry.
  */
-const SUPPORTED_SERVICES_LIST_FORMATTER = new Intl.ListFormat("en", {
-  style: "long",
-  type: "conjunction",
-});
-export const supportedServicesProse: string = SUPPORTED_SERVICES_LIST_FORMATTER.format(
+export const supportedServicesProse: string = formatServiceLabelsProse(
   supportedServices.map((s) => s.label),
 );
