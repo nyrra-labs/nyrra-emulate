@@ -877,6 +877,10 @@ packages/
     clerk/          # Clerk users + organizations + OAuth applications
     foundry/        # Foundry OAuth 2.0 + compute modules + current user
     aws/            # AWS S3, SQS, IAM, STS
+    okta/           # Okta identity provider / OIDC
+    mongoatlas/     # MongoDB Atlas Admin API + Data API
+    resend/         # Resend email API
+    stripe/         # Stripe billing and payments API
 apps/
   web-svelte/       # Deployable docs site (SvelteKit + Cloudflare adapter)
   web/              # Upstream Next.js docs / content source (not deployed)
