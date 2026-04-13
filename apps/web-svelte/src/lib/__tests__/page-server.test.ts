@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { load, prerender } from "../../routes/+page.server";
-import { DEFAULT_SERVICE_NAMES } from "../../../../../packages/emulate/src/registry";
+import {
+  DEFAULT_SERVICE_NAMES,
+  SERVICE_NAMES,
+} from "../../../../../packages/emulate/src/registry";
 
 const SHIKI_THEMES_CLASS = 'class="shiki shiki-themes vercel-light vercel-dark"';
 
@@ -20,9 +23,12 @@ function isShikiHtml(html: string): boolean {
 // is the cleanest way to keep the assertions readable without widening
 // the global type.
 type StartupService = { name: string; label: string; port: number };
+type SupportedSvc = { name: string; label: string };
 type RootLoadData = {
   codeBlocks: { quickStart: string; cli: string };
   defaultStartupServices: readonly StartupService[];
+  supportedServices: readonly SupportedSvc[];
+  supportedServicesProse: string;
 };
 
 async function callLoad(): Promise<RootLoadData> {
@@ -81,5 +87,27 @@ describe("root +page.server.ts", () => {
     for (let i = 0; i < data.defaultStartupServices.length; i++) {
       expect(data.defaultStartupServices[i].port).toBe(4000 + i);
     }
+  });
+
+  it("load() exposes supportedServices derived from runtime SERVICE_NAMES filtered to exclude foundry", async () => {
+    const data = await callLoad();
+    const expected = SERVICE_NAMES.filter((name) => name !== "foundry");
+    expect(data.supportedServices.map((s) => s.name)).toEqual([...expected]);
+  });
+
+  it("load()'s supportedServices includes Clerk and excludes Foundry", async () => {
+    const data = await callLoad();
+    const names = data.supportedServices.map((s) => s.name);
+    expect(names).toContain("clerk");
+    expect(names).not.toContain("foundry");
+  });
+
+  it("load() exposes supportedServicesProse as a non-empty Oxford-comma string containing Clerk but not Foundry", async () => {
+    const data = await callLoad();
+    expect(typeof data.supportedServicesProse).toBe("string");
+    expect(data.supportedServicesProse.length).toBeGreaterThan(0);
+    expect(data.supportedServicesProse).toContain("Clerk");
+    expect(data.supportedServicesProse).not.toContain("Foundry");
+    expect(data.supportedServicesProse).toContain(", and ");
   });
 });

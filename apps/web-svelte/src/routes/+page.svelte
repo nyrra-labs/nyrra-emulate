@@ -18,8 +18,7 @@
 		href="https://github.com/vercel-labs/emulate"
 		target="_blank"
 		rel="noopener noreferrer">emulate by Vercel Labs</a
-	>, so the same process can also stand in for Vercel, GitHub, Google, Slack, Apple, Microsoft,
-	AWS, Okta, MongoDB Atlas, Resend, and Stripe inside your test runs.
+	>, so the same process can also stand in for {data.supportedServicesProse} inside your test runs.
 </p>
 
 <h2

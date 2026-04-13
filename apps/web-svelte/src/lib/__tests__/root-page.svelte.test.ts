@@ -3,14 +3,17 @@ import { render } from "svelte/server";
 import Page from "../../routes/+page.svelte";
 
 // SvelteKit's auto-generated PageData for the root route does not
-// declare `codeBlocks` or `defaultStartupServices`, so synthetic test
-// data is cast at the test boundary to the concrete runtime shape
-// the route component reads.
+// declare `codeBlocks`, `defaultStartupServices`, `supportedServices`,
+// or `supportedServicesProse`, so synthetic test data is cast at the
+// test boundary to the concrete runtime shape the route component reads.
 type SyntheticStartupService = { name: string; label: string; port: number };
+type SyntheticSupportedService = { name: string; label: string };
 type SyntheticPageData = {
   data: {
     codeBlocks: { quickStart: string; cli: string };
     defaultStartupServices: readonly SyntheticStartupService[];
+    supportedServices: readonly SyntheticSupportedService[];
+    supportedServicesProse: string;
   };
 };
 
@@ -39,11 +42,27 @@ const SYNTHETIC_STARTUP: readonly SyntheticStartupService[] = [
   { name: "clerk", label: "Clerk", port: 4011 },
 ];
 
+// Synthetic supported list mirrors the real SERVICE_NAMES set with
+// foundry filtered out (the FoundryCI hero prose mentions Foundry
+// separately as the page's main subject). Same 12 labels as the
+// startup list above; the difference between the two is that
+// supportedServices has no `port` field.
+const SYNTHETIC_SUPPORTED: readonly SyntheticSupportedService[] = SYNTHETIC_STARTUP.map(
+  ({ name, label }) => ({ name, label }),
+);
+
+const SYNTHETIC_SUPPORTED_PROSE = new Intl.ListFormat("en", {
+  style: "long",
+  type: "conjunction",
+}).format(SYNTHETIC_SUPPORTED.map((s) => s.label));
+
 function renderRoot(): { body: string } {
   const props: SyntheticPageData = {
     data: {
       codeBlocks: { quickStart: QUICK_START_HTML, cli: CLI_HTML },
       defaultStartupServices: SYNTHETIC_STARTUP,
+      supportedServices: SYNTHETIC_SUPPORTED,
+      supportedServicesProse: SYNTHETIC_SUPPORTED_PROSE,
     },
   };
   return render(Page, { props: props as Parameters<typeof render>[1] });
@@ -177,5 +196,57 @@ describe("root +page.svelte SSR default startup service list", () => {
     // synthetic-data render.
     expect(body).not.toContain("http://localhost:3999");
     expect(body).not.toContain(`http://localhost:${4000 + SYNTHETIC_STARTUP.length}`);
+  });
+});
+
+describe("root +page.svelte SSR hero supported services prose", () => {
+  it("renders the supportedServicesProse string inside the intro paragraph", () => {
+    const { body } = renderRoot();
+    expect(body).toContain(SYNTHETIC_SUPPORTED_PROSE);
+    // The prose appears between "stand in for " and " inside your test runs".
+    expect(body).toContain(`stand in for ${SYNTHETIC_SUPPORTED_PROSE} inside your test runs`);
+  });
+
+  it("includes Clerk in the rendered intro (the regression guard against the pre-derived hardcoded 11-item list)", () => {
+    const { body } = renderRoot();
+    // The intro paragraph's "stand in for X inside your test runs" sentence
+    // must contain Clerk after the refactor.
+    expect(body).toContain("Clerk");
+    // Specifically check that Clerk appears in the supportedServicesProse
+    // context (i.e. inside the same intro sentence).
+    const introIdx = body.indexOf("stand in for");
+    const insideRunsIdx = body.indexOf("inside your test runs");
+    expect(introIdx).toBeGreaterThan(-1);
+    expect(insideRunsIdx).toBeGreaterThan(introIdx);
+    const introSlice = body.slice(introIdx, insideRunsIdx);
+    expect(introSlice).toContain("Clerk");
+  });
+
+  it("still mentions Foundry in the intro (in the FoundryCI hero sentences, not in the supporting list)", () => {
+    const { body } = renderRoot();
+    // The first two sentences of the intro paragraph mention Foundry as
+    // the FoundryCI main subject. Those sentences are unchanged by this
+    // refactor.
+    expect(body).toContain("Palantir Foundry");
+    expect(body).toContain("FoundryCI is a Nyrra project");
+    // The supportedServicesProse synthetic data does NOT contain Foundry,
+    // so the rendered intro's "stand in for X" sentence must also not
+    // contain Foundry.
+    const standInIdx = body.indexOf("stand in for");
+    const insideRunsIdx = body.indexOf("inside your test runs");
+    expect(standInIdx).toBeGreaterThan(-1);
+    expect(insideRunsIdx).toBeGreaterThan(standInIdx);
+    const standInSlice = body.slice(standInIdx, insideRunsIdx);
+    expect(standInSlice).not.toContain("Foundry");
+  });
+
+  it("does NOT contain the old hardcoded comma list (Microsoft, AWS, Okta, MongoDB Atlas, Resend, and Stripe)", () => {
+    const { body } = renderRoot();
+    // The pre-derived hardcoded list ended with "MongoDB Atlas, Resend, and Stripe"
+    // (with Stripe as the last entry). The runtime-derived order ends with
+    // "...MongoDB Atlas, and Clerk", so the old "and Stripe" tail must be gone.
+    expect(body).not.toContain("MongoDB Atlas, Resend, and Stripe");
+    // The pre-derived list also had AWS before Okta; runtime has Okta before AWS.
+    expect(body).not.toContain("Microsoft, AWS, Okta");
   });
 });

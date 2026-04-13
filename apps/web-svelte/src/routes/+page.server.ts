@@ -1,6 +1,10 @@
 import type { PageServerLoad } from "./$types";
 import { highlightAll } from "$lib/code-highlight.server";
-import { defaultStartupServices } from "$lib/default-services.server";
+import {
+  defaultStartupServices,
+  supportedServices,
+  supportedServicesProse,
+} from "$lib/default-services.server";
 
 export const prerender = true;
 
@@ -36,5 +40,5 @@ emulate list`,
 
 export const load: PageServerLoad = async () => {
   const codeBlocks = await highlightAll(codes);
-  return { codeBlocks, defaultStartupServices };
+  return { codeBlocks, defaultStartupServices, supportedServices, supportedServicesProse };
 };
