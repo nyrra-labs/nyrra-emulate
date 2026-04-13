@@ -47,10 +47,7 @@ describe("app/ route tree covers every allDocsPages entry", () => {
       const slug = hrefToSlug(page.href);
       const mdxPath = resolve(APPS_WEB_APP, slug, "page.mdx");
       const content = readFileSync(mdxPath, "utf-8");
-      expect(
-        content.trim().length,
-        `app/${slug}/page.mdx is empty or whitespace-only`,
-      ).toBeGreaterThan(0);
+      expect(content.trim().length, `app/${slug}/page.mdx is empty or whitespace-only`).toBeGreaterThan(0);
     }
   });
 });
@@ -81,17 +78,16 @@ describe("every non-root layout.tsx delegates metadata via pageMetadata('slug')"
     }
   });
 
-  it("every non-root layout.tsx exports metadata = pageMetadata(\"<slug>\") with the matching slug", () => {
+  it('every non-root layout.tsx exports metadata = pageMetadata("<slug>") with the matching slug', () => {
     for (const page of allDocsPages) {
       if (page.href === "/") continue;
       const slug = hrefToSlug(page.href);
       const layoutPath = resolve(APPS_WEB_APP, slug, "layout.tsx");
       const src = readFileSync(layoutPath, "utf-8");
       const expectedCall = `export const metadata = pageMetadata("${slug}")`;
-      expect(
-        src.includes(expectedCall),
-        `app/${slug}/layout.tsx does not export metadata via ${expectedCall}`,
-      ).toBe(true);
+      expect(src.includes(expectedCall), `app/${slug}/layout.tsx does not export metadata via ${expectedCall}`).toBe(
+        true,
+      );
     }
   });
 
@@ -181,10 +177,7 @@ describe("root special case: app/layout.tsx carries the shared template, not a p
     for (const candidate of ["root", "index", "_root", "_index", ""]) {
       if (!candidate) continue;
       const mirrorLayout = resolve(APPS_WEB_APP, candidate, "layout.tsx");
-      expect(
-        existsSync(mirrorLayout),
-        `unexpected root mirror: app/${candidate}/layout.tsx exists`,
-      ).toBe(false);
+      expect(existsSync(mirrorLayout), `unexpected root mirror: app/${candidate}/layout.tsx exists`).toBe(false);
     }
   });
 
@@ -210,9 +203,7 @@ describe("root special case: app/layout.tsx carries the shared template, not a p
 describe("app/ directory bidirectional coverage (no orphan routes in either direction)", () => {
   it("every app/<X>/page.mdx on disk corresponds to an allDocsPages entry (or is a known non-docs dir)", () => {
     const entries = readdirSync(APPS_WEB_APP, { withFileTypes: true });
-    const registrySlugs = new Set(
-      allDocsPages.filter((p) => p.href !== "/").map((p) => hrefToSlug(p.href)),
-    );
+    const registrySlugs = new Set(allDocsPages.filter((p) => p.href !== "/").map((p) => hrefToSlug(p.href)));
 
     for (const entry of entries) {
       if (!entry.isDirectory()) continue;
@@ -228,9 +219,7 @@ describe("app/ directory bidirectional coverage (no orphan routes in either dire
 
   it("every app/<X>/layout.tsx on disk corresponds to an allDocsPages entry (or is a known non-docs dir)", () => {
     const entries = readdirSync(APPS_WEB_APP, { withFileTypes: true });
-    const registrySlugs = new Set(
-      allDocsPages.filter((p) => p.href !== "/").map((p) => hrefToSlug(p.href)),
-    );
+    const registrySlugs = new Set(allDocsPages.filter((p) => p.href !== "/").map((p) => hrefToSlug(p.href)));
 
     for (const entry of entries) {
       if (!entry.isDirectory()) continue;
@@ -246,9 +235,7 @@ describe("app/ directory bidirectional coverage (no orphan routes in either dire
 
   it("every app/ subdirectory is either an allDocsPages slug or in the NON_DOCS_APP_DIRS allowlist", () => {
     const entries = readdirSync(APPS_WEB_APP, { withFileTypes: true });
-    const registrySlugs = new Set(
-      allDocsPages.filter((p) => p.href !== "/").map((p) => hrefToSlug(p.href)),
-    );
+    const registrySlugs = new Set(allDocsPages.filter((p) => p.href !== "/").map((p) => hrefToSlug(p.href)));
 
     for (const entry of entries) {
       if (!entry.isDirectory()) continue;
@@ -265,8 +252,7 @@ describe("app/ directory bidirectional coverage (no orphan routes in either dire
   it("the app/ directory contains exactly allDocsPages non-root count + NON_DOCS_APP_DIRS count subdirectories", () => {
     const entries = readdirSync(APPS_WEB_APP, { withFileTypes: true });
     const dirCount = entries.filter((e) => e.isDirectory()).length;
-    const expectedCount =
-      allDocsPages.filter((p) => p.href !== "/").length + NON_DOCS_APP_DIRS.size;
+    const expectedCount = allDocsPages.filter((p) => p.href !== "/").length + NON_DOCS_APP_DIRS.size;
     expect(dirCount).toBe(expectedCount);
   });
 });
@@ -333,10 +319,7 @@ describe("no second hand-maintained docs route list anywhere in apps/web consume
   });
 
   it("the canonical allDocsPages in docs-pages.ts is the ONE file carrying every docs slug", () => {
-    const pagesSrc = readFileSync(
-      resolve(REPO_ROOT, "apps/web/lib/docs-pages.ts"),
-      "utf-8",
-    );
+    const pagesSrc = readFileSync(resolve(REPO_ROOT, "apps/web/lib/docs-pages.ts"), "utf-8");
     for (const slug of DOCS_SLUG_LITERALS) {
       expect(
         pagesSrc.includes(`"${slug}"`),
@@ -350,10 +333,7 @@ describe("no second hand-maintained docs route list anywhere in apps/web consume
     // carries. Only docs-pages.ts should have all 17. Every other
     // file (including docs-navigation.ts, which now imports the
     // registry from docs-pages.ts) should have 0-2.
-    const pagesSrc = readFileSync(
-      resolve(REPO_ROOT, "apps/web/lib/docs-pages.ts"),
-      "utf-8",
-    );
+    const pagesSrc = readFileSync(resolve(REPO_ROOT, "apps/web/lib/docs-pages.ts"), "utf-8");
     const pagesCount = DOCS_SLUG_LITERALS.filter((slug) => pagesSrc.includes(`"${slug}"`)).length;
     expect(pagesCount).toBe(DOCS_SLUG_LITERALS.length);
 
@@ -389,10 +369,7 @@ describe("no second hand-maintained docs route list anywhere in apps/web consume
     const DOCS_NAVIGATION_IMPORT = /import\s*\{[^}]*\ballDocsPages\b[^}]*\}\s*from\s*["'][^"']*docs-navigation["']/;
     for (const relPath of NON_NAV_CONSUMERS) {
       const filePath = resolve(REPO_ROOT, relPath);
-      expect(
-        existsSync(filePath),
-        `guarded consumer ${relPath} is missing from the repo`,
-      ).toBe(true);
+      expect(existsSync(filePath), `guarded consumer ${relPath} is missing from the repo`).toBe(true);
       const src = readFileSync(filePath, "utf-8");
       expect(
         DOCS_PAGES_IMPORT.test(src),

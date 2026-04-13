@@ -81,16 +81,12 @@ describe("Sidebar.svelte SSR section structure", () => {
 describe("Sidebar.svelte SSR active route highlighting", () => {
   it("applies the active class bucket to the /foundry link when the current pathname is /foundry", () => {
     const body = renderSidebar("/foundry");
-    expect(body).toMatch(
-      new RegExp(`<a\\s[^>]*href="/foundry"[^>]*class="[^"]*${ACTIVE_CLASS_SUBSTRING}[^"]*"`),
-    );
+    expect(body).toMatch(new RegExp(`<a\\s[^>]*href="/foundry"[^>]*class="[^"]*${ACTIVE_CLASS_SUBSTRING}[^"]*"`));
   });
 
   it("leaves a non-active sibling like /vercel in the inactive class bucket", () => {
     const body = renderSidebar("/foundry");
-    expect(body).toMatch(
-      /<a\s[^>]*href="\/vercel"[^>]*class="[^"]*hover:text-neutral-900[^"]*"/,
-    );
+    expect(body).toMatch(/<a\s[^>]*href="\/vercel"[^>]*class="[^"]*hover:text-neutral-900[^"]*"/);
     const vercelMatch = body.match(/<a\s[^>]*href="\/vercel"[^>]*class="([^"]*)"/);
     expect(vercelMatch).not.toBeNull();
     expect(vercelMatch![1]).not.toContain(ACTIVE_CLASS_SUBSTRING);
@@ -101,12 +97,8 @@ describe("Sidebar.svelte SSR active route highlighting", () => {
     const vercelBody = renderSidebar("/vercel");
     // After remocking to /vercel, the /vercel link should now carry the
     // active class and the /foundry link should not.
-    const foundryLinkInVercelRender = vercelBody.match(
-      /<a\s[^>]*href="\/foundry"[^>]*class="([^"]*)"/,
-    );
-    const vercelLinkInVercelRender = vercelBody.match(
-      /<a\s[^>]*href="\/vercel"[^>]*class="([^"]*)"/,
-    );
+    const foundryLinkInVercelRender = vercelBody.match(/<a\s[^>]*href="\/foundry"[^>]*class="([^"]*)"/);
+    const vercelLinkInVercelRender = vercelBody.match(/<a\s[^>]*href="\/vercel"[^>]*class="([^"]*)"/);
     expect(foundryLinkInVercelRender).not.toBeNull();
     expect(vercelLinkInVercelRender).not.toBeNull();
     expect(foundryLinkInVercelRender![1]).not.toContain(ACTIVE_CLASS_SUBSTRING);
@@ -120,9 +112,7 @@ describe("Sidebar.svelte SSR active route highlighting", () => {
   it("renders no active link when the current pathname matches no nav entry", () => {
     const body = renderSidebar("/this-route-does-not-exist");
     // Every nav link in the Services group should be in the inactive bucket.
-    const allFoundryLinks = body.match(
-      /<a\s[^>]*href="\/foundry"[^>]*class="([^"]*)"/g,
-    );
+    const allFoundryLinks = body.match(/<a\s[^>]*href="\/foundry"[^>]*class="([^"]*)"/g);
     expect(allFoundryLinks).not.toBeNull();
     for (const link of allFoundryLinks!) {
       expect(link).not.toContain(ACTIVE_CLASS_SUBSTRING);

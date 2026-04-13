@@ -21,10 +21,8 @@ type SyntheticPageData = {
   };
 };
 
-const QUICK_START_HTML =
-  '<pre class="shiki shiki-themes vercel-light vercel-dark"><code>NPX_TEST_TOKEN</code></pre>';
-const CLI_HTML =
-  '<pre class="shiki shiki-themes vercel-light vercel-dark"><code>CLI_TEST_TOKEN</code></pre>';
+const QUICK_START_HTML = '<pre class="shiki shiki-themes vercel-light vercel-dark"><code>NPX_TEST_TOKEN</code></pre>';
+const CLI_HTML = '<pre class="shiki shiki-themes vercel-light vercel-dark"><code>CLI_TEST_TOKEN</code></pre>';
 
 // Synthetic startup list mirroring the real DEFAULT_SERVICE_NAMES order
 // (vercel, github, google, slack, apple, microsoft, okta, aws, resend,
@@ -51,9 +49,10 @@ const SYNTHETIC_STARTUP: readonly SyntheticStartupService[] = [
 // separately as the page's main subject). Same 12 labels as the
 // startup list above; the difference between the two is that
 // supportedServices has no `port` field.
-const SYNTHETIC_SUPPORTED: readonly SyntheticSupportedService[] = SYNTHETIC_STARTUP.map(
-  ({ name, label }) => ({ name, label }),
-);
+const SYNTHETIC_SUPPORTED: readonly SyntheticSupportedService[] = SYNTHETIC_STARTUP.map(({ name, label }) => ({
+  name,
+  label,
+}));
 
 const SYNTHETIC_SUPPORTED_PROSE = new Intl.ListFormat("en", {
   style: "long",
@@ -86,8 +85,7 @@ const SYNTHETIC_LOWER_HALF_HTML =
 // default-startup list and the post-list paragraph below it.
 const QS_INTRO_MARKER = "QS_INTRO_TEST_TOKEN";
 const QS_POST_MARKER = "QS_POST_LIST_TEST_TOKEN";
-const SYNTHETIC_QS_INTRO_HTML =
-  '<p class="mb-4 text-sm leading-relaxed">' + QS_INTRO_MARKER + "</p>";
+const SYNTHETIC_QS_INTRO_HTML = '<p class="mb-4 text-sm leading-relaxed">' + QS_INTRO_MARKER + "</p>";
 const SYNTHETIC_QS_POST_LIST_HTML =
   '<p class="mb-4 text-sm leading-relaxed">' +
   QS_POST_MARKER +
@@ -188,9 +186,7 @@ describe("root +page.svelte SSR default startup service list", () => {
       // Each entry should appear as `<strong>{label}</strong> on http://localhost:{port}`.
       // Match the strong tag + label and the http localhost port via two separate
       // substring checks (the rendered Svelte output may interleave whitespace).
-      const labelPattern = new RegExp(
-        `<strong[^>]*>${service.label.replace(/\./g, "\\.")}</strong>`,
-      );
+      const labelPattern = new RegExp(`<strong[^>]*>${service.label.replace(/\./g, "\\.")}</strong>`);
       expect(body).toMatch(labelPattern);
       expect(body).toContain(`http://localhost:${service.port}`);
     }
@@ -221,7 +217,9 @@ describe("root +page.svelte SSR default startup service list", () => {
     // pair, proving the rendered order matches the data order.
     let previousIdx = -1;
     for (const service of SYNTHETIC_STARTUP) {
-      const idx = body.indexOf(`<strong class="font-medium text-neutral-900 dark:text-neutral-100">${service.label}</strong>`);
+      const idx = body.indexOf(
+        `<strong class="font-medium text-neutral-900 dark:text-neutral-100">${service.label}</strong>`,
+      );
       expect(idx).toBeGreaterThan(previousIdx);
       previousIdx = idx;
     }
@@ -352,9 +350,7 @@ describe("root +page.svelte SSR Quick Start prose", () => {
     // The synthetic post-list HTML wraps `emulate --service foundry` in
     // an inline code span. The Svelte template pastes this through
     // `{@html}` unchanged, so it must land in the body verbatim.
-    expect(body).toContain(
-      '<code class="bg-neutral-100">emulate --service foundry</code>',
-    );
+    expect(body).toContain('<code class="bg-neutral-100">emulate --service foundry</code>');
   });
 
   it("does NOT render the stale hand-authored 'boots the supporting emulator stack' prose", () => {

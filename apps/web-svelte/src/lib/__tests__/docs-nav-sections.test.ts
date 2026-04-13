@@ -52,12 +52,7 @@ describe("NAV_LABEL_OVERRIDES canonical shape", () => {
 
 describe("TOP_SECTION_HREFS canonical shape", () => {
   it("contains exactly the four first-party onboarding hrefs in the expected order", () => {
-    expect(TOP_SECTION_HREFS).toEqual([
-      "/",
-      "/programmatic-api",
-      "/configuration",
-      "/nextjs",
-    ]);
+    expect(TOP_SECTION_HREFS).toEqual(["/", "/programmatic-api", "/configuration", "/nextjs"]);
   });
 
   it("is a readonly array (not a Set) so consumers can spread into ordered lists", () => {
@@ -83,7 +78,9 @@ describe("REFERENCE_SECTION_HREFS canonical shape", () => {
       expect(TOP_SECTION_HREFS).not.toContain(href);
       // /foundry, /vercel, etc. are service hrefs; none should leak
       // into the reference set.
-      expect(href).not.toMatch(/^\/(foundry|vercel|github|google|slack|apple|microsoft|aws|okta|mongoatlas|resend|stripe)$/);
+      expect(href).not.toMatch(
+        /^\/(foundry|vercel|github|google|slack|apple|microsoft|aws|okta|mongoatlas|resend|stripe)$/,
+      );
     }
   });
 });
@@ -175,9 +172,7 @@ describe("Svelte nav.sections consumes the shared helper with the expected struc
 
 describe("Next.js docsNavSections consumes the shared helper with the expected structure", () => {
   it("top section contains the shared TOP_SECTION_HREFS in the same order", async () => {
-    const { docsNavSections } = await import(
-      "../../../../../apps/web/lib/docs-navigation"
-    );
+    const { docsNavSections } = await import("../../../../../apps/web/lib/docs-navigation");
     const top = docsNavSections[0];
     expect(top.items.map((i) => i.href)).toEqual([...TOP_SECTION_HREFS]);
   });
@@ -188,9 +183,7 @@ describe("Next.js docsNavSections consumes the shared helper with the expected s
     // NOT the Svelte-local "Overview" override. This test pins that
     // the two apps' root labels intentionally differ while sharing
     // the same NAV_LABEL_OVERRIDES map.
-    const { docsNavSections } = await import(
-      "../../../../../apps/web/lib/docs-navigation"
-    );
+    const { docsNavSections } = await import("../../../../../apps/web/lib/docs-navigation");
     const top = docsNavSections[0];
     const rootItem = top.items.find((i) => i.href === "/");
     expect(rootItem).toBeDefined();
@@ -198,9 +191,7 @@ describe("Next.js docsNavSections consumes the shared helper with the expected s
   });
 
   it("services section applies the same NAV_LABEL_OVERRIDES as the Svelte nav", async () => {
-    const { docsNavSections } = await import(
-      "../../../../../apps/web/lib/docs-navigation"
-    );
+    const { docsNavSections } = await import("../../../../../apps/web/lib/docs-navigation");
     const services = docsNavSections[1];
     const byHref = new Map(services.items.map((item) => [item.href, item.label]));
     expect(byHref.get("/vercel")).toBe("Vercel");
@@ -217,9 +208,7 @@ describe("Next.js docsNavSections consumes the shared helper with the expected s
     // differs from the Svelte nav's Foundry-first ordering and
     // confirms the two apps intentionally diverge on services
     // ordering even though they share TOP/REFERENCE_SECTION_HREFS.
-    const { docsNavSections } = await import(
-      "../../../../../apps/web/lib/docs-navigation"
-    );
+    const { docsNavSections } = await import("../../../../../apps/web/lib/docs-navigation");
     const services = docsNavSections[1];
     const hrefs = services.items.map((i) => i.href);
     const foundryIdx = hrefs.indexOf("/foundry");
@@ -231,9 +220,7 @@ describe("Next.js docsNavSections consumes the shared helper with the expected s
   });
 
   it("reference section contains the shared REFERENCE_SECTION_HREFS in the same order", async () => {
-    const { docsNavSections } = await import(
-      "../../../../../apps/web/lib/docs-navigation"
-    );
+    const { docsNavSections } = await import("../../../../../apps/web/lib/docs-navigation");
     const reference = docsNavSections[2];
     expect(reference.items.map((i) => i.href)).toEqual([...REFERENCE_SECTION_HREFS]);
   });
@@ -245,12 +232,8 @@ describe("shared helper drives both apps with byte-identical overrides + top/ref
       import("../../../../../apps/web/lib/docs-navigation"),
       import("../nav"),
     ]);
-    const webServices = new Map(
-      docsNavSections[1].items.map((i) => [i.href, i.label]),
-    );
-    const svelteServices = new Map(
-      svelteSections[1].items.map((i) => [i.href, i.label]),
-    );
+    const webServices = new Map(docsNavSections[1].items.map((i) => [i.href, i.label]));
+    const svelteServices = new Map(svelteSections[1].items.map((i) => [i.href, i.label]));
     for (const overrideHref of Object.keys(NAV_LABEL_OVERRIDES)) {
       const expectedLabel = NAV_LABEL_OVERRIDES[overrideHref];
       expect(webServices.get(overrideHref)).toBe(expectedLabel);

@@ -20,10 +20,7 @@
  * ships to the browser.
  */
 import { DEFAULT_SERVICE_NAMES, SERVICE_NAMES } from "../../../../packages/emulate/src/registry";
-import {
-  formatServiceLabelsProse,
-  resolveServiceLabel,
-} from "../../../../apps/web/lib/service-labels";
+import { formatServiceLabelsProse, resolveServiceLabel } from "../../../../apps/web/lib/service-labels";
 
 /**
  * Base port the CLI uses when starting the default startup set. Matches
@@ -65,13 +62,11 @@ export type SupportedService = {
  * matching the CLI's `basePort + i` allocation in
  * `packages/emulate/src/commands/start.ts`.
  */
-export const defaultStartupServices: readonly DefaultStartupService[] = DEFAULT_SERVICE_NAMES.map(
-  (name, i) => ({
-    name,
-    label: resolveServiceLabel(name),
-    port: BASE_PORT + i,
-  }),
-);
+export const defaultStartupServices: readonly DefaultStartupService[] = DEFAULT_SERVICE_NAMES.map((name, i) => ({
+  name,
+  label: resolveServiceLabel(name),
+  port: BASE_PORT + i,
+}));
 
 /**
  * Hero-prose supported service list for the root docs page.
@@ -87,9 +82,9 @@ export const defaultStartupServices: readonly DefaultStartupService[] = DEFAULT_
  * in the runtime order, so a future addition to `SERVICE_NAMES`
  * (e.g. a new OAuth provider) flows into the hero list automatically.
  */
-export const supportedServices: readonly SupportedService[] = SERVICE_NAMES.filter(
-  (name) => name !== "foundry",
-).map((name) => ({ name, label: resolveServiceLabel(name) }));
+export const supportedServices: readonly SupportedService[] = SERVICE_NAMES.filter((name) => name !== "foundry").map(
+  (name) => ({ name, label: resolveServiceLabel(name) }),
+);
 
 /**
  * Pre-formatted Oxford-comma English prose form of `supportedServices`,
@@ -103,6 +98,4 @@ export const supportedServices: readonly SupportedService[] = SERVICE_NAMES.filt
  * <X> inside your test runs." sentence so the entire supporting list
  * stays in lockstep with the runtime registry.
  */
-export const supportedServicesProse: string = formatServiceLabelsProse(
-  supportedServices.map((s) => s.label),
-);
+export const supportedServicesProse: string = formatServiceLabelsProse(supportedServices.map((s) => s.label));

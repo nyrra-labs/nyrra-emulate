@@ -15,9 +15,7 @@ import { renderDocsHtmlByHref } from "$lib/render-docs.server";
 export const prerender = true;
 
 export const entries: EntryGenerator = () =>
-  docsSources
-    .filter((source) => source.href !== "/")
-    .map((source) => ({ slug: source.href.slice(1) }));
+  docsSources.filter((source) => source.href !== "/").map((source) => ({ slug: source.href.slice(1) }));
 
 export const load: PageServerLoad = async ({ params }) => {
   const { html } = await renderDocsHtmlByHref(`/${params.slug}`);

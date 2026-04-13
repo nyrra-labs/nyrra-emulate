@@ -235,7 +235,7 @@ describe("OG route handlers static contract: title resolution goes through getPa
     expect(src).toContain('import { getPageTitle, renderOgImage } from "./og-image"');
   });
 
-  it("app/og/route.tsx calls getPageTitle(\"\") for the root slug (non-null-asserted)", () => {
+  it('app/og/route.tsx calls getPageTitle("") for the root slug (non-null-asserted)', () => {
     const src = readFileSync(OG_ROOT_ROUTE_PATH, "utf-8");
     // The root route uses `getPageTitle("")!` because the empty-slug
     // lookup is guaranteed by the PAGE_TITLE_OVERRIDES contract.

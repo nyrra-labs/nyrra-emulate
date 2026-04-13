@@ -12,10 +12,7 @@ import {
   supportedServiceLabels,
   supportedServicesProse,
 } from "../docs-chat-summary";
-import {
-  DEFAULT_SERVICE_NAMES,
-  SERVICE_NAMES,
-} from "../../../../packages/emulate/src/registry";
+import { DEFAULT_SERVICE_NAMES, SERVICE_NAMES } from "../../../../packages/emulate/src/registry";
 import { mdxToCleanMarkdown } from "../mdx-to-markdown";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -166,34 +163,25 @@ describe("buildDocsChatOpeningSummary loud-fail guards", () => {
   it("throws if the programmatic-api doc is missing from docsFiles", () => {
     const docsFiles = buildSyntheticDocsFiles();
     delete docsFiles[PROGRAMMATIC_API_DOCS_KEY];
-    expect(() => buildDocsChatOpeningSummary(docsFiles)).toThrow(
-      /programmatic-api.*missing/,
-    );
+    expect(() => buildDocsChatOpeningSummary(docsFiles)).toThrow(/programmatic-api.*missing/);
   });
 
   it("throws if the programmatic-api doc no longer contains createEmulator", () => {
     const docsFiles = buildSyntheticDocsFiles();
-    docsFiles[PROGRAMMATIC_API_DOCS_KEY] =
-      "# Programmatic API\n\nNo load-bearing token here.";
-    expect(() => buildDocsChatOpeningSummary(docsFiles)).toThrow(
-      /programmatic-api.*createEmulator/,
-    );
+    docsFiles[PROGRAMMATIC_API_DOCS_KEY] = "# Programmatic API\n\nNo load-bearing token here.";
+    expect(() => buildDocsChatOpeningSummary(docsFiles)).toThrow(/programmatic-api.*createEmulator/);
   });
 
   it("throws if the nextjs doc is missing from docsFiles", () => {
     const docsFiles = buildSyntheticDocsFiles();
     delete docsFiles[NEXTJS_DOCS_KEY];
-    expect(() => buildDocsChatOpeningSummary(docsFiles)).toThrow(
-      /nextjs.*missing/,
-    );
+    expect(() => buildDocsChatOpeningSummary(docsFiles)).toThrow(/nextjs.*missing/);
   });
 
   it("throws if the nextjs doc no longer contains @emulators/adapter-next", () => {
     const docsFiles = buildSyntheticDocsFiles();
     docsFiles[NEXTJS_DOCS_KEY] = "# Next.js\n\nNo load-bearing token here.";
-    expect(() => buildDocsChatOpeningSummary(docsFiles)).toThrow(
-      /nextjs.*adapter-next/,
-    );
+    expect(() => buildDocsChatOpeningSummary(docsFiles)).toThrow(/nextjs.*adapter-next/);
   });
 });
 

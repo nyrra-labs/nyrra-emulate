@@ -24,12 +24,8 @@ describe("renderDocsHtmlByHref on the root /` page", () => {
 
   it("renders markdown links to other doc routes with the docs link class and href", async () => {
     const { html } = await renderDocsHtmlByHref("/");
-    expect(html).toMatch(
-      /<a class="[^"]*underline[^"]*" href="\/programmatic-api">Programmatic API<\/a>/,
-    );
-    expect(html).toMatch(
-      /<a class="[^"]*underline[^"]*" href="\/nextjs">Next\.js Integration<\/a>/,
-    );
+    expect(html).toMatch(/<a class="[^"]*underline[^"]*" href="\/programmatic-api">Programmatic API<\/a>/);
+    expect(html).toMatch(/<a class="[^"]*underline[^"]*" href="\/nextjs">Next\.js Integration<\/a>/);
   });
 
   it("wraps fenced code blocks in the CodeBlock outer/inner div pair with the Shiki shell", async () => {

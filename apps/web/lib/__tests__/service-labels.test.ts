@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  STARTUP_LABEL_OVERRIDES,
-  formatServiceLabelsProse,
-  resolveServiceLabel,
-} from "../service-labels";
+import { STARTUP_LABEL_OVERRIDES, formatServiceLabelsProse, resolveServiceLabel } from "../service-labels";
 import { STARTUP_LABEL_OVERRIDES as docsChatOverrides } from "../docs-chat-summary";
 // Cross-workspace import: the Svelte default-services.server.ts
 // re-exports the same underlying STARTUP_LABEL_OVERRIDES reference
@@ -12,10 +8,7 @@ import { STARTUP_LABEL_OVERRIDES as docsChatOverrides } from "../docs-chat-summa
 // the same object, catching any regression that reintroduces a
 // parallel literal on either side.
 import { STARTUP_LABEL_OVERRIDES as svelteOverrides } from "../../../web-svelte/src/lib/default-services.server";
-import {
-  DEFAULT_SERVICE_NAMES,
-  SERVICE_NAMES,
-} from "../../../../packages/emulate/src/registry";
+import { DEFAULT_SERVICE_NAMES, SERVICE_NAMES } from "../../../../packages/emulate/src/registry";
 
 describe("STARTUP_LABEL_OVERRIDES canonical shape", () => {
   it("contains exactly the three brand-sensitive service name overrides", () => {
@@ -99,9 +92,7 @@ describe("resolveServiceLabel applies overrides and falls back to capitalize", (
 
 describe("formatServiceLabelsProse produces Oxford-comma English prose", () => {
   it("joins multiple labels with commas and a trailing ', and '", () => {
-    expect(formatServiceLabelsProse(["Vercel", "GitHub", "Google"])).toBe(
-      "Vercel, GitHub, and Google",
-    );
+    expect(formatServiceLabelsProse(["Vercel", "GitHub", "Google"])).toBe("Vercel, GitHub, and Google");
   });
 
   it("joins exactly two labels with ' and ' (no comma)", () => {
@@ -117,17 +108,13 @@ describe("formatServiceLabelsProse produces Oxford-comma English prose", () => {
   });
 
   it("preserves input order (no alphabetization)", () => {
-    expect(formatServiceLabelsProse(["Zebra", "Alpha", "Beta"])).toBe(
-      "Zebra, Alpha, and Beta",
-    );
+    expect(formatServiceLabelsProse(["Zebra", "Alpha", "Beta"])).toBe("Zebra, Alpha, and Beta");
   });
 });
 
 describe("shared helper drives docs-chat-summary and default-services with byte-identical output", () => {
   it("docs-chat-summary supportedServicesProse contains the canonical brand-sensitive labels", async () => {
-    const { supportedServicesProse, supportedServiceLabels } = await import(
-      "../docs-chat-summary"
-    );
+    const { supportedServicesProse, supportedServiceLabels } = await import("../docs-chat-summary");
     // The full 13-service list for the docs-chat path — includes Foundry.
     expect(supportedServicesProse).toContain("GitHub");
     expect(supportedServicesProse).toContain("AWS");
@@ -140,9 +127,7 @@ describe("shared helper drives docs-chat-summary and default-services with byte-
   });
 
   it("docs-chat-summary preserves the upstream SERVICE_NAMES source order in its prose", async () => {
-    const { supportedServiceLabels } = await import(
-      "../docs-chat-summary"
-    );
+    const { supportedServiceLabels } = await import("../docs-chat-summary");
     const expected = SERVICE_NAMES.map(resolveServiceLabel);
     expect(supportedServiceLabels).toEqual(expected);
   });

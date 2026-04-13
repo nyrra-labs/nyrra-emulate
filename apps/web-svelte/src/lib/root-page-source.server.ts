@@ -83,10 +83,7 @@ export const rootPageRawMdx: string = rootSource.raw;
  * naming the missing marker so the stack trace at the caller site
  * points at the helper whose contract just broke.
  */
-export function sliceRootPageSection(
-  startMarker: string,
-  endMarker?: string,
-): string {
+export function sliceRootPageSection(startMarker: string, endMarker?: string): string {
   const startIdx = rootPageRawMdx.indexOf(startMarker);
   if (startIdx === -1) {
     throw new Error(
@@ -98,10 +95,7 @@ export function sliceRootPageSection(
   if (endMarker === undefined) {
     return rootPageRawMdx.slice(startIdx);
   }
-  const endIdx = rootPageRawMdx.indexOf(
-    endMarker,
-    startIdx + startMarker.length,
-  );
+  const endIdx = rootPageRawMdx.indexOf(endMarker, startIdx + startMarker.length);
   if (endIdx === -1) {
     throw new Error(
       `root-page-source: upstream apps/web/app/page.mdx does not contain ` +

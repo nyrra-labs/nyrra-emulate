@@ -87,9 +87,7 @@ export type DocsNavSection = {
  * live here at module init.
  */
 const TOP_SECTION_HREFS: ReadonlySet<string> = new Set(TOP_SECTION_HREFS_LIST);
-const REFERENCE_SECTION_HREFS: ReadonlySet<string> = new Set(
-  REFERENCE_SECTION_HREFS_LIST,
-);
+const REFERENCE_SECTION_HREFS: ReadonlySet<string> = new Set(REFERENCE_SECTION_HREFS_LIST);
 
 function resolveNavLabel(page: NavItem): string {
   return NAV_LABEL_OVERRIDES[page.href] ?? page.name;
@@ -118,11 +116,7 @@ function buildDocsNavSections(): DocsNavSection[] {
     }
   }
 
-  return [
-    { items: top },
-    { title: "Services", items: services },
-    { title: "Reference", items: reference },
-  ];
+  return [{ items: top }, { title: "Services", items: services }, { title: "Reference", items: reference }];
 }
 
 /**
@@ -138,9 +132,7 @@ export const docsNavSections: readonly DocsNavSection[] = buildDocsNavSections()
  * `docs-mobile-nav.tsx` to resolve the current page's label for the
  * mobile nav trigger button.
  */
-export const docsNavAllItems: readonly DocsNavItem[] = docsNavSections.flatMap(
-  (section) => section.items,
-);
+export const docsNavAllItems: readonly DocsNavItem[] = docsNavSections.flatMap((section) => section.items);
 
 // Module-init coverage guards. Any violation throws at the first
 // import of this module (which happens during the Next.js build when

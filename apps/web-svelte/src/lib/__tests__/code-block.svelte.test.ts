@@ -19,8 +19,7 @@ describe("CodeBlock.svelte SSR", () => {
   });
 
   it("embeds the provided html via {@html} rather than escaping it", () => {
-    const html =
-      '<pre class="shiki shiki-themes vercel-light vercel-dark"><code>const x = 1;</code></pre>';
+    const html = '<pre class="shiki shiki-themes vercel-light vercel-dark"><code>const x = 1;</code></pre>';
     const { body } = render(CodeBlock, { props: { html } });
     expect(body).toContain(html);
     expect(body).not.toContain("&lt;pre");

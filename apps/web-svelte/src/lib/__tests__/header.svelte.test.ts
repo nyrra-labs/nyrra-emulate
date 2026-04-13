@@ -22,17 +22,13 @@ describe("Header.svelte SSR", () => {
     const { body } = render(Header);
     expect(body).toContain('href="https://github.com/vercel-labs/emulate"');
     expect(body).toContain('aria-label="GitHub repository"');
-    expect(body).toMatch(
-      /href="https:\/\/github\.com\/vercel-labs\/emulate"[^>]*target="_blank"/,
-    );
+    expect(body).toMatch(/href="https:\/\/github\.com\/vercel-labs\/emulate"[^>]*target="_blank"/);
   });
 
   it("renders the npm link to the emulate package", () => {
     const { body } = render(Header);
     expect(body).toContain('href="https://www.npmjs.com/package/emulate"');
-    expect(body).toMatch(
-      /href="https:\/\/www\.npmjs\.com\/package\/emulate"[^>]*target="_blank"/,
-    );
+    expect(body).toMatch(/href="https:\/\/www\.npmjs\.com\/package\/emulate"[^>]*target="_blank"/);
     expect(body).toContain(">npm</a>");
   });
 

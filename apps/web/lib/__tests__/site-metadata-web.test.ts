@@ -39,30 +39,12 @@ const APPS_WEB_SITE_METADATA_PATH = resolve(REPO_ROOT, "apps/web/lib/site-metada
 const APPS_WEB_OG_IMAGE_PATH = resolve(REPO_ROOT, "apps/web/app/og/og-image.tsx");
 const APPS_WEB_DOCS_CHAT_PATH = resolve(REPO_ROOT, "apps/web/components/docs-chat.tsx");
 const APPS_WEB_DOCS_CHAT_SUMMARY_PATH = resolve(REPO_ROOT, "apps/web/lib/docs-chat-summary.ts");
-const WEB_SVELTE_PAGE_METADATA_PATH = resolve(
-  REPO_ROOT,
-  "apps/web-svelte/src/lib/page-metadata.ts",
-);
-const WEB_SVELTE_UPSTREAM_META_PATH = resolve(
-  REPO_ROOT,
-  "apps/web-svelte/src/lib/upstream-site-metadata.ts",
-);
-const WEB_SVELTE_HEADER_PATH = resolve(
-  REPO_ROOT,
-  "apps/web-svelte/src/lib/components/Header.svelte",
-);
-const WEB_SVELTE_LAYOUT_PATH = resolve(
-  REPO_ROOT,
-  "apps/web-svelte/src/routes/+layout.svelte",
-);
-const WEB_SVELTE_ROOT_PAGE_PATH = resolve(
-  REPO_ROOT,
-  "apps/web-svelte/src/routes/+page.svelte",
-);
-const WEB_SVELTE_FOUNDRYCI_BRANDING_PATH = resolve(
-  REPO_ROOT,
-  "apps/web-svelte/src/lib/foundryci-branding.ts",
-);
+const WEB_SVELTE_PAGE_METADATA_PATH = resolve(REPO_ROOT, "apps/web-svelte/src/lib/page-metadata.ts");
+const WEB_SVELTE_UPSTREAM_META_PATH = resolve(REPO_ROOT, "apps/web-svelte/src/lib/upstream-site-metadata.ts");
+const WEB_SVELTE_HEADER_PATH = resolve(REPO_ROOT, "apps/web-svelte/src/lib/components/Header.svelte");
+const WEB_SVELTE_LAYOUT_PATH = resolve(REPO_ROOT, "apps/web-svelte/src/routes/+layout.svelte");
+const WEB_SVELTE_ROOT_PAGE_PATH = resolve(REPO_ROOT, "apps/web-svelte/src/routes/+page.svelte");
+const WEB_SVELTE_FOUNDRYCI_BRANDING_PATH = resolve(REPO_ROOT, "apps/web-svelte/src/lib/foundryci-branding.ts");
 
 describe("site-metadata.ts constant values", () => {
   it("SITE_NAME is 'emulate'", () => {
@@ -243,10 +225,7 @@ describe("apps/web/app/layout.tsx delegates site metadata to the shared module",
       "TWITTER_CARD",
     ];
     for (const constantName of constants) {
-      expect(
-        src.includes(constantName),
-        `app/layout.tsx does not reference ${constantName}`,
-      ).toBe(true);
+      expect(src.includes(constantName), `app/layout.tsx does not reference ${constantName}`).toBe(true);
     }
   });
 
@@ -332,10 +311,7 @@ describe("apps/web/lib/page-metadata.ts delegates site metadata to the shared mo
       "suffixWithSiteName",
     ];
     for (const constantName of constants) {
-      expect(
-        src.includes(constantName),
-        `page-metadata.ts does not reference ${constantName}`,
-      ).toBe(true);
+      expect(src.includes(constantName), `page-metadata.ts does not reference ${constantName}`).toBe(true);
     }
   });
 
@@ -433,7 +409,7 @@ describe("apps/web/components/docs-chat.tsx delegates product-name branding to S
     expect(src).toContain('"How do I start the server?"');
     expect(src).toContain('"What GitHub APIs are supported?"');
     expect(src).toContain('"How do I configure OAuth?"');
-    expect(src).toContain("\"What's the architecture?\"");
+    expect(src).toContain('"What\'s the architecture?"');
   });
 });
 
@@ -504,10 +480,7 @@ describe("apps/web-svelte/src/lib/upstream-site-metadata.ts re-exports the upstr
       "suffixWithSiteName",
     ];
     for (const name of exports) {
-      expect(
-        src.includes(name),
-        `upstream-site-metadata.ts does not re-export ${name}`,
-      ).toBe(true);
+      expect(src.includes(name), `upstream-site-metadata.ts does not re-export ${name}`).toBe(true);
     }
   });
 
@@ -518,7 +491,10 @@ describe("apps/web-svelte/src/lib/upstream-site-metadata.ts re-exports the upstr
     // are intentional (they explain why the constants stay local),
     // so this assertion scopes itself to the export statement only.
     const exportMatch = src.match(/export\s*\{[\s\S]*?\}\s*from\s*"[^"]+";/);
-    expect(exportMatch, "upstream-site-metadata.ts should have a runtime `export { ... } from ...` block").not.toBeNull();
+    expect(
+      exportMatch,
+      "upstream-site-metadata.ts should have a runtime `export { ... } from ...` block",
+    ).not.toBeNull();
     const exportBlock = exportMatch![0];
     expect(exportBlock).not.toContain("BASE_URL");
     expect(exportBlock).not.toContain("ROOT_TITLE");
@@ -546,10 +522,7 @@ describe("apps/web-svelte/src/lib/page-metadata.ts delegates upstream branding t
       "suffixWithSiteName",
     ];
     for (const name of imports) {
-      expect(
-        src.includes(name),
-        `apps/web-svelte/src/lib/page-metadata.ts does not import ${name}`,
-      ).toBe(true);
+      expect(src.includes(name), `apps/web-svelte/src/lib/page-metadata.ts does not import ${name}`).toBe(true);
     }
   });
 
@@ -748,9 +721,7 @@ describe("apps/web-svelte/src/lib/foundryci-branding.ts is the one source of the
     // file's header explains what FOUNDRYCI_SITE_NAME renders as)
     // do not false-positive. The runtime code body must not carry
     // a parallel hand-written literal.
-    const runtimeSrc = src
-      .replace(/\/\*\*[\s\S]*?\*\//g, "")
-      .replace(/\/\/.*$/gm, "");
+    const runtimeSrc = src.replace(/\/\*\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
     expect(runtimeSrc).not.toContain('"FoundryCI by Nyrra"');
   });
 
@@ -763,9 +734,7 @@ describe("apps/web-svelte/src/lib/foundryci-branding.ts is the one source of the
     // line comments before matching, so legitimate docblock mentions
     // of these names (the docblock explains why they are NOT here)
     // do not false-positive.
-    const runtimeSrc = src
-      .replace(/\/\*\*[\s\S]*?\*\//g, "")
-      .replace(/\/\/.*$/gm, "");
+    const runtimeSrc = src.replace(/\/\*\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
     expect(runtimeSrc).not.toContain('"emulate"');
     expect(runtimeSrc).not.toContain("GITHUB_REPO_URL");
     expect(runtimeSrc).not.toContain("NPM_PACKAGE_URL");
@@ -822,9 +791,7 @@ describe("apps/web-svelte/src/lib/page-metadata.ts delegates FoundryCI branding 
     // relative path because this test covers the Svelte
     // foundryci-branding delegation contract, not the Next.js
     // metadata helper.
-    const { pageMetadata } = await import(
-      "../../../web-svelte/src/lib/page-metadata"
-    );
+    const { pageMetadata } = await import("../../../web-svelte/src/lib/page-metadata");
     const root = pageMetadata("");
     expect(root).not.toBeNull();
     expect(root!.title).toBe("FoundryCI by Nyrra | Local Foundry Emulation");

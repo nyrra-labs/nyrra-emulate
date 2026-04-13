@@ -89,7 +89,10 @@ describe("rootQuickStartPostListMdx slice", () => {
     const fenceMatch = body.match(/^```(?:\w*)\n[\s\S]*?^```/m);
     expect(fenceMatch).not.toBeNull();
     const afterFence = body.slice((fenceMatch!.index ?? 0) + fenceMatch![0].length).trim();
-    const blocks = afterFence.split(/\n{2,}/).map((s) => s.trim()).filter((s) => s.length > 0);
+    const blocks = afterFence
+      .split(/\n{2,}/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
     expect(blocks.length).toBe(3);
     expect(rootQuickStartPostListMdx).toBe(blocks[2]);
   });
@@ -100,9 +103,7 @@ describe("rootQuickStartIntroHtml rendered content", () => {
     // The shared docs renderer emits `<p class="mb-4 text-sm leading-relaxed
     // text-neutral-600 dark:text-neutral-400">`, matching the historical
     // hand-written Svelte paragraph classes byte-for-byte.
-    expect(rootQuickStartIntroHtml).toMatch(
-      /<p\s+class="[^"]*mb-4[^"]*text-sm[^"]*leading-relaxed[^"]*"[^>]*>/,
-    );
+    expect(rootQuickStartIntroHtml).toMatch(/<p\s+class="[^"]*mb-4[^"]*text-sm[^"]*leading-relaxed[^"]*"[^>]*>/);
   });
 
   it("renders the upstream 'default startup set starts with sensible defaults' text", () => {
@@ -125,9 +126,7 @@ describe("rootQuickStartIntroHtml rendered content", () => {
 
 describe("rootQuickStartPostListHtml rendered content", () => {
   it("renders a single <p> with the shared docs paragraph utility classes", () => {
-    expect(rootQuickStartPostListHtml).toMatch(
-      /<p\s+class="[^"]*mb-4[^"]*text-sm[^"]*leading-relaxed[^"]*"[^>]*>/,
-    );
+    expect(rootQuickStartPostListHtml).toMatch(/<p\s+class="[^"]*mb-4[^"]*text-sm[^"]*leading-relaxed[^"]*"[^>]*>/);
   });
 
   it("renders the Foundry-availability lead sentence", () => {
@@ -141,9 +140,7 @@ describe("rootQuickStartPostListHtml rendered content", () => {
   });
 
   it("renders the `foundry:` inline code via the shared docs codespan class", () => {
-    expect(rootQuickStartPostListHtml).toMatch(
-      /<code class="[^"]*bg-neutral-100[^"]*"[^>]*>foundry:<\/code>/,
-    );
+    expect(rootQuickStartPostListHtml).toMatch(/<code class="[^"]*bg-neutral-100[^"]*"[^>]*>foundry:<\/code>/);
   });
 
   it("renders the Foundry slice description tokens", () => {

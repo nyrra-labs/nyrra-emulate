@@ -32,7 +32,7 @@ describe("Search.svelte SSR default state", () => {
     expect(body).not.toContain('role="dialog"');
     expect(body).not.toContain('aria-modal="true"');
     expect(body).not.toContain("Type to search documentation");
-    expect(body).not.toContain("aria-label=\"Search documentation\"");
+    expect(body).not.toContain('aria-label="Search documentation"');
   });
 
   it("does not render the result list scroll container or the results list items", () => {

@@ -182,7 +182,7 @@ describe("theme.svelte.ts browser=true initialization", () => {
     vi.doUnmock("$app/environment");
   });
 
-  it("reads current=dark from an existing <html class=\"dark\"> on the document", async () => {
+  it('reads current=dark from an existing <html class="dark"> on the document', async () => {
     setupFakeBrowserGlobals({
       initialDarkClass: true,
       storedTheme: null,
@@ -337,10 +337,7 @@ function extractInlineBootstrapScript(html: string): string {
   return match[1];
 }
 
-function runBootstrapScript(opts: {
-  stored: string | null;
-  systemLight: boolean;
-}): { hasDarkClass: boolean } {
+function runBootstrapScript(opts: { stored: string | null; systemLight: boolean }): { hasDarkClass: boolean } {
   const classes = new Set<string>(["dark"]); // initial state from <html class="dark">
 
   const fakeDocument = {

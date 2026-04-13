@@ -4,11 +4,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { allDocsPages } from "../docs-pages";
 import { loadDocsFilesFromRoot } from "../docs-files";
-import {
-  buildSearchIndexFromRoot,
-  searchEntries,
-  type IndexEntry,
-} from "../search-index";
+import { buildSearchIndexFromRoot, searchEntries, type IndexEntry } from "../search-index";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -102,20 +98,17 @@ describe("searchEntries (pure scorer driven by the route handler)", () => {
     {
       title: "Foundry",
       href: "/foundry",
-      content:
-        "Run a local Foundry OAuth 2.0 and compute module emulator with full state persistence.",
+      content: "Run a local Foundry OAuth 2.0 and compute module emulator with full state persistence.",
     },
     {
       title: "Vercel API",
       href: "/vercel",
-      content:
-        "Emulate the Vercel REST API for deployments, projects, domains, and environment variables.",
+      content: "Emulate the Vercel REST API for deployments, projects, domains, and environment variables.",
     },
     {
       title: "Configuration",
       href: "/configuration",
-      content:
-        "Seed config options let you define users, OAuth clients, deployed apps, and compute module runtimes.",
+      content: "Seed config options let you define users, OAuth clients, deployed apps, and compute module runtimes.",
     },
   ];
 
@@ -336,12 +329,7 @@ describe("static contract: search and docs-chat routes delegate to the shared re
     const docsChatRoute = readFileSync(DOCS_CHAT_ROUTE_PATH, "utf-8");
     // Any inline literal array with known service slugs would be a
     // regression; the shared helper is the single source of truth.
-    const forbiddenLiterals = [
-      '"/programmatic-api"',
-      '"/configuration"',
-      '"/nextjs"',
-      '"/foundry"',
-    ];
+    const forbiddenLiterals = ['"/programmatic-api"', '"/configuration"', '"/nextjs"', '"/foundry"'];
     for (const literal of forbiddenLiterals) {
       expect(searchRoute).not.toContain(literal);
       expect(docsChatRoute).not.toContain(literal);

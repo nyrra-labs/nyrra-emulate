@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { load, prerender } from "../../routes/+page.server";
 import { rootCodeBlocks } from "../root-code-blocks.server";
-import {
-  DEFAULT_SERVICE_NAMES,
-  SERVICE_NAMES,
-} from "../../../../../packages/emulate/src/registry";
+import { DEFAULT_SERVICE_NAMES, SERVICE_NAMES } from "../../../../../packages/emulate/src/registry";
 
 const SHIKI_THEMES_CLASS = 'class="shiki shiki-themes vercel-light vercel-dark"';
 
@@ -177,9 +174,7 @@ describe("root +page.server.ts", () => {
     const data = await callLoad();
     expect(data.rootQuickStartPostListHtml).toContain("Foundry is available");
     // Inline code spans come through as `<code class="...">...</code>`.
-    expect(data.rootQuickStartPostListHtml).toMatch(
-      /<code [^>]*>emulate --service foundry<\/code>/,
-    );
+    expect(data.rootQuickStartPostListHtml).toMatch(/<code [^>]*>emulate --service foundry<\/code>/);
     expect(data.rootQuickStartPostListHtml).toMatch(/<code [^>]*>foundry:<\/code>/);
     // Load-bearing Foundry slice description tokens.
     expect(data.rootQuickStartPostListHtml).toContain("OAuth 2.0");

@@ -24,10 +24,7 @@
  * via the shared `root-page-source.server` helper.
  */
 import type { SupportedLang } from "./code-highlight.server";
-import {
-  extractFencedBlocks,
-  rootPageRawMdx,
-} from "./root-page-source.server";
+import { extractFencedBlocks, rootPageRawMdx } from "./root-page-source.server";
 
 type RootCodeBlock = { lang: SupportedLang; code: string };
 

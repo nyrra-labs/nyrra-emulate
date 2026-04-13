@@ -41,18 +41,15 @@ import { docsSources, type DocsSource } from "./docs-source";
 import { highlight, type SupportedLang } from "./code-highlight.server";
 import { mdxToCleanMarkdown } from "./mdx-to-markdown";
 
-const H1_CLASS =
-  "mb-6 text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100";
-const H2_CLASS =
-  "mb-4 mt-12 text-lg font-semibold text-neutral-900 first:mt-0 dark:text-neutral-100";
+const H1_CLASS = "mb-6 text-2xl font-semibold tracking-tight text-neutral-900 dark:text-neutral-100";
+const H2_CLASS = "mb-4 mt-12 text-lg font-semibold text-neutral-900 first:mt-0 dark:text-neutral-100";
 const H3_CLASS = "mb-3 mt-8 text-base font-semibold text-neutral-900 dark:text-neutral-100";
 const P_CLASS = "mb-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400";
 const UL_CLASS = "mb-4 list-disc space-y-1 pl-5 text-sm";
 const OL_CLASS = "mb-4 list-decimal space-y-1 pl-5 text-sm";
 const LI_CLASS = "text-neutral-600 dark:text-neutral-400";
 const STRONG_CLASS = "font-medium text-neutral-900 dark:text-neutral-100";
-const INLINE_CODE_CLASS =
-  "rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800";
+const INLINE_CODE_CLASS = "rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800";
 const LINK_CLASS =
   "text-neutral-900 underline decoration-neutral-300 underline-offset-2 hover:decoration-neutral-900 dark:text-neutral-100 dark:decoration-neutral-700 dark:hover:decoration-neutral-100";
 const CODE_BLOCK_OUTER_CLASS =
@@ -128,8 +125,7 @@ export async function renderDocsHtml(rawMdx: string): Promise<string> {
         for (const item of token.items) {
           body += this.listitem(item);
         }
-        const start =
-          token.ordered && token.start !== 1 && token.start !== "" ? ` start="${token.start}"` : "";
+        const start = token.ordered && token.start !== 1 && token.start !== "" ? ` start="${token.start}"` : "";
         return `<${tag} class="${cls}"${start}>\n${body}</${tag}>\n`;
       },
       listitem(item) {
@@ -165,11 +161,7 @@ export async function renderDocsHtml(rawMdx: string): Promise<string> {
 }
 
 function escapeAttr(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/"/g, "&quot;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
+  return value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 /**

@@ -95,9 +95,7 @@ function upstreamMdxKeyToHref(key: string): string {
   // "../../../web/app/page.mdx" -> "/"
   // "../../../web/app/foundry/page.mdx" -> "/foundry"
   // "../../../web/app/some/nested/page.mdx" -> "/some/nested"
-  const relative = key.startsWith(UPSTREAM_MDX_KEY_PREFIX)
-    ? key.slice(UPSTREAM_MDX_KEY_PREFIX.length)
-    : key;
+  const relative = key.startsWith(UPSTREAM_MDX_KEY_PREFIX) ? key.slice(UPSTREAM_MDX_KEY_PREFIX.length) : key;
   return mdxRelativePathToHref(relative);
 }
 
@@ -128,21 +126,19 @@ export type DocsSource = {
  * and should not duplicate its entries. The list is the derived projection
  * of `PAGE_TITLES`; do not introduce a second hand-maintained title map.
  */
-export const docsSources: readonly DocsSource[] = Object.entries(PAGE_TITLES).map(
-  ([slug, title]) => {
-    const href = slugToHref(slug);
-    const mdxKey = hrefToUpstreamMdxKey(href);
-    const raw = upstreamMdxRaw[mdxKey];
-    if (raw === undefined) {
-      throw new Error(
-        `docs-source: slug ${JSON.stringify(slug)} has a PAGE_TITLES entry but no ` +
-          `upstream MDX was found at ${mdxKey}. Either the upstream apps/web page ` +
-          `was removed or the slug-to-path convention was violated.`,
-      );
-    }
-    return { href, title, raw };
-  },
-);
+export const docsSources: readonly DocsSource[] = Object.entries(PAGE_TITLES).map(([slug, title]) => {
+  const href = slugToHref(slug);
+  const mdxKey = hrefToUpstreamMdxKey(href);
+  const raw = upstreamMdxRaw[mdxKey];
+  if (raw === undefined) {
+    throw new Error(
+      `docs-source: slug ${JSON.stringify(slug)} has a PAGE_TITLES entry but no ` +
+        `upstream MDX was found at ${mdxKey}. Either the upstream apps/web page ` +
+        `was removed or the slug-to-path convention was violated.`,
+    );
+  }
+  return { href, title, raw };
+});
 
 // Reverse parity guard: every upstream `apps/web/app/**\/page.mdx` page
 // must either be surfaced via `PAGE_TITLES` or explicitly listed in

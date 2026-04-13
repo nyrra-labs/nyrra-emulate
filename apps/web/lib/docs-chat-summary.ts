@@ -52,10 +52,7 @@
  * a cross-package relative path in the regression test).
  */
 import { SERVICE_NAMES } from "../../../packages/emulate/src/registry";
-import {
-  formatServiceLabelsProse,
-  resolveServiceLabel,
-} from "./service-labels";
+import { formatServiceLabelsProse, resolveServiceLabel } from "./service-labels";
 import { SITE_NAME } from "./site-metadata";
 
 /**
@@ -76,8 +73,7 @@ export { STARTUP_LABEL_OVERRIDES } from "./service-labels";
  * ending with `"foundry"`). Consumed by `supportedServicesProse`
  * below and exported for test verification.
  */
-export const supportedServiceLabels: readonly string[] =
-  SERVICE_NAMES.map(resolveServiceLabel);
+export const supportedServiceLabels: readonly string[] = SERVICE_NAMES.map(resolveServiceLabel);
 
 /**
  * Oxford-comma English prose form of the full supported-service
@@ -132,9 +128,7 @@ export const NEXTJS_DOCS_KEY = "/nextjs.md";
  * one filesystem read serves both the tool environment and the
  * prompt validation.
  */
-export function buildDocsChatOpeningSummary(
-  docsFiles: Readonly<Record<string, string>>,
-): string {
+export function buildDocsChatOpeningSummary(docsFiles: Readonly<Record<string, string>>): string {
   const programmaticApiDoc = docsFiles[PROGRAMMATIC_API_DOCS_KEY];
   if (typeof programmaticApiDoc !== "string") {
     throw new Error(

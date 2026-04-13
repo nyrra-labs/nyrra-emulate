@@ -36,17 +36,13 @@ import { join } from "path";
 import { allDocsPages } from "./docs-pages";
 import { mdxToCleanMarkdown } from "./mdx-to-markdown";
 
-export async function loadDocsFilesFromRoot(
-  docsRoot: string,
-): Promise<Record<string, string>> {
+export async function loadDocsFilesFromRoot(docsRoot: string): Promise<Record<string, string>> {
   const files: Record<string, string> = {};
 
   const results = await Promise.allSettled(
     allDocsPages.map(async (page) => {
       const slug = page.href.replace(/^\//, "");
-      const filePath = slug
-        ? join(docsRoot, "app", slug, "page.mdx")
-        : join(docsRoot, "app", "page.mdx");
+      const filePath = slug ? join(docsRoot, "app", slug, "page.mdx") : join(docsRoot, "app", "page.mdx");
 
       const raw = await readFile(filePath, "utf-8");
       const md = mdxToCleanMarkdown(raw);

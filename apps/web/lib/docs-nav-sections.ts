@@ -65,12 +65,7 @@ export const NAV_LABEL_OVERRIDES: Readonly<Record<string, string>> = {
  * apps. Order within the section is preserved by iteration order
  * when consumers walk this array.
  */
-export const TOP_SECTION_HREFS: readonly string[] = [
-  "/",
-  "/programmatic-api",
-  "/configuration",
-  "/nextjs",
-];
+export const TOP_SECTION_HREFS: readonly string[] = ["/", "/programmatic-api", "/configuration", "/nextjs"];
 
 /**
  * Hrefs that belong in the "Reference" section (Authentication,
@@ -78,7 +73,4 @@ export const TOP_SECTION_HREFS: readonly string[] = [
  * classification because this is a deliberate IA decision shared
  * between the two apps.
  */
-export const REFERENCE_SECTION_HREFS: readonly string[] = [
-  "/authentication",
-  "/architecture",
-];
+export const REFERENCE_SECTION_HREFS: readonly string[] = ["/authentication", "/architecture"];

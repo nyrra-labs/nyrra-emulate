@@ -17,9 +17,7 @@ describe("PageMeta.svelte SSR root /", () => {
   it("emits the FoundryCI by Nyrra root title and description into <svelte:head>", () => {
     const { head } = renderForPathname("/");
     expect(head).toContain("<title>FoundryCI by Nyrra | Local Foundry Emulation</title>");
-    expect(head).toMatch(
-      /<meta name="description" content="[^"]*Not mocks\.[^"]*"/,
-    );
+    expect(head).toMatch(/<meta name="description" content="[^"]*Not mocks\.[^"]*"/);
     expect(head).toContain("Nyrra");
   });
 
@@ -28,13 +26,9 @@ describe("PageMeta.svelte SSR root /", () => {
     expect(head).toContain('<meta property="og:type" content="website"');
     expect(head).toContain('<meta property="og:locale" content="en_US"');
     expect(head).toContain('<meta property="og:site_name" content="FoundryCI by Nyrra"');
-    expect(head).toContain(
-      '<meta property="og:title" content="FoundryCI by Nyrra | Local Foundry Emulation"',
-    );
+    expect(head).toContain('<meta property="og:title" content="FoundryCI by Nyrra | Local Foundry Emulation"');
     expect(head).toContain('<meta property="og:url" content="https://foundryci.com"');
-    expect(head).toContain(
-      '<meta property="og:image" content="https://foundryci.com/og-default.png"',
-    );
+    expect(head).toContain('<meta property="og:image" content="https://foundryci.com/og-default.png"');
     expect(head).toContain('<meta property="og:image:width" content="1200"');
     expect(head).toContain('<meta property="og:image:height" content="630"');
     expect(head).toContain('<meta property="og:image:alt" content="FoundryCI by Nyrra"');
@@ -43,12 +37,8 @@ describe("PageMeta.svelte SSR root /", () => {
   it("emits Twitter card tags that mirror the OG values", () => {
     const { head } = renderForPathname("/");
     expect(head).toContain('<meta name="twitter:card" content="summary_large_image"');
-    expect(head).toContain(
-      '<meta name="twitter:title" content="FoundryCI by Nyrra | Local Foundry Emulation"',
-    );
-    expect(head).toContain(
-      '<meta name="twitter:image" content="https://foundryci.com/og-default.png"',
-    );
+    expect(head).toContain('<meta name="twitter:title" content="FoundryCI by Nyrra | Local Foundry Emulation"');
+    expect(head).toContain('<meta name="twitter:image" content="https://foundryci.com/og-default.png"');
   });
 });
 
@@ -56,22 +46,16 @@ describe("PageMeta.svelte SSR /foundry FoundryCI brand override", () => {
   it("emits the FoundryCI by Nyrra branded title and absolute /foundry URL", () => {
     const { head } = renderForPathname("/foundry");
     expect(head).toContain("<title>Foundry | FoundryCI by Nyrra</title>");
-    expect(head).toContain(
-      '<meta property="og:title" content="Foundry | FoundryCI by Nyrra"',
-    );
+    expect(head).toContain('<meta property="og:title" content="Foundry | FoundryCI by Nyrra"');
     expect(head).toContain('<meta property="og:url" content="https://foundryci.com/foundry"');
     expect(head).toContain('<meta property="og:site_name" content="FoundryCI by Nyrra"');
-    expect(head).toContain(
-      '<meta property="og:image:alt" content="Foundry - FoundryCI by Nyrra"',
-    );
+    expect(head).toContain('<meta property="og:image:alt" content="Foundry - FoundryCI by Nyrra"');
   });
 
   it("emits a Twitter card with the FoundryCI by Nyrra branded title", () => {
     const { head } = renderForPathname("/foundry");
     expect(head).toContain('<meta name="twitter:card" content="summary_large_image"');
-    expect(head).toContain(
-      '<meta name="twitter:title" content="Foundry | FoundryCI by Nyrra"',
-    );
+    expect(head).toContain('<meta name="twitter:title" content="Foundry | FoundryCI by Nyrra"');
   });
 });
 

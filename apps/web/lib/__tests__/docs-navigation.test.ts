@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { allDocsPages } from "../docs-pages";
-import {
-  docsNavAllItems,
-  docsNavSections,
-  NAV_LABEL_OVERRIDES,
-} from "../docs-navigation";
+import { docsNavAllItems, docsNavSections, NAV_LABEL_OVERRIDES } from "../docs-navigation";
 
 const SERVICE_HREF_REFERENCE: readonly string[] = [
   "/vercel",
@@ -85,12 +81,7 @@ describe("docsNavSections coverage of the canonical allDocsPages registry", () =
 describe("docsNavSections top section", () => {
   it("contains the four onboarding pages in allDocsPages source order", () => {
     const top = docsNavSections[0];
-    expect(top.items.map((item) => item.href)).toEqual([
-      "/",
-      "/programmatic-api",
-      "/configuration",
-      "/nextjs",
-    ]);
+    expect(top.items.map((item) => item.href)).toEqual(["/", "/programmatic-api", "/configuration", "/nextjs"]);
   });
 
   it("uses the canonical allDocsPages names for onboarding labels (no overrides)", () => {
@@ -154,18 +145,12 @@ describe("docsNavSections services section", () => {
 describe("docsNavSections reference section", () => {
   it("contains /authentication and /architecture in allDocsPages source order", () => {
     const reference = docsNavSections[2];
-    expect(reference.items.map((item) => item.href)).toEqual([
-      "/authentication",
-      "/architecture",
-    ]);
+    expect(reference.items.map((item) => item.href)).toEqual(["/authentication", "/architecture"]);
   });
 
   it("uses the canonical allDocsPages names for reference labels (no overrides)", () => {
     const reference = docsNavSections[2];
-    expect(reference.items.map((item) => item.label)).toEqual([
-      "Authentication",
-      "Architecture",
-    ]);
+    expect(reference.items.map((item) => item.label)).toEqual(["Authentication", "Architecture"]);
   });
 });
 
@@ -199,11 +184,7 @@ describe("NAV_LABEL_OVERRIDES contract", () => {
 
 describe("desktop and mobile nav share the same docsNavSections data", () => {
   it("docsNavAllItems equals the concat of section items across all three sections", () => {
-    const manual = [
-      ...docsNavSections[0].items,
-      ...docsNavSections[1].items,
-      ...docsNavSections[2].items,
-    ];
+    const manual = [...docsNavSections[0].items, ...docsNavSections[1].items, ...docsNavSections[2].items];
     expect(docsNavAllItems).toEqual(manual);
   });
 

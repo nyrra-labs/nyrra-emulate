@@ -49,9 +49,7 @@ describe("sliceRootPageSection start-marker + end-marker slicing", () => {
     // raw paragraph strings so the consumer's post-fence block split
     // produces the same output it did pre-refactor.
     const slice = sliceRootPageSection("## Quick Start", "## CLI");
-    const { rootQuickStartIntroMdx, rootQuickStartPostListMdx } = await import(
-      "../root-quick-start-prose.server"
-    );
+    const { rootQuickStartIntroMdx, rootQuickStartPostListMdx } = await import("../root-quick-start-prose.server");
     expect(slice).toContain(rootQuickStartIntroMdx);
     expect(slice).toContain(rootQuickStartPostListMdx);
   });
@@ -63,15 +61,13 @@ describe("sliceRootPageSection start-marker + end-marker slicing", () => {
   });
 
   it("throws with a precise error naming the missing start marker", () => {
-    expect(() => sliceRootPageSection("## DefinitelyNotInTheMdx")).toThrow(
-      /"## DefinitelyNotInTheMdx" marker/,
-    );
+    expect(() => sliceRootPageSection("## DefinitelyNotInTheMdx")).toThrow(/"## DefinitelyNotInTheMdx" marker/);
   });
 
   it("throws with a precise error naming the missing end marker", () => {
-    expect(() =>
-      sliceRootPageSection("## Quick Start", "## DefinitelyNotInTheMdx"),
-    ).toThrow(/"## DefinitelyNotInTheMdx" marker after the "## Quick Start" marker/);
+    expect(() => sliceRootPageSection("## Quick Start", "## DefinitelyNotInTheMdx")).toThrow(
+      /"## DefinitelyNotInTheMdx" marker after the "## Quick Start" marker/,
+    );
   });
 
   it("rejects an end marker that exists but only appears BEFORE the start marker", () => {
@@ -79,9 +75,9 @@ describe("sliceRootPageSection start-marker + end-marker slicing", () => {
     // `## Quick Start`. Using it as an end marker should fail because
     // sliceRootPageSection only looks for the end marker AFTER the
     // start marker position.
-    expect(() =>
-      sliceRootPageSection("## Quick Start", "# Getting Started"),
-    ).toThrow(/"# Getting Started" marker after the "## Quick Start" marker/);
+    expect(() => sliceRootPageSection("## Quick Start", "# Getting Started")).toThrow(
+      /"# Getting Started" marker after the "## Quick Start" marker/,
+    );
   });
 });
 
@@ -118,8 +114,7 @@ describe("extractFencedBlocks regex + shape", () => {
   });
 
   it("returns blocks in source order (not sorted)", () => {
-    const mdx =
-      "```yaml\nfirst: 1\n```\n\n```bash\nsecond\n```\n\n```typescript\nconst third = 3;\n```";
+    const mdx = "```yaml\nfirst: 1\n```\n\n```bash\nsecond\n```\n\n```typescript\nconst third = 3;\n```";
     const blocks = extractFencedBlocks(mdx);
     expect(blocks.map((b) => b.lang)).toEqual(["yaml", "bash", "typescript"]);
   });
@@ -149,9 +144,7 @@ describe("shared helper drives all three root-page consumers with byte-identical
   });
 
   it("root-quick-start-prose's intro + post-list MDX are derived from sliceRootPageSection('## Quick Start', '## CLI')", async () => {
-    const { rootQuickStartIntroMdx, rootQuickStartPostListMdx } = await import(
-      "../root-quick-start-prose.server"
-    );
+    const { rootQuickStartIntroMdx, rootQuickStartPostListMdx } = await import("../root-quick-start-prose.server");
     const qsBody = sliceRootPageSection("## Quick Start", "## CLI");
     // Both paragraph fragments must appear in the slice — the
     // consumer's post-fence block split picks them out of the

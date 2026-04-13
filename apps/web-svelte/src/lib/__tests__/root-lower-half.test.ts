@@ -62,27 +62,19 @@ describe("rootLowerHalfHtml rendered content", () => {
   });
 
   it("renders the EMULATE_PORT and PORT env-var inline code tokens via the docs codespan class", () => {
-    expect(rootLowerHalfHtml).toMatch(
-      /<code class="[^"]*bg-neutral-100[^"]*"[^>]*>EMULATE_PORT<\/code>/,
-    );
-    expect(rootLowerHalfHtml).toMatch(
-      /<code class="[^"]*bg-neutral-100[^"]*"[^>]*>PORT<\/code>/,
-    );
+    expect(rootLowerHalfHtml).toMatch(/<code class="[^"]*bg-neutral-100[^"]*"[^>]*>EMULATE_PORT<\/code>/);
+    expect(rootLowerHalfHtml).toMatch(/<code class="[^"]*bg-neutral-100[^"]*"[^>]*>PORT<\/code>/);
     expect(rootLowerHalfHtml).toContain("environment variables");
   });
 
   it("renders the Programmatic API H2 heading and the /programmatic-api link", () => {
-    expect(rootLowerHalfHtml).toMatch(
-      /<h2[^>]*>Programmatic API<\/h2>/,
-    );
+    expect(rootLowerHalfHtml).toMatch(/<h2[^>]*>Programmatic API<\/h2>/);
     expect(rootLowerHalfHtml).toContain('href="/programmatic-api"');
     expect(rootLowerHalfHtml).toMatch(/>Programmatic API<\/a>/);
     // The Programmatic API paragraph mentions `createEmulator` as
     // inline code — a load-bearing token that proves the upstream
     // prose rendered through.
-    expect(rootLowerHalfHtml).toMatch(
-      /<code class="[^"]*bg-neutral-100[^"]*"[^>]*>createEmulator<\/code>/,
-    );
+    expect(rootLowerHalfHtml).toMatch(/<code class="[^"]*bg-neutral-100[^"]*"[^>]*>createEmulator<\/code>/);
   });
 
   it("renders the Next.js Integration H2 heading and the /nextjs link", () => {

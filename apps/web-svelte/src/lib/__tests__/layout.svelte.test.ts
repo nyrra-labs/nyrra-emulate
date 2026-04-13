@@ -93,9 +93,7 @@ describe("+layout.svelte SSR PageMeta head integration for /foundry", () => {
   it("emits the FoundryCI by Nyrra Twitter card title", () => {
     const { head } = renderLayout("/foundry");
     expect(head).toContain('<meta name="twitter:card" content="summary_large_image"');
-    expect(head).toContain(
-      '<meta name="twitter:title" content="Foundry | FoundryCI by Nyrra"',
-    );
+    expect(head).toContain('<meta name="twitter:title" content="Foundry | FoundryCI by Nyrra"');
   });
 });
 
@@ -117,18 +115,14 @@ describe("+layout.svelte SSR PageMeta head integration for root /", () => {
   it("emits the FoundryCI root title and absolute root URL into the head output", () => {
     const { head } = renderLayout("/");
     expect(head).toContain("<title>FoundryCI by Nyrra | Local Foundry Emulation</title>");
-    expect(head).toContain(
-      '<meta property="og:title" content="FoundryCI by Nyrra | Local Foundry Emulation"',
-    );
+    expect(head).toContain('<meta property="og:title" content="FoundryCI by Nyrra | Local Foundry Emulation"');
     expect(head).toContain('<meta property="og:url" content="https://foundryci.com"');
     expect(head).toContain('<meta property="og:site_name" content="FoundryCI by Nyrra"');
   });
 
   it("emits the root description containing Not mocks. and Nyrra", () => {
     const { head } = renderLayout("/");
-    expect(head).toMatch(
-      /<meta name="description" content="[^"]*Not mocks\.[^"]*"/,
-    );
+    expect(head).toMatch(/<meta name="description" content="[^"]*Not mocks\.[^"]*"/);
     expect(head).toContain("Nyrra");
   });
 });
