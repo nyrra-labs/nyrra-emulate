@@ -1,13 +1,18 @@
 <script lang="ts">
 	import Search from './Search.svelte';
 	import ThemeToggle from './ThemeToggle.svelte';
+	import {
+		FOUNDRYCI_BRAND,
+		NYRRA_PARENT_LABEL,
+		NYRRA_URL,
+	} from '$lib/foundryci-branding';
 	import { GITHUB_REPO_URL, NPM_PACKAGE_URL } from '$lib/upstream-site-metadata';
 </script>
 
 <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-sm dark:bg-neutral-950/90">
 	<div class="flex h-14 items-center justify-between gap-6 px-4">
 		<div class="flex items-center gap-3">
-			<a href="/" class="flex items-center gap-2" aria-label="FoundryCI home">
+			<a href="/" class="flex items-center gap-2" aria-label={`${FOUNDRYCI_BRAND} home`}>
 				<svg
 					viewBox="0 0 16 16"
 					width="18"
@@ -17,7 +22,7 @@
 				>
 					<path d="M3 2 H13 V4 H5 V7 H11 V9 H5 V14 H3 Z" />
 				</svg>
-				<span class="font-pixel text-lg leading-none">FoundryCI</span>
+				<span class="font-pixel text-lg leading-none">{FOUNDRYCI_BRAND}</span>
 			</a>
 			<span class="hidden text-neutral-300 sm:inline dark:text-neutral-700" aria-hidden="true">
 				<svg
@@ -36,12 +41,12 @@
 				</svg>
 			</span>
 			<a
-				href="https://nyrra.ai"
+				href={NYRRA_URL}
 				target="_blank"
 				rel="noopener noreferrer"
 				class="hidden text-xs text-neutral-500 transition-colors hover:text-neutral-900 sm:inline dark:text-neutral-400 dark:hover:text-neutral-100"
 			>
-				by Nyrra
+				by {NYRRA_PARENT_LABEL}
 			</a>
 		</div>
 		<nav class="flex items-center gap-4">

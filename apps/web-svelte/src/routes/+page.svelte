@@ -1,5 +1,6 @@
 <script lang="ts">
 	import CodeBlock from '$lib/components/CodeBlock.svelte';
+	import { GITHUB_REPO_URL } from '$lib/upstream-site-metadata';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -15,7 +16,7 @@
 	depend on, with production-fidelity state instead of mocks. FoundryCI is built on
 	<a
 		class="text-neutral-900 underline decoration-neutral-300 underline-offset-2 hover:decoration-neutral-900 dark:text-neutral-100 dark:decoration-neutral-700 dark:hover:decoration-neutral-100"
-		href="https://github.com/vercel-labs/emulate"
+		href={GITHUB_REPO_URL}
 		target="_blank"
 		rel="noopener noreferrer">emulate by Vercel Labs</a
 	>, so the same process can also stand in for {data.supportedServicesProse} inside your test runs.

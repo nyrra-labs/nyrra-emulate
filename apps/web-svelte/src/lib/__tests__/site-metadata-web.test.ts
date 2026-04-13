@@ -22,6 +22,12 @@ import {
   ogImageAlt,
   suffixWithSiteName,
 } from "../../../../../apps/web/lib/site-metadata";
+import {
+  FOUNDRYCI_BRAND,
+  FOUNDRYCI_SITE_NAME,
+  NYRRA_PARENT_LABEL,
+  NYRRA_URL,
+} from "../foundryci-branding";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -48,6 +54,14 @@ const WEB_SVELTE_HEADER_PATH = resolve(
 const WEB_SVELTE_LAYOUT_PATH = resolve(
   REPO_ROOT,
   "apps/web-svelte/src/routes/+layout.svelte",
+);
+const WEB_SVELTE_ROOT_PAGE_PATH = resolve(
+  REPO_ROOT,
+  "apps/web-svelte/src/routes/+page.svelte",
+);
+const WEB_SVELTE_FOUNDRYCI_BRANDING_PATH = resolve(
+  REPO_ROOT,
+  "apps/web-svelte/src/lib/foundryci-branding.ts",
 );
 
 describe("site-metadata.ts constant values", () => {
@@ -573,14 +587,23 @@ describe("apps/web-svelte/src/lib/page-metadata.ts delegates upstream branding t
 
   it("preserves the local FoundryCI-specific facts (BASE_URL, ROOT_TITLE, ROOT_SITE_NAME, FOUNDRYCI_PAGE_METADATA)", () => {
     const src = readFileSync(WEB_SVELTE_PAGE_METADATA_PATH, "utf-8");
-    // These stay Svelte-local per the task guardrails.
+    // BASE_URL stays as a hand-written literal — it's the FoundryCI
+    // canonical domain and is not shared with apps/web.
     expect(src).toContain('const BASE_URL = "https://foundryci.com"');
-    expect(src).toContain('const ROOT_TITLE = "FoundryCI by Nyrra | Local Foundry Emulation"');
-    expect(src).toContain('const ROOT_SITE_NAME = "FoundryCI by Nyrra"');
+    // ROOT_TITLE and ROOT_SITE_NAME now derive from FOUNDRYCI_SITE_NAME
+    // via the new foundryci-branding helper — the previous hand-
+    // written literals are replaced by template-literal expressions
+    // that reference the shared constant. The derivation test in the
+    // `page-metadata.ts delegates FoundryCI branding to
+    // foundryci-branding` describe group pins the exact shape.
+    expect(src).toContain("const ROOT_TITLE = `${FOUNDRYCI_SITE_NAME} | Local Foundry Emulation`");
+    expect(src).toContain("const ROOT_SITE_NAME = FOUNDRYCI_SITE_NAME");
+    // FOUNDRYCI_PAGE_METADATA map remains local to page-metadata.ts
+    // with its per-page description prose; only the title field
+    // derives from FOUNDRYCI_SITE_NAME.
     expect(src).toContain("FOUNDRYCI_PAGE_METADATA");
-    // And the FoundryCI per-page overrides for /foundry and /configuration.
-    expect(src).toContain('"Foundry | FoundryCI by Nyrra"');
-    expect(src).toContain('"Configuration | FoundryCI by Nyrra"');
+    expect(src).toContain("`Foundry | ${FOUNDRYCI_SITE_NAME}`");
+    expect(src).toContain("`Configuration | ${FOUNDRYCI_SITE_NAME}`");
   });
 
   it("preserves the local OG image path handling (static /og-default.png)", () => {
@@ -610,13 +633,33 @@ describe("apps/web-svelte/src/lib/components/Header.svelte delegates GitHub/npm 
     expect(src).not.toContain('"https://www.npmjs.com/package/emulate"');
   });
 
-  it("preserves the FoundryCI-local Nyrra attribution link", () => {
+  it("routes the Nyrra attribution link through foundryci-branding (NYRRA_URL + NYRRA_PARENT_LABEL)", () => {
     const src = readFileSync(WEB_SVELTE_HEADER_PATH, "utf-8");
-    // The Nyrra attribution is Svelte-local (FoundryCI parent) and
-    // does not flow through the upstream branding surface.
-    expect(src).toContain('"https://nyrra.ai"');
-    expect(src).toContain("by Nyrra");
-    expect(src).toContain("FoundryCI");
+    // After the FoundryCI-branding extraction, the Nyrra attribution
+    // is Svelte-local but consolidated in `$lib/foundryci-branding`.
+    // The Header references NYRRA_URL + NYRRA_PARENT_LABEL by name;
+    // the literal URL and visible "Nyrra" text must be gone from the
+    // component source (the rendered output still shows "by Nyrra"
+    // at runtime via the interpolation).
+    expect(src).toContain("from '$lib/foundryci-branding'");
+    expect(src).toContain("NYRRA_URL");
+    expect(src).toContain("NYRRA_PARENT_LABEL");
+    expect(src).toContain("href={NYRRA_URL}");
+    expect(src).toContain("by {NYRRA_PARENT_LABEL}");
+    expect(src).not.toContain('"https://nyrra.ai"');
+    expect(src).not.toContain(">by Nyrra<");
+  });
+
+  it("routes the FoundryCI wordmark through foundryci-branding (FOUNDRYCI_BRAND)", () => {
+    const src = readFileSync(WEB_SVELTE_HEADER_PATH, "utf-8");
+    // The wordmark span and the home aria-label both interpolate
+    // FOUNDRYCI_BRAND. The bare JSX text "FoundryCI" must be gone
+    // from the source (runtime-rendered output is unchanged).
+    expect(src).toContain("FOUNDRYCI_BRAND");
+    expect(src).toContain("{FOUNDRYCI_BRAND}");
+    expect(src).toContain("aria-label={`${FOUNDRYCI_BRAND} home`}");
+    expect(src).not.toContain(">FoundryCI</span>");
+    expect(src).not.toContain('aria-label="FoundryCI home"');
   });
 });
 
@@ -640,10 +683,178 @@ describe("apps/web-svelte/src/routes/+layout.svelte footer delegates the GitHub 
     expect(src).toContain(">emulate by Vercel Labs</a");
   });
 
-  it("preserves the FoundryCI-local Nyrra attribution footer link", () => {
+  it("routes the Nyrra attribution footer link through foundryci-branding (NYRRA_URL + NYRRA_PARENT_LABEL)", () => {
     const src = readFileSync(WEB_SVELTE_LAYOUT_PATH, "utf-8");
+    expect(src).toContain("from '$lib/foundryci-branding'");
+    expect(src).toContain("NYRRA_URL");
+    expect(src).toContain("NYRRA_PARENT_LABEL");
+    expect(src).toContain("href={NYRRA_URL}");
+    expect(src).toContain("{NYRRA_PARENT_LABEL}</a");
+    expect(src).not.toContain('"https://nyrra.ai"');
+    expect(src).not.toContain(">Nyrra</a");
+  });
+});
+
+describe("apps/web-svelte/src/lib/foundryci-branding.ts constant values", () => {
+  it("NYRRA_URL is 'https://nyrra.ai'", () => {
+    expect(NYRRA_URL).toBe("https://nyrra.ai");
+  });
+
+  it("NYRRA_URL is a parseable absolute URL", () => {
+    expect(() => new URL(NYRRA_URL)).not.toThrow();
+    expect(new URL(NYRRA_URL).hostname).toBe("nyrra.ai");
+  });
+
+  it("FOUNDRYCI_BRAND is 'FoundryCI' (the bare PascalCase product name)", () => {
+    expect(FOUNDRYCI_BRAND).toBe("FoundryCI");
+  });
+
+  it("NYRRA_PARENT_LABEL is 'Nyrra' (the bare parent-organization display name)", () => {
+    expect(NYRRA_PARENT_LABEL).toBe("Nyrra");
+  });
+
+  it("FOUNDRYCI_SITE_NAME is 'FoundryCI by Nyrra' (the full compound site name)", () => {
+    expect(FOUNDRYCI_SITE_NAME).toBe("FoundryCI by Nyrra");
+  });
+
+  it("FOUNDRYCI_SITE_NAME is derived from FOUNDRYCI_BRAND + NYRRA_PARENT_LABEL", () => {
+    // A future rename of either bare constant should cascade through
+    // the compound form automatically.
+    expect(FOUNDRYCI_SITE_NAME).toBe(`${FOUNDRYCI_BRAND} by ${NYRRA_PARENT_LABEL}`);
+  });
+});
+
+describe("apps/web-svelte/src/lib/foundryci-branding.ts is the one source of the Svelte-local brand literals", () => {
+  it("NYRRA_URL literal is defined in foundryci-branding.ts", () => {
+    const src = readFileSync(WEB_SVELTE_FOUNDRYCI_BRANDING_PATH, "utf-8");
     expect(src).toContain('"https://nyrra.ai"');
-    expect(src).toContain(">Nyrra</a");
+  });
+
+  it("FOUNDRYCI_BRAND literal is defined in foundryci-branding.ts", () => {
+    const src = readFileSync(WEB_SVELTE_FOUNDRYCI_BRANDING_PATH, "utf-8");
+    expect(src).toContain('"FoundryCI"');
+  });
+
+  it("NYRRA_PARENT_LABEL literal is defined in foundryci-branding.ts", () => {
+    const src = readFileSync(WEB_SVELTE_FOUNDRYCI_BRANDING_PATH, "utf-8");
+    expect(src).toContain('"Nyrra"');
+  });
+
+  it("FOUNDRYCI_SITE_NAME is computed via template literal (not hand-written)", () => {
+    const src = readFileSync(WEB_SVELTE_FOUNDRYCI_BRANDING_PATH, "utf-8");
+    expect(src).toContain("`${FOUNDRYCI_BRAND} by ${NYRRA_PARENT_LABEL}`");
+    // Strip docblock comments before the negative assertion so
+    // legitimate docblock references to the compound string (the
+    // file's header explains what FOUNDRYCI_SITE_NAME renders as)
+    // do not false-positive. The runtime code body must not carry
+    // a parallel hand-written literal.
+    const runtimeSrc = src
+      .replace(/\/\*\*[\s\S]*?\*\//g, "")
+      .replace(/\/\/.*$/gm, "");
+    expect(runtimeSrc).not.toContain('"FoundryCI by Nyrra"');
+  });
+
+  it("does NOT export upstream emulate constants (those live in upstream-site-metadata.ts)", () => {
+    const src = readFileSync(WEB_SVELTE_FOUNDRYCI_BRANDING_PATH, "utf-8");
+    // foundryci-branding.ts is strictly for FoundryCI / Nyrra facts;
+    // upstream SITE_NAME, GITHUB_REPO_URL, etc. stay in
+    // upstream-site-metadata.ts. Scope the negative assertion to the
+    // runtime code by stripping `/** ... */` JSDoc blocks and `//`
+    // line comments before matching, so legitimate docblock mentions
+    // of these names (the docblock explains why they are NOT here)
+    // do not false-positive.
+    const runtimeSrc = src
+      .replace(/\/\*\*[\s\S]*?\*\//g, "")
+      .replace(/\/\/.*$/gm, "");
+    expect(runtimeSrc).not.toContain('"emulate"');
+    expect(runtimeSrc).not.toContain("GITHUB_REPO_URL");
+    expect(runtimeSrc).not.toContain("NPM_PACKAGE_URL");
+    // Use a word-boundary regex for SITE_NAME so the bare upstream
+    // identifier does NOT match the FoundryCI-local compound constant
+    // FOUNDRYCI_SITE_NAME (which legitimately contains "SITE_NAME"
+    // as a suffix).
+    expect(runtimeSrc).not.toMatch(/\bSITE_NAME\b/);
+    // Every `export` statement must name only FoundryCI / Nyrra
+    // constants; cross-check by pinning the four expected runtime
+    // exports by their bare names.
+    expect(runtimeSrc).toContain("export const NYRRA_URL");
+    expect(runtimeSrc).toContain("export const FOUNDRYCI_BRAND");
+    expect(runtimeSrc).toContain("export const NYRRA_PARENT_LABEL");
+    expect(runtimeSrc).toContain("export const FOUNDRYCI_SITE_NAME");
+  });
+});
+
+describe("apps/web-svelte/src/lib/page-metadata.ts delegates FoundryCI branding to foundryci-branding", () => {
+  it("imports FOUNDRYCI_SITE_NAME from ./foundryci-branding", () => {
+    const src = readFileSync(WEB_SVELTE_PAGE_METADATA_PATH, "utf-8");
+    expect(src).toContain('from "./foundryci-branding"');
+    expect(src).toContain("FOUNDRYCI_SITE_NAME");
+  });
+
+  it("ROOT_TITLE derives from FOUNDRYCI_SITE_NAME via template interpolation", () => {
+    const src = readFileSync(WEB_SVELTE_PAGE_METADATA_PATH, "utf-8");
+    expect(src).toContain("`${FOUNDRYCI_SITE_NAME} | Local Foundry Emulation`");
+    expect(src).not.toContain('"FoundryCI by Nyrra | Local Foundry Emulation"');
+  });
+
+  it("ROOT_SITE_NAME is assigned directly from FOUNDRYCI_SITE_NAME (not a parallel literal)", () => {
+    const src = readFileSync(WEB_SVELTE_PAGE_METADATA_PATH, "utf-8");
+    expect(src).toContain("const ROOT_SITE_NAME = FOUNDRYCI_SITE_NAME");
+    expect(src).not.toContain('const ROOT_SITE_NAME = "FoundryCI by Nyrra"');
+  });
+
+  it("FOUNDRYCI_PAGE_METADATA override titles derive from FOUNDRYCI_SITE_NAME", () => {
+    const src = readFileSync(WEB_SVELTE_PAGE_METADATA_PATH, "utf-8");
+    expect(src).toContain("`Foundry | ${FOUNDRYCI_SITE_NAME}`");
+    expect(src).toContain("`Configuration | ${FOUNDRYCI_SITE_NAME}`");
+    // The hand-written literal forms must be gone.
+    expect(src).not.toContain('"Foundry | FoundryCI by Nyrra"');
+    expect(src).not.toContain('"Configuration | FoundryCI by Nyrra"');
+  });
+
+  it("runtime pageMetadata still produces the exact pre-refactor FoundryCI brand strings for / and /foundry", async () => {
+    // This is the runtime behavior-preservation check: the helper's
+    // template-literal interpolations must produce byte-identical
+    // output to the pre-refactor literals. Any typo in the
+    // FOUNDRYCI_SITE_NAME derivation would surface here.
+    const { pageMetadata } = await import("../page-metadata");
+    const root = pageMetadata("");
+    expect(root).not.toBeNull();
+    expect(root!.title).toBe("FoundryCI by Nyrra | Local Foundry Emulation");
+    expect(root!.openGraph.siteName).toBe("FoundryCI by Nyrra");
+    const foundry = pageMetadata("foundry");
+    expect(foundry).not.toBeNull();
+    expect(foundry!.title).toBe("Foundry | FoundryCI by Nyrra");
+    expect(foundry!.openGraph.siteName).toBe("FoundryCI by Nyrra");
+  });
+});
+
+describe("apps/web-svelte/src/routes/+page.svelte delegates the upstream attribution link to GITHUB_REPO_URL", () => {
+  it("imports GITHUB_REPO_URL from $lib/upstream-site-metadata", () => {
+    const src = readFileSync(WEB_SVELTE_ROOT_PAGE_PATH, "utf-8");
+    expect(src).toContain("from '$lib/upstream-site-metadata'");
+    expect(src).toContain("GITHUB_REPO_URL");
+  });
+
+  it("the 'emulate by Vercel Labs' hero link references {GITHUB_REPO_URL} (not the literal URL)", () => {
+    const src = readFileSync(WEB_SVELTE_ROOT_PAGE_PATH, "utf-8");
+    expect(src).toContain("href={GITHUB_REPO_URL}");
+    expect(src).not.toContain('href="https://github.com/vercel-labs/emulate"');
+  });
+
+  it("preserves the 'emulate by Vercel Labs' visible link text (editorial attribution)", () => {
+    const src = readFileSync(WEB_SVELTE_ROOT_PAGE_PATH, "utf-8");
+    // The visible label is deliberate editorial attribution copy, not
+    // a branding constant; it stays hand-written and must survive
+    // the refactor unchanged.
+    expect(src).toContain(">emulate by Vercel Labs</a");
+  });
+
+  it("preserves the FoundryCI-first hero heading and prose intro (not touched by this slice)", () => {
+    const src = readFileSync(WEB_SVELTE_ROOT_PAGE_PATH, "utf-8");
+    expect(src).toContain("Local Foundry Emulation");
+    expect(src).toContain("FoundryCI is a Nyrra project");
+    expect(src).toContain("Palantir Foundry");
   });
 });
 

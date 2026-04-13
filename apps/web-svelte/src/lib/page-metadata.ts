@@ -50,6 +50,7 @@
  * import its own root hero copy from the upstream emulate docs.
  */
 import { PAGE_TITLES } from "./page-titles";
+import { FOUNDRYCI_SITE_NAME } from "./foundryci-branding";
 import {
   OG_IMAGE_HEIGHT,
   OG_IMAGE_WIDTH,
@@ -77,10 +78,10 @@ const OG_IMAGE_URL = `${BASE_URL}${OG_IMAGE_PATH}`;
  * emulate` via `SITE_NAME` so per-service titles stay aligned with the
  * upstream Next.js docs.
  */
-const ROOT_TITLE = "FoundryCI by Nyrra | Local Foundry Emulation";
+const ROOT_TITLE = `${FOUNDRYCI_SITE_NAME} | Local Foundry Emulation`;
 const ROOT_DESCRIPTION =
   "Local Palantir Foundry emulation for CI and no-network sandboxes. FoundryCI is a Nyrra project built on emulate by Vercel Labs. Not mocks.";
-const ROOT_SITE_NAME = "FoundryCI by Nyrra";
+const ROOT_SITE_NAME = FOUNDRYCI_SITE_NAME;
 
 /**
  * Per-page FoundryCI metadata overrides. Pages keyed in this map opt out of
@@ -99,12 +100,12 @@ const ROOT_SITE_NAME = "FoundryCI by Nyrra";
  */
 const FOUNDRYCI_PAGE_METADATA: Record<string, { title: string; description: string }> = {
   foundry: {
-    title: "Foundry | FoundryCI by Nyrra",
+    title: `Foundry | ${FOUNDRYCI_SITE_NAME}`,
     description:
       "Local Palantir Foundry emulation: OAuth 2.0, current-user lookup, and compute-module runtime. FoundryCI by Nyrra, built on emulate by Vercel Labs.",
   },
   configuration: {
-    title: "Configuration | FoundryCI by Nyrra",
+    title: `Configuration | ${FOUNDRYCI_SITE_NAME}`,
     description:
       "Seed config for FoundryCI: Foundry users, OAuth clients, runtimes, and the supporting emulate services. By Nyrra, built on emulate by Vercel Labs.",
   },
