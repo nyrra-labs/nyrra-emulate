@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "type-check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-    "deploy:dry-run": "vite build && wrangler deploy --dry-run"
+    "deploy:dry-run": "vite build && wrangler deploy --dry-run",
+    "preview:worker": "vite build && wrangler dev --local --ip 127.0.0.1 --port 8788 --show-interactive-dev-session=false"
   },
   "dependencies": {
     "@sveltejs/kit": "^2",
