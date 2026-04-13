@@ -908,6 +908,13 @@ pnpm --filter web-svelte build
 pnpm --filter web-svelte lint
 ```
 
+If the Svelte build fails on an upstream MDX change, or a page renders an upstream construct incorrectly, the fix usually lives in one of two shared files rather than in the route components:
+
+- `apps/web-svelte/src/lib/mdx-to-markdown.ts` strips MDX-only artifacts (`export`/`import` lines, JSX-only `<div className="...">` blocks) before the raw string reaches the markdown parser. Add new strip rules here when upstream MDX introduces MDX-only syntax that marked would otherwise choke on.
+- `apps/web-svelte/src/lib/render-docs.server.ts` is the shared marked + Shiki renderer. Add a new renderer method or extend `mapLang` here when upstream MDX uses a markdown construct or fence language the renderer does not yet cover. Every migrated route consumes this renderer through `renderDocsHtmlByHref(href)`, so a single renderer extension reaches every page at once.
+
+Hand-duplicating upstream MDX content into a Svelte route component is the wrong answer: the renderer should learn the construct instead.
+
 ## Auth
 
 Tokens are configured in the seed config and map to users. Pass them as `Authorization: Bearer <token>` or `Authorization: token <token>`.
