@@ -31,18 +31,21 @@
  * `metadataBase` auto-resolution; SvelteKit has no equivalent so we compute
  * the absolute canonical URL inline.
  *
- * The Open Graph and Twitter image URLs point at the SvelteKit /og endpoints
- * (`apps/web-svelte/src/routes/og/+server.ts` for the root and
- * `apps/web-svelte/src/routes/og/[...slug]/+server.ts` for non-root). The
- * endpoints use satori + @resvg/resvg-js to render the same 1200x630 brand
- * card the apps/web Next.js docs ship from `app/og/og-image.tsx`, with the
- * same fonts (Geist-Regular.ttf, GeistPixel-Square.ttf) copied byte-for-byte
- * from `apps/web/public/`.
+ * Open Graph and Twitter image URLs point at a single static social card at
+ * `apps/web-svelte/static/og-default.png`. Every page shares the same image.
+ * The dynamic satori + @resvg/resvg-js renderer that apps/web uses is not
+ * compatible with the Cloudflare Workers runtime this app deploys to, so the
+ * static fallback is the deployment-foundation simplification: one PNG,
+ * served as a plain static asset, no runtime font reads, no Node-only image
+ * pipeline. If per-page social cards are reintroduced later, the apps/web
+ * Next.js site remains the authoritative source of the dynamic layout.
  */
 import { PAGE_TITLES } from "./page-titles";
 
 const SITE_NAME = "emulate";
 const BASE_URL = "https://emulate.dev";
+const OG_IMAGE_PATH = "/og-default.png";
+const OG_IMAGE_URL = `${BASE_URL}${OG_IMAGE_PATH}`;
 
 /**
  * Root page title and description. Mirrors `apps/web/app/layout.tsx` exactly,
@@ -91,9 +94,7 @@ export function pageMetadata(slug: string): PageMetadata | null {
   if (slug === "") {
     // Root page: render the layout default values verbatim. apps/web's
     // `openGraph.url` for the root has no trailing slash, so we mirror
-    // that exactly. The root OG image is served from `/og`, mirroring
-    // `apps/web/app/og/route.tsx`.
-    const rootImageUrl = `${BASE_URL}/og`;
+    // that exactly. The OG image is the shared static social card.
     return {
       title: ROOT_TITLE,
       description: ROOT_DESCRIPTION,
@@ -105,7 +106,7 @@ export function pageMetadata(slug: string): PageMetadata | null {
         description: ROOT_DESCRIPTION,
         url: BASE_URL,
         image: {
-          url: rootImageUrl,
+          url: OG_IMAGE_URL,
           width: 1200,
           height: 630,
           alt: "emulate",
@@ -115,7 +116,7 @@ export function pageMetadata(slug: string): PageMetadata | null {
         card: "summary_large_image",
         title: ROOT_TITLE,
         description: ROOT_DESCRIPTION,
-        image: rootImageUrl,
+        image: OG_IMAGE_URL,
       },
     };
   }
@@ -129,9 +130,6 @@ export function pageMetadata(slug: string): PageMetadata | null {
   // "Programmatic API | emulate"), not the bare displayTitle.
   const fullTitle = `${displayTitle} | ${SITE_NAME}`;
   const url = `${BASE_URL}/${slug}`;
-  // Per-page OG image is served from `/og/${slug}`, mirroring
-  // `apps/web/app/og/[...slug]/route.tsx`.
-  const imageUrl = `${BASE_URL}/og/${slug}`;
 
   return {
     title: fullTitle,
@@ -144,7 +142,7 @@ export function pageMetadata(slug: string): PageMetadata | null {
       description: PAGE_DESCRIPTION,
       url,
       image: {
-        url: imageUrl,
+        url: OG_IMAGE_URL,
         width: 1200,
         height: 630,
         alt: `${displayTitle} - ${SITE_NAME}`,
@@ -154,7 +152,7 @@ export function pageMetadata(slug: string): PageMetadata | null {
       card: "summary_large_image",
       title: fullTitle,
       description: PAGE_DESCRIPTION,
-      image: imageUrl,
+      image: OG_IMAGE_URL,
     },
   };
 }

@@ -12,15 +12,12 @@
     "type-check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
   },
   "dependencies": {
-    "@resvg/resvg-js": "^2.6.2",
     "@sveltejs/kit": "^2",
-    "satori": "^0.26.0",
-    "satori-html": "^0.3.2",
     "shiki": "4.0.2"
   },
   "devDependencies": {
     "@eslint/js": "^9",
-    "@sveltejs/adapter-auto": "^7",
+    "@sveltejs/adapter-cloudflare": "^7",
     "@sveltejs/vite-plugin-svelte": "^5",
     "@tailwindcss/vite": "^4",
     "eslint": "^9",
