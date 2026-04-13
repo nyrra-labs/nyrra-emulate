@@ -1,0 +1,29 @@
+# Cloudflare Workers config for the FoundryCI docs site.
+#
+# Targets the build artifact shape that `@sveltejs/adapter-cloudflare`
+# emits at `apps/web-svelte/.svelte-kit/cloudflare/` after `vite build`:
+#
+#   - `main` points at the SvelteKit-generated worker entry.
+#   - `[assets].directory` points at the same directory, which also
+#     contains the prerendered HTML and the static assets. Wrangler
+#     excludes the `_worker.js` entry from the assets upload
+#     automatically when both paths overlap.
+#
+# `nodejs_compat` is required because the SvelteKit server bundle
+# imports `node:async_hooks` (for AsyncLocalStorage). Without this
+# compatibility flag, `wrangler deploy --dry-run` warns about the
+# missing flag and the actual deploy would fail at runtime.
+#
+# Custom domains, routes, and `account_id` are intentionally NOT set
+# here. This file is the minimum needed for `wrangler deploy --dry-run`
+# to validate the build artifact. A future deploy slice will pick a
+# Cloudflare account and wire production routing on top of this base.
+
+name = "foundryci-docs"
+main = ".svelte-kit/cloudflare/_worker.js"
+compatibility_date = "2026-04-13"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = ".svelte-kit/cloudflare"
+binding = "ASSETS"
