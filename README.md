@@ -951,7 +951,7 @@ Search indexing: there is no separate search page list to maintain. Once a new u
 - `apps/web-svelte/src/lib/docs-search-pages.ts` is a thin adapter over the same `docsSources` registry; it exists so any future consumer that wants the lightweight `{ name, href }` projection still has it.
 - `apps/web-svelte/src/routes/api/search/+server.ts` serves results via `getSearchIndex()`, scoring title matches above content matches and returning short snippets around the first matched term.
 
-If upstream MDX changes cause bad search snippets or missing search hits, the fix usually belongs in `apps/web-svelte/src/lib/mdx-to-markdown.ts` (when MDX-only artifacts leak into the search content and need stripping) or `apps/web-svelte/src/lib/search-index.ts` (when the markdown-stripping or snippet-extraction pass needs adjusting), not in any per-route component.
+If upstream MDX changes cause bad search snippets or missing search hits, the fix usually belongs in `apps/web-svelte/src/lib/mdx-to-markdown.ts` (when MDX-only artifacts leak into the search content and need stripping), `apps/web-svelte/src/lib/search-index.ts` (when the search-specific markdown-stripping pass that normalizes each entry's content needs adjusting), or `apps/web-svelte/src/routes/api/search/+server.ts` (when the ranking weights or snippet shape need adjusting), not in any per-route component.
 
 ## Auth
 
