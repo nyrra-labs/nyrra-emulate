@@ -915,6 +915,15 @@ If the Svelte build fails on an upstream MDX change, or a page renders an upstre
 
 Hand-duplicating upstream MDX content into a Svelte route component is the wrong answer: the renderer should learn the construct instead.
 
+The visible shell branding and per-page metadata also live in a small set of shared files rather than in each route:
+
+- `apps/web-svelte/src/lib/components/Header.svelte` owns the header brand cluster (the F mark, the `FoundryCI` wordmark, the `by Nyrra` link, plus the search / GitHub / npm / theme-toggle nav). Edit the wordmark, mark, or brand-link copy here.
+- `apps/web-svelte/src/routes/+layout.svelte` owns the footer attribution row (`Built on emulate by Vercel Labs` and `A Nyrra project`). Edit footer copy or attribution links here.
+- `apps/web-svelte/src/lib/page-metadata.ts` is the single source for `<title>`, meta description, and Open Graph / Twitter metadata. The `ROOT_*` constants drive the homepage card; the `FOUNDRYCI_PAGE_METADATA` map opts FoundryCI-critical pages out of the generic `${displayTitle} | emulate` template.
+- `apps/web-svelte/static/og-default.svg` is the source-of-truth social card (embedded Geist + GeistPixelSquare TTFs); `apps/web-svelte/static/og-default.png` is the rasterized output the build serves. The SVG is the canonical, human-reviewable form.
+
+Per-route components are intentionally thin and should not carry brand strings of their own.
+
 ## Auth
 
 Tokens are configured in the seed config and map to users. Pass them as `Authorization: Bearer <token>` or `Authorization: token <token>`.
