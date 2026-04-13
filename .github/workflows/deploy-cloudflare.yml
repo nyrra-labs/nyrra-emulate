@@ -85,14 +85,13 @@ jobs:
               "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/workers/subdomain"
           )"
           workers_subdomain="$(
-            node -e 'const fs = require("node:fs"); const payload = JSON.parse(fs.readFileSync(0, "utf8")); console.log(payload.result.subdomain);' \
+            node -e 'const fs = require("node:fs"); const payload = JSON.parse(fs.readFileSync(0, "utf8")); const subdomain = payload?.result?.subdomain; if (typeof subdomain !== "string" || subdomain.length === 0) process.exit(1); process.stdout.write(subdomain);' \
               <<<"$subdomain_response"
-          )"
-
-          if [ -z "$workers_subdomain" ]; then
+          )" || {
             echo "Failed to determine workers subdomain" >&2
+            printf '%s\n' "$subdomain_response" >&2
             exit 1
-          fi
+          }
 
           preview_url="https://${PREVIEW_ALIAS}-${WORKER_NAME}.${workers_subdomain}.workers.dev"
 
@@ -143,7 +142,7 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
           set -euo pipefail
-          output="$(pnpm --filter web-svelte deploy:production 2>&1)"
+          output="$(pnpm --filter web-svelte deploy:production 2>&1)" || { printf '%s\n' "$output" >&2; exit 1; }
           printf '%s\n' "$output"
 
           version_id="$(printf '%s\n' "$output" | sed -n 's/^Current Version ID: //p; s/^Version ID: //p' | tail -n 1)"
