@@ -65,12 +65,36 @@ function hrefToUpstreamMdxKey(href: string): string {
   return href === "/" ? "../../../web/app/page.mdx" : `../../../web/app/${href.slice(1)}/page.mdx`;
 }
 
+const UPSTREAM_MDX_KEY_PREFIX = "../../../web/app/";
+
+/**
+ * Maps a path RELATIVE TO the upstream `apps/web/app/` directory (i.e.
+ * everything after the `apps/web/app/` segment) back to a docs href.
+ * Handles arbitrary depth: the root `page.mdx` becomes `/`, single-
+ * segment `foundry/page.mdx` becomes `/foundry`, and nested
+ * `foo/bar/page.mdx` becomes `/foo/bar`. This is the single source of
+ * truth for the inverse of the docs-source slug→href convention; any
+ * caller that needs to map a filesystem or Vite-glob MDX location to
+ * an href must funnel through this helper to avoid drift.
+ *
+ * Exported so the test suite can verify the mapping directly with
+ * synthetic inputs and use it from an independent filesystem walker
+ * without duplicating the regex logic.
+ */
+export function mdxRelativePathToHref(relativePath: string): string {
+  if (relativePath === "page.mdx") return "/";
+  const inner = relativePath.replace(/\/page\.mdx$/, "");
+  return `/${inner}`;
+}
+
 function upstreamMdxKeyToHref(key: string): string {
   // "../../../web/app/page.mdx" -> "/"
   // "../../../web/app/foundry/page.mdx" -> "/foundry"
   // "../../../web/app/some/nested/page.mdx" -> "/some/nested"
-  const inner = key.replace(/^\.\.\/\.\.\/\.\.\/web\/app\//, "").replace(/\/?page\.mdx$/, "");
-  return inner === "" ? "/" : `/${inner}`;
+  const relative = key.startsWith(UPSTREAM_MDX_KEY_PREFIX)
+    ? key.slice(UPSTREAM_MDX_KEY_PREFIX.length)
+    : key;
+  return mdxRelativePathToHref(relative);
 }
 
 /**
