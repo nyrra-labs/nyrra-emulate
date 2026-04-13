@@ -8,6 +8,7 @@ describe("Header.svelte SSR", () => {
     expect(body).toContain('href="/"');
     expect(body).toContain('aria-label="FoundryCI home"');
     expect(body).toContain("FoundryCI");
+    expect(body).toContain('src="/nyrra-logo-5-colors.svg"');
   });
 
   it("renders the by-Nyrra external link with the nyrra.ai href and rel attributes", () => {
