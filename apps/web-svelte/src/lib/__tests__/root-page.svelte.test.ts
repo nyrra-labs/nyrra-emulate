@@ -16,6 +16,8 @@ type SyntheticPageData = {
     supportedServices: readonly SyntheticSupportedService[];
     supportedServicesProse: string;
     rootLowerHalfHtml: string;
+    rootQuickStartIntroHtml: string;
+    rootQuickStartPostListHtml: string;
   };
 };
 
@@ -75,6 +77,22 @@ const SYNTHETIC_LOWER_HALF_HTML =
   '<h2 class="text-lg">Next.js Integration</h2>' +
   '<p>See the <a href="/nextjs">Next.js Integration</a> docs for same-origin setup instructions.</p>';
 
+// Synthetic pre-rendered HTML mirroring the shape the real
+// `rootQuickStartIntroHtml` / `rootQuickStartPostListHtml` helpers
+// produce from the upstream `## Quick Start` slice. Each fragment is a
+// single `<p>` with the shared docs paragraph utility classes; the
+// unique QS_INTRO_MARKER / QS_POST_MARKER tokens let the ordering
+// assertions prove the template drops the intro above the runtime
+// default-startup list and the post-list paragraph below it.
+const QS_INTRO_MARKER = "QS_INTRO_TEST_TOKEN";
+const QS_POST_MARKER = "QS_POST_LIST_TEST_TOKEN";
+const SYNTHETIC_QS_INTRO_HTML =
+  '<p class="mb-4 text-sm leading-relaxed">' + QS_INTRO_MARKER + "</p>";
+const SYNTHETIC_QS_POST_LIST_HTML =
+  '<p class="mb-4 text-sm leading-relaxed">' +
+  QS_POST_MARKER +
+  ' Foundry availability: <code class="bg-neutral-100">emulate --service foundry</code>.</p>';
+
 function renderRoot(): { body: string } {
   const props: SyntheticPageData = {
     data: {
@@ -83,6 +101,8 @@ function renderRoot(): { body: string } {
       supportedServices: SYNTHETIC_SUPPORTED,
       supportedServicesProse: SYNTHETIC_SUPPORTED_PROSE,
       rootLowerHalfHtml: SYNTHETIC_LOWER_HALF_HTML,
+      rootQuickStartIntroHtml: SYNTHETIC_QS_INTRO_HTML,
+      rootQuickStartPostListHtml: SYNTHETIC_QS_POST_LIST_HTML,
     },
   };
   return render(Page, { props: props as Parameters<typeof render>[1] });
@@ -268,5 +288,82 @@ describe("root +page.svelte SSR hero supported services prose", () => {
     expect(body).not.toContain("MongoDB Atlas, Resend, and Stripe");
     // The pre-derived list also had AWS before Okta; runtime has Okta before AWS.
     expect(body).not.toContain("Microsoft, AWS, Okta");
+  });
+});
+
+describe("root +page.svelte SSR Quick Start prose", () => {
+  it("renders the injected Quick Start intro HTML above the runtime default-startup list", () => {
+    const { body } = renderRoot();
+    expect(body).toContain(QS_INTRO_MARKER);
+    const introIdx = body.indexOf(QS_INTRO_MARKER);
+    // The runtime list is rendered as `<li>...<strong ...>Vercel</strong>...`,
+    // and Vercel is the first entry in SYNTHETIC_STARTUP. The intro token
+    // must appear before that first strong tag.
+    const firstStrongIdx = body.indexOf(
+      '<strong class="font-medium text-neutral-900 dark:text-neutral-100">Vercel</strong>',
+    );
+    expect(firstStrongIdx).toBeGreaterThan(-1);
+    expect(introIdx).toBeGreaterThan(-1);
+    expect(introIdx).toBeLessThan(firstStrongIdx);
+  });
+
+  it("renders the injected Quick Start post-list HTML below the runtime default-startup list and above the CLI heading", () => {
+    const { body } = renderRoot();
+    expect(body).toContain(QS_POST_MARKER);
+    const postListIdx = body.indexOf(QS_POST_MARKER);
+    const lastStrongIdx = body.indexOf(
+      '<strong class="font-medium text-neutral-900 dark:text-neutral-100">Clerk</strong>',
+    );
+    // The CLI H2 is the next heading after the Quick Start prose.
+    const cliHeadingIdx = body.search(/<h2[^>]*>CLI<\/h2>/);
+    expect(lastStrongIdx).toBeGreaterThan(-1);
+    expect(cliHeadingIdx).toBeGreaterThan(-1);
+    expect(postListIdx).toBeGreaterThan(lastStrongIdx);
+    expect(postListIdx).toBeLessThan(cliHeadingIdx);
+  });
+
+  it("preserves the overall Quick Start section order: intro -> list -> post-list -> CLI", () => {
+    const { body } = renderRoot();
+    // The QuickStart H2 should come before the intro token, which comes
+    // before the first list strong, which comes before the last list
+    // strong, which comes before the post-list token, which comes before
+    // the CLI H2.
+    const qsHeadingIdx = body.search(/<h2[^>]*>\s*Quick Start\s*<\/h2>/);
+    const introIdx = body.indexOf(QS_INTRO_MARKER);
+    const firstStrongIdx = body.indexOf(
+      '<strong class="font-medium text-neutral-900 dark:text-neutral-100">Vercel</strong>',
+    );
+    const lastStrongIdx = body.indexOf(
+      '<strong class="font-medium text-neutral-900 dark:text-neutral-100">Clerk</strong>',
+    );
+    const postListIdx = body.indexOf(QS_POST_MARKER);
+    const cliHeadingIdx = body.search(/<h2[^>]*>CLI<\/h2>/);
+
+    expect(qsHeadingIdx).toBeGreaterThan(-1);
+    expect(introIdx).toBeGreaterThan(qsHeadingIdx);
+    expect(firstStrongIdx).toBeGreaterThan(introIdx);
+    expect(lastStrongIdx).toBeGreaterThan(firstStrongIdx);
+    expect(postListIdx).toBeGreaterThan(lastStrongIdx);
+    expect(cliHeadingIdx).toBeGreaterThan(postListIdx);
+  });
+
+  it("renders the post-list inline code span from the injected HTML", () => {
+    const { body } = renderRoot();
+    // The synthetic post-list HTML wraps `emulate --service foundry` in
+    // an inline code span. The Svelte template pastes this through
+    // `{@html}` unchanged, so it must land in the body verbatim.
+    expect(body).toContain(
+      '<code class="bg-neutral-100">emulate --service foundry</code>',
+    );
+  });
+
+  it("does NOT render the stale hand-authored 'boots the supporting emulator stack' prose", () => {
+    const { body } = renderRoot();
+    // The previous hand-authored intro paragraph no longer lives in the
+    // template; the route now drops `{@html data.rootQuickStartIntroHtml}`
+    // in its place. The synthetic intro does not contain this string,
+    // so the body must not either.
+    expect(body).not.toContain("boots the supporting emulator stack");
+    expect(body).not.toContain("No config file is needed for the supporting");
   });
 });

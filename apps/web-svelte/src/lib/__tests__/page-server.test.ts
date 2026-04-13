@@ -31,6 +31,8 @@ type RootLoadData = {
   supportedServices: readonly SupportedSvc[];
   supportedServicesProse: string;
   rootLowerHalfHtml: string;
+  rootQuickStartIntroHtml: string;
+  rootQuickStartPostListHtml: string;
 };
 
 async function callLoad(): Promise<RootLoadData> {
@@ -146,6 +148,43 @@ describe("root +page.server.ts", () => {
     expect(data.rootLowerHalfHtml).not.toContain("Getting Started");
     expect(data.rootLowerHalfHtml).not.toContain("Quick Start");
     expect(data.rootLowerHalfHtml).not.toContain("# Start the default startup set");
+  });
+
+  it("load() exposes rootQuickStartIntroHtml and rootQuickStartPostListHtml as non-empty <p>-wrapped strings", async () => {
+    const data = await callLoad();
+    expect(typeof data.rootQuickStartIntroHtml).toBe("string");
+    expect(typeof data.rootQuickStartPostListHtml).toBe("string");
+    expect(data.rootQuickStartIntroHtml.length).toBeGreaterThan(0);
+    expect(data.rootQuickStartPostListHtml.length).toBeGreaterThan(0);
+    expect(data.rootQuickStartIntroHtml.trimStart().startsWith("<p")).toBe(true);
+    expect(data.rootQuickStartPostListHtml.trimStart().startsWith("<p")).toBe(true);
+  });
+
+  it("load()'s rootQuickStartIntroHtml contains the upstream 'default startup set' Quick Start intro prose", async () => {
+    // Pins the upstream -> helper -> load() chain for the Quick Start
+    // intro paragraph. If `root-quick-start-prose.server.ts` ever
+    // stopped pulling from the upstream MDX slice, these load-bearing
+    // tokens would disappear from the rendered output.
+    const data = await callLoad();
+    expect(data.rootQuickStartIntroHtml).toContain("default startup set starts with sensible defaults");
+    expect(data.rootQuickStartIntroHtml).toContain("No config file needed");
+    // Nothing from the stale hand-authored intro should survive.
+    expect(data.rootQuickStartIntroHtml).not.toContain("boots the supporting emulator stack");
+    expect(data.rootQuickStartIntroHtml).not.toContain("No config file is needed for the supporting");
+  });
+
+  it("load()'s rootQuickStartPostListHtml contains the upstream Foundry-availability paragraph with inline code", async () => {
+    const data = await callLoad();
+    expect(data.rootQuickStartPostListHtml).toContain("Foundry is available");
+    // Inline code spans come through as `<code class="...">...</code>`.
+    expect(data.rootQuickStartPostListHtml).toMatch(
+      /<code [^>]*>emulate --service foundry<\/code>/,
+    );
+    expect(data.rootQuickStartPostListHtml).toMatch(/<code [^>]*>foundry:<\/code>/);
+    // Load-bearing Foundry slice description tokens.
+    expect(data.rootQuickStartPostListHtml).toContain("OAuth 2.0");
+    expect(data.rootQuickStartPostListHtml).toContain("compute-module runtime");
+    expect(data.rootQuickStartPostListHtml).toContain("contour routes");
   });
 
   it("load()'s rendered codeBlocks contain the upstream-derived rootCodeBlocks source after HTML tag stripping", async () => {

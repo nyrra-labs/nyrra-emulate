@@ -7,6 +7,10 @@ import {
 } from "$lib/default-services.server";
 import { rootCodeBlocks } from "$lib/root-code-blocks.server";
 import { rootLowerHalfHtml } from "$lib/root-lower-half.server";
+import {
+  rootQuickStartIntroHtml,
+  rootQuickStartPostListHtml,
+} from "$lib/root-quick-start-prose.server";
 
 export const prerender = true;
 
@@ -18,5 +22,7 @@ export const load: PageServerLoad = async () => {
     supportedServices,
     supportedServicesProse,
     rootLowerHalfHtml,
+    rootQuickStartIntroHtml,
+    rootQuickStartPostListHtml,
   };
 };

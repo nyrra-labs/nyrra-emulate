@@ -65,13 +65,17 @@
 
 <CodeBlock html={data.codeBlocks.quickStart} />
 
-<p class="mb-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
-	<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
-		>npx emulate</code
-	>
-	boots the supporting emulator stack with sensible defaults. No config file is needed for the supporting
-	services:
-</p>
+<!--
+	The Quick Start intro paragraph below and the post-list Foundry-
+	availability paragraph further down are derived from upstream
+	`apps/web/app/page.mdx` via `$lib/root-quick-start-prose.server.ts`,
+	so future upstream edits to either fragment flow into this page
+	automatically. The runtime-derived default-startup list still sits
+	between them, so the Quick Start section reads: upstream intro
+	prose -> runtime list -> upstream post-list prose -> CLI heading.
+-->
+<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+{@html data.rootQuickStartIntroHtml}
 
 <!--
 	The default startup service list is derived from the runtime
@@ -93,6 +97,9 @@
 		</li>
 	{/each}
 </ul>
+
+<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+{@html data.rootQuickStartPostListHtml}
 
 <h2 class="mb-4 mt-12 text-lg font-semibold text-neutral-900 dark:text-neutral-100">CLI</h2>
 
