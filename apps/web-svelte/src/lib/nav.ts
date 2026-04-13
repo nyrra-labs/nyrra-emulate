@@ -45,6 +45,11 @@
  * shipping a broken sidebar link.
  */
 import { PAGE_TITLES } from "./page-titles";
+import {
+  NAV_LABEL_OVERRIDES,
+  REFERENCE_SECTION_HREFS,
+  TOP_SECTION_HREFS,
+} from "../../../../apps/web/lib/docs-nav-sections";
 
 export type NavSection = {
   title?: string;
@@ -52,26 +57,19 @@ export type NavSection = {
 };
 
 /**
- * Visible-label overrides for the few nav items whose Sidebar /
- * MobileNav label is intentionally SHORTER than the corresponding
- * `PAGE_TITLES` document title. The default is to derive each nav
- * item's label directly from `PAGE_TITLES`, so this map should stay
- * small and only carry the conscious shortenings the Services section
- * uses for OAuth / social / cloud provider pages where the nav reads
- * more naturally as a brand name without the "API" or "Sign In"
- * suffix that the document title needs for SEO.
- *
- * Add an entry here only with a comment explaining why the page needs
- * a non-derived nav label. Removing an entry here will revert that
- * page's nav label to its `PAGE_TITLES` value at the next module init.
+ * Re-export of the shared `NAV_LABEL_OVERRIDES` map from
+ * `apps/web/lib/docs-nav-sections.ts`. The map used to live inline
+ * in this file alongside a parallel copy in
+ * `apps/web/lib/docs-navigation.ts`; the extraction collapsed both
+ * into one source of truth so a future nav-label shortening only
+ * needs one entry added to the shared helper. Keeping the re-export
+ * here so existing test imports against `$lib/nav` continue to
+ * resolve unchanged. The resolver below still falls back to the
+ * Svelte-local `PAGE_TITLES[slug]` (which overrides the root to
+ * "Overview"), so the Next.js and Svelte navs share the override
+ * map but keep distinct fallback sources for non-overridden labels.
  */
-export const NAV_LABEL_OVERRIDES: Readonly<Record<string, string>> = {
-  "/vercel": "Vercel", // PAGE_TITLES: "Vercel API"
-  "/github": "GitHub", // PAGE_TITLES: "GitHub API"
-  "/google": "Google", // PAGE_TITLES: "Google API"
-  "/slack": "Slack", // PAGE_TITLES: "Slack API"
-  "/apple": "Apple", // PAGE_TITLES: "Apple Sign In"
-};
+export { NAV_LABEL_OVERRIDES } from "../../../../apps/web/lib/docs-nav-sections";
 
 /**
  * Implemented pages that intentionally do not appear anywhere in the
@@ -85,35 +83,52 @@ export const NAV_LABEL_OVERRIDES: Readonly<Record<string, string>> = {
 const INTENTIONALLY_HIDDEN: ReadonlySet<string> = new Set<string>();
 
 /**
+ * Svelte-local services section ordering. Deliberately FoundryCI-
+ * first, NOT derived from the `allDocsPages` source order apps/web
+ * uses — the Svelte docs site is FoundryCI-branded and leads with
+ * the Foundry service in the sidebar to reflect that positioning.
+ * Every other service follows in the same source order the upstream
+ * registry uses. This list stays local (not imported from
+ * `docs-nav-sections.ts`) because the two apps intentionally
+ * diverge on service ordering.
+ */
+const SERVICES_SECTION_HREFS: readonly string[] = [
+  "/foundry",
+  "/vercel",
+  "/github",
+  "/google",
+  "/slack",
+  "/apple",
+  "/microsoft",
+  "/aws",
+  "/okta",
+  "/mongoatlas",
+  "/resend",
+  "/stripe",
+];
+
+/**
  * Internal raw nav structure: each entry is just an `href`, no label.
  * The visible labels are derived in one place via `resolveNavLabel`
  * below, so a future PAGE_TITLES change automatically updates every
- * nav label that is not in `NAV_LABEL_OVERRIDES`.
+ * nav label that is not in `NAV_LABEL_OVERRIDES`. The top and
+ * reference sections are imported from the shared
+ * `apps/web/lib/docs-nav-sections.ts` helper so both apps share one
+ * source of truth for section classification; the Services ordering
+ * stays Svelte-local because the FoundryCI-first positioning differs
+ * from apps/web's allDocsPages source-order fallback.
  */
-const rawSections: { title?: string; hrefs: string[] }[] = [
+const rawSections: { title?: string; hrefs: readonly string[] }[] = [
   {
-    hrefs: ["/", "/programmatic-api", "/configuration", "/nextjs"],
+    hrefs: TOP_SECTION_HREFS,
   },
   {
     title: "Services",
-    hrefs: [
-      "/foundry",
-      "/vercel",
-      "/github",
-      "/google",
-      "/slack",
-      "/apple",
-      "/microsoft",
-      "/aws",
-      "/okta",
-      "/mongoatlas",
-      "/resend",
-      "/stripe",
-    ],
+    hrefs: SERVICES_SECTION_HREFS,
   },
   {
     title: "Reference",
-    hrefs: ["/authentication", "/architecture"],
+    hrefs: REFERENCE_SECTION_HREFS,
   },
 ];
 

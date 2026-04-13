@@ -25,19 +25,32 @@
  * service page to `allDocsPages` automatically surfaces it in the
  * Services section at the right position without any parallel edit
  * to the nav components. Adding a new top-level or reference page
- * requires adding its href to the corresponding explicit set below;
- * the module-init coverage guard throws loudly if a non-existent
- * href is listed or if an override key does not correspond to any
- * real `allDocsPages` entry.
+ * requires adding its href to the corresponding explicit set in
+ * `./docs-nav-sections.ts`; the module-init coverage guard throws
+ * loudly if a non-existent href is listed or if an override key
+ * does not correspond to any real `allDocsPages` entry.
  *
- * `NAV_LABEL_OVERRIDES` carries the small set of intentional nav
- * label shortenings (e.g. "Vercel" instead of the document title
- * "Vercel API"). The sidebar has limited horizontal space and the
- * "Services" section header already implies "API", so the short
- * form reads better there. Any override key must correspond to a
- * real `allDocsPages` entry; the assertion at module init catches
- * stale entries before render.
+ * `NAV_LABEL_OVERRIDES`, `TOP_SECTION_HREFS`, and
+ * `REFERENCE_SECTION_HREFS` are imported from
+ * `./docs-nav-sections.ts`, which is the single cross-app source of
+ * truth for the label-shortening map and the top/reference section
+ * classification. Both the Svelte docs nav and this Next.js docs
+ * nav consume the same three constants so a rebrand or section
+ * move touches one file.
  */
+import {
+  NAV_LABEL_OVERRIDES,
+  REFERENCE_SECTION_HREFS as REFERENCE_SECTION_HREFS_LIST,
+  TOP_SECTION_HREFS as TOP_SECTION_HREFS_LIST,
+} from "./docs-nav-sections";
+
+/**
+ * Re-export of the shared `NAV_LABEL_OVERRIDES` map from
+ * `./docs-nav-sections`. Existing callers and test imports that
+ * resolve `NAV_LABEL_OVERRIDES` from `@/lib/docs-navigation` keep
+ * working without changes.
+ */
+export { NAV_LABEL_OVERRIDES } from "./docs-nav-sections";
 
 export type NavItem = {
   name: string;
@@ -76,48 +89,19 @@ export const allDocsPages: NavItem[] = [
 ];
 
 /**
- * Sidebar/mobile-nav label overrides for pages whose `allDocsPages`
- * name is intentionally longer than the nav label. The default is to
- * derive each nav item's label from the page's `name` field, so this
- * map should stay small and only carry the conscious shortenings the
- * Services section uses for OAuth / social / cloud provider pages.
- *
- * Every key must correspond to a real `allDocsPages` entry; the
- * module-init coverage guard below throws if a stale override is
- * left behind.
+ * O(1) lookup sets derived from the shared `TOP_SECTION_HREFS` /
+ * `REFERENCE_SECTION_HREFS` arrays in `./docs-nav-sections`. The
+ * shared helper exports arrays (so the Svelte consumer can spread
+ * them into its own ordered `rawSections`), and each consumer
+ * wraps locally with `new Set()` where O(1) membership checks are
+ * useful. Apps/web's classifier needs `.has(href)` per-page inside
+ * the services/top/reference bucket split, so the wrapped forms
+ * live here at module init.
  */
-export const NAV_LABEL_OVERRIDES: Readonly<Record<string, string>> = {
-  "/vercel": "Vercel", // allDocsPages: "Vercel API"
-  "/github": "GitHub", // allDocsPages: "GitHub API"
-  "/google": "Google", // allDocsPages: "Google API"
-  "/slack": "Slack", // allDocsPages: "Slack API"
-  "/apple": "Apple", // allDocsPages: "Apple Sign In"
-};
-
-/**
- * Hrefs that belong in the unlabeled top section of the sidebar
- * (first-party onboarding). Explicit rather than derived because
- * the top section is a deliberate IA decision, not a mechanical
- * projection of the canonical registry. Every entry must correspond
- * to a real `allDocsPages` entry.
- */
-const TOP_SECTION_HREFS: ReadonlySet<string> = new Set([
-  "/",
-  "/programmatic-api",
-  "/configuration",
-  "/nextjs",
-]);
-
-/**
- * Hrefs that belong in the "Reference" section. Same rationale as
- * `TOP_SECTION_HREFS`: explicit classification because this is an IA
- * decision, not a mechanical projection. Every entry must correspond
- * to a real `allDocsPages` entry.
- */
-const REFERENCE_SECTION_HREFS: ReadonlySet<string> = new Set([
-  "/authentication",
-  "/architecture",
-]);
+const TOP_SECTION_HREFS: ReadonlySet<string> = new Set(TOP_SECTION_HREFS_LIST);
+const REFERENCE_SECTION_HREFS: ReadonlySet<string> = new Set(
+  REFERENCE_SECTION_HREFS_LIST,
+);
 
 function resolveNavLabel(page: NavItem): string {
   return NAV_LABEL_OVERRIDES[page.href] ?? page.name;
