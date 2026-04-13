@@ -2,7 +2,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { allDocsPages } from "../docs-navigation";
+import { allDocsPages } from "../docs-pages";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -332,36 +332,37 @@ describe("no second hand-maintained docs route list anywhere in apps/web consume
     }
   });
 
-  it("the canonical allDocsPages in docs-navigation.ts is the ONE file carrying every docs slug", () => {
-    const navSrc = readFileSync(
-      resolve(REPO_ROOT, "apps/web/lib/docs-navigation.ts"),
+  it("the canonical allDocsPages in docs-pages.ts is the ONE file carrying every docs slug", () => {
+    const pagesSrc = readFileSync(
+      resolve(REPO_ROOT, "apps/web/lib/docs-pages.ts"),
       "utf-8",
     );
     for (const slug of DOCS_SLUG_LITERALS) {
       expect(
-        navSrc.includes(`"${slug}"`),
-        `apps/web/lib/docs-navigation.ts is missing the canonical "${slug}" entry`,
+        pagesSrc.includes(`"${slug}"`),
+        `apps/web/lib/docs-pages.ts is missing the canonical "${slug}" entry`,
       ).toBe(true);
     }
   });
 
-  it("docs-navigation.ts is the only apps/web consumer file with every docs slug literal", () => {
+  it("docs-pages.ts is the only apps/web consumer file with every docs slug literal", () => {
     // Cross-check: tally how many slug literals each guarded file
-    // carries. Only docs-navigation.ts should have all 17. Every
-    // other file should have 0-2.
-    const navSrc = readFileSync(
-      resolve(REPO_ROOT, "apps/web/lib/docs-navigation.ts"),
+    // carries. Only docs-pages.ts should have all 17. Every other
+    // file (including docs-navigation.ts, which now imports the
+    // registry from docs-pages.ts) should have 0-2.
+    const pagesSrc = readFileSync(
+      resolve(REPO_ROOT, "apps/web/lib/docs-pages.ts"),
       "utf-8",
     );
-    const navCount = DOCS_SLUG_LITERALS.filter((slug) => navSrc.includes(`"${slug}"`)).length;
-    expect(navCount).toBe(DOCS_SLUG_LITERALS.length);
+    const pagesCount = DOCS_SLUG_LITERALS.filter((slug) => pagesSrc.includes(`"${slug}"`)).length;
+    expect(pagesCount).toBe(DOCS_SLUG_LITERALS.length);
 
     for (const relPath of GUARDED_FILES) {
       const filePath = resolve(REPO_ROOT, relPath);
       if (!existsSync(filePath)) continue;
       const src = readFileSync(filePath, "utf-8");
       const count = DOCS_SLUG_LITERALS.filter((slug) => src.includes(`"${slug}"`)).length;
-      expect(count).toBeLessThan(navCount);
+      expect(count).toBeLessThan(pagesCount);
     }
   });
 });

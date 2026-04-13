@@ -38,7 +38,7 @@
  * Next.js docs ("Vercel API" rather than "Vercel", "Microsoft Entra ID"
  * rather than "Microsoft").
  */
-import { allDocsPages } from "../../../web/lib/docs-navigation";
+import { allDocsPages } from "../../../web/lib/docs-pages";
 
 function hrefToSlug(href: string): string {
   return href === "/" ? "" : href.replace(/^\/+/, "");

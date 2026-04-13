@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { allDocsPages } from "../docs-navigation";
+import { allDocsPages } from "../docs-pages";
 import { getPageTitle, PAGE_TITLE_OVERRIDES, PAGE_TITLES } from "../page-titles";
 
 /**

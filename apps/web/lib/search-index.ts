@@ -1,6 +1,6 @@
 import { readFile } from "fs/promises";
 import { join } from "path";
-import { allDocsPages } from "./docs-navigation";
+import { allDocsPages } from "./docs-pages";
 import { mdxToCleanMarkdown } from "./mdx-to-markdown";
 
 export type IndexEntry = {

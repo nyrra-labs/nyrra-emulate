@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { allDocsPages } from "../docs-pages";
 import {
-  allDocsPages,
   docsNavAllItems,
   docsNavSections,
   NAV_LABEL_OVERRIDES,

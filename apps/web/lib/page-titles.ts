@@ -23,7 +23,7 @@
  * that does not correspond to a real `allDocsPages` entry fails
  * the Next.js build at module init via the coverage guard below.
  */
-import { allDocsPages } from "./docs-navigation";
+import { allDocsPages } from "./docs-pages";
 
 /**
  * Slug-keyed title overrides for pages whose rendered hero / OG

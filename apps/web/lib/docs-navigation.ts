@@ -38,6 +38,7 @@
  * nav consume the same three constants so a rebrand or section
  * move touches one file.
  */
+import { allDocsPages, type NavItem } from "./docs-pages";
 import {
   NAV_LABEL_OVERRIDES,
   REFERENCE_SECTION_HREFS as REFERENCE_SECTION_HREFS_LIST,
@@ -52,10 +53,18 @@ import {
  */
 export { NAV_LABEL_OVERRIDES } from "./docs-nav-sections";
 
-export type NavItem = {
-  name: string;
-  href: string;
-};
+/**
+ * Re-export of the canonical docs page registry + type from
+ * `./docs-pages`. Non-nav consumers should import these from
+ * `./docs-pages` directly; the re-export here exists so historical
+ * callers that resolve `allDocsPages` / `NavItem` from
+ * `@/lib/docs-navigation` keep compiling during any future migration
+ * pass. Nav-aware consumers (both nav components, the Svelte nav
+ * shim) still import `docsNavSections` / `docsNavAllItems` /
+ * `NAV_LABEL_OVERRIDES` / `DocsNavSection` / `DocsNavItem` from
+ * this file as before.
+ */
+export { allDocsPages, type NavItem } from "./docs-pages";
 
 export type DocsNavItem = {
   href: string;
@@ -66,27 +75,6 @@ export type DocsNavSection = {
   title?: string;
   items: readonly DocsNavItem[];
 };
-
-export const allDocsPages: NavItem[] = [
-  { name: "Getting Started", href: "/" },
-  { name: "Programmatic API", href: "/programmatic-api" },
-  { name: "Configuration", href: "/configuration" },
-  { name: "Next.js Integration", href: "/nextjs" },
-  { name: "Vercel API", href: "/vercel" },
-  { name: "GitHub API", href: "/github" },
-  { name: "Google API", href: "/google" },
-  { name: "Slack API", href: "/slack" },
-  { name: "Apple Sign In", href: "/apple" },
-  { name: "Microsoft Entra ID", href: "/microsoft" },
-  { name: "Foundry", href: "/foundry" },
-  { name: "AWS", href: "/aws" },
-  { name: "Okta", href: "/okta" },
-  { name: "MongoDB Atlas", href: "/mongoatlas" },
-  { name: "Resend", href: "/resend" },
-  { name: "Stripe", href: "/stripe" },
-  { name: "Authentication", href: "/authentication" },
-  { name: "Architecture", href: "/architecture" },
-];
 
 /**
  * O(1) lookup sets derived from the shared `TOP_SECTION_HREFS` /

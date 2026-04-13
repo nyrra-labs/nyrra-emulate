@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { allDocsPages } from "../docs-navigation";
+import { allDocsPages } from "../docs-pages";
 import { pageMetadata } from "../page-metadata";
 import { getPageTitle, PAGE_TITLES } from "../page-titles";
 

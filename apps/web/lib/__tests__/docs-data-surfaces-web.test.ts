@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { allDocsPages } from "../docs-navigation";
+import { allDocsPages } from "../docs-pages";
 import { loadDocsFilesFromRoot } from "../docs-files";
 import {
   buildSearchIndexFromRoot,
@@ -304,7 +304,7 @@ describe("static contract: search and docs-chat routes delegate to the shared re
 
   it("apps/web/lib/search-index.ts imports allDocsPages from the canonical registry", () => {
     const src = readFileSync(SEARCH_INDEX_LIB_PATH, "utf-8");
-    expect(src).toContain('from "./docs-navigation"');
+    expect(src).toContain('from "./docs-pages"');
     expect(src).toContain("allDocsPages");
   });
 
@@ -315,7 +315,7 @@ describe("static contract: search and docs-chat routes delegate to the shared re
 
   it("apps/web/lib/docs-files.ts imports allDocsPages from the canonical registry", () => {
     const src = readFileSync(DOCS_FILES_LIB_PATH, "utf-8");
-    expect(src).toContain('from "./docs-navigation"');
+    expect(src).toContain('from "./docs-pages"');
     expect(src).toContain("allDocsPages");
   });
 
