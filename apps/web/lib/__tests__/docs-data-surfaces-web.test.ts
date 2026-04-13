@@ -18,6 +18,7 @@ const APPS_WEB_DIR = resolve(REPO_ROOT, "apps/web");
 // carrying their own hand-maintained page lists.
 const SEARCH_ROUTE_PATH = resolve(REPO_ROOT, "apps/web/app/api/search/route.ts");
 const DOCS_CHAT_ROUTE_PATH = resolve(REPO_ROOT, "apps/web/app/api/docs-chat/route.ts");
+const APPS_WEB_ROOT_LIB_PATH = resolve(REPO_ROOT, "apps/web/lib/apps-web-root.ts");
 const SEARCH_INDEX_LIB_PATH = resolve(REPO_ROOT, "apps/web/lib/search-index.ts");
 const DOCS_FILES_LIB_PATH = resolve(REPO_ROOT, "apps/web/lib/docs-files.ts");
 
@@ -301,6 +302,13 @@ describe("static contract: search and docs-chat routes delegate to the shared re
     expect(src).toContain("allDocsPages");
   });
 
+  it("apps/web/lib/search-index.ts resolves the apps/web root via the shared helper instead of process.cwd()", () => {
+    const src = readFileSync(SEARCH_INDEX_LIB_PATH, "utf-8");
+    expect(src).toContain('from "./apps-web-root"');
+    expect(src).toContain("APPS_WEB_ROOT");
+    expect(src).not.toContain("process.cwd()");
+  });
+
   it("apps/web/lib/search-index.ts walks allDocsPages inside buildSearchIndexFromRoot", () => {
     const src = readFileSync(SEARCH_INDEX_LIB_PATH, "utf-8");
     expect(src).toMatch(/for\s*\(\s*const\s+item\s+of\s+allDocsPages\s*\)/);
@@ -310,6 +318,19 @@ describe("static contract: search and docs-chat routes delegate to the shared re
     const src = readFileSync(DOCS_FILES_LIB_PATH, "utf-8");
     expect(src).toContain('from "./docs-pages"');
     expect(src).toContain("allDocsPages");
+  });
+
+  it("apps/web/app/api/docs-chat/route.ts imports APPS_WEB_ROOT and does not depend on process.cwd()", () => {
+    const src = readFileSync(DOCS_CHAT_ROUTE_PATH, "utf-8");
+    expect(src).toContain('from "@/lib/apps-web-root"');
+    expect(src).toContain("loadDocsFilesFromRoot(APPS_WEB_ROOT)");
+    expect(src).not.toContain("process.cwd()");
+  });
+
+  it("apps/web/lib/apps-web-root.ts resolves apps/web relative to import.meta.url", () => {
+    const src = readFileSync(APPS_WEB_ROOT_LIB_PATH, "utf-8");
+    expect(src).toContain("fileURLToPath(import.meta.url)");
+    expect(src).toContain('resolve(__dirname, "..")');
   });
 
   it("apps/web/lib/docs-files.ts walks allDocsPages via Promise.allSettled", () => {

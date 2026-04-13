@@ -5,6 +5,13 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -22,8 +29,6 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm build
-
       - run: pnpm format:check
 
       - run: pnpm type-check
@@ -31,5 +36,7 @@ jobs:
       - run: pnpm lint
 
       - run: pnpm test
+
+      - run: pnpm build
 
       - run: pnpm --filter web-svelte deploy:dry-run
