@@ -7,33 +7,50 @@ import { Search } from "@/components/search";
 import { DocsChat } from "@/components/docs-chat";
 import { DocsMobileNav } from "@/components/docs-mobile-nav";
 import { DocsNav } from "@/components/docs-nav";
+import {
+  OG_IMAGE_HEIGHT,
+  OG_IMAGE_WIDTH,
+  OG_LOCALE,
+  OG_TYPE,
+  ROOT_DEFAULT_TITLE,
+  ROOT_OG_IMAGE_URL,
+  ROOT_SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_URL,
+  TITLE_TEMPLATE,
+  TWITTER_CARD,
+} from "@/lib/site-metadata";
 import { cookies } from "next/headers";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://emulate.dev"),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "emulate | Local API Emulation for CI & Sandboxes",
-    template: "%s | emulate",
+    default: ROOT_DEFAULT_TITLE,
+    template: TITLE_TEMPLATE,
   },
-  description:
-    "Local drop-in replacement services for CI and no-network sandboxes. Fully stateful, production-fidelity API emulation. Not mocks.",
+  description: ROOT_SITE_DESCRIPTION,
   openGraph: {
-    type: "website",
-    locale: "en_US",
-    url: "https://emulate.dev",
-    siteName: "emulate",
-    title: "emulate | Local API Emulation for CI & Sandboxes",
-    description:
-      "Local drop-in replacement services for CI and no-network sandboxes. Fully stateful, production-fidelity API emulation. Not mocks.",
-    images: [{ url: "/og", width: 1200, height: 630, alt: "emulate" }],
+    type: OG_TYPE,
+    locale: OG_LOCALE,
+    url: SITE_URL,
+    siteName: SITE_NAME,
+    title: ROOT_DEFAULT_TITLE,
+    description: ROOT_SITE_DESCRIPTION,
+    images: [
+      {
+        url: ROOT_OG_IMAGE_URL,
+        width: OG_IMAGE_WIDTH,
+        height: OG_IMAGE_HEIGHT,
+        alt: SITE_NAME,
+      },
+    ],
   },
   twitter: {
-    card: "summary_large_image",
-    title: "emulate | Local API Emulation for CI & Sandboxes",
-    description:
-      "Local drop-in replacement services for CI and no-network sandboxes. Fully stateful, production-fidelity API emulation. Not mocks.",
-    images: ["/og"],
+    card: TWITTER_CARD,
+    title: ROOT_DEFAULT_TITLE,
+    description: ROOT_SITE_DESCRIPTION,
+    images: [ROOT_OG_IMAGE_URL],
   },
 };
 

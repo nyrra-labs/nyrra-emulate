@@ -154,24 +154,24 @@ describe("root special case: app/layout.tsx carries the shared template, not a p
     expect(src).not.toContain("pageMetadata");
   });
 
-  it("app/layout.tsx exports a root metadata literal with the '%s | emulate' title template", () => {
+  it("app/layout.tsx derives the title template from the shared TITLE_TEMPLATE constant", () => {
     const src = readFileSync(resolve(APPS_WEB_APP, "layout.tsx"), "utf-8");
-    // The root layout sets `title.template: "%s | emulate"` which
-    // Next.js applies to every CHILD segment's metadata.title. This
-    // is the mechanism that turns a child pageMetadata("foundry")
-    // returning `title: "Foundry"` into the HTML <title> tag
-    // `Foundry | emulate`. The non-root tests above assert that
-    // children emit the short title; this test pins the other end
-    // of that contract — the root layout provides the template.
-    expect(src).toMatch(/template:\s*["']%s\s*\|\s*emulate["']/);
+    // After the site-metadata extraction the template literal lives
+    // in `site-metadata.ts`; the root layout just references the
+    // constant by name. The value assertion (that TITLE_TEMPLATE
+    // equals "%s | emulate") is pinned by `site-metadata-web.test.ts`.
+    expect(src).toContain('from "@/lib/site-metadata"');
+    expect(src).toMatch(/template:\s*TITLE_TEMPLATE/);
   });
 
-  it("app/layout.tsx exports a root title.default for the '/' URL", () => {
+  it("app/layout.tsx derives the root title.default from the shared ROOT_DEFAULT_TITLE constant", () => {
     const src = readFileSync(resolve(APPS_WEB_APP, "layout.tsx"), "utf-8");
     // Next.js does NOT apply the title template to the root segment's
     // own metadata — the template only applies to child segments. So
-    // the '/' URL needs an explicit default title.
-    expect(src).toMatch(/default:\s*["']emulate \| Local API Emulation for CI & Sandboxes["']/);
+    // the '/' URL needs an explicit default title, which lives in
+    // `site-metadata.ts` as `ROOT_DEFAULT_TITLE` and is imported here
+    // by name.
+    expect(src).toMatch(/default:\s*ROOT_DEFAULT_TITLE/);
   });
 
   it("there is no app/<root>/layout.tsx mirror of the non-root per-slug pattern", () => {
