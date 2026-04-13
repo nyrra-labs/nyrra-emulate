@@ -1,20 +1,20 @@
 import { describe, expect, it } from "vitest";
 import { docsSources } from "../docs-source";
-import { allDocsPages, type DocsSearchPage } from "../docs-search-pages";
+import { docsSearchPages, type DocsSearchPage } from "../docs-search-pages";
 
-describe("allDocsPages", () => {
+describe("docsSearchPages", () => {
   it("is the ordered { name, href } projection of docsSources", () => {
-    expect(allDocsPages.length).toBe(docsSources.length);
+    expect(docsSearchPages.length).toBe(docsSources.length);
     const projected: DocsSearchPage[] = docsSources.map((source) => ({
       name: source.title,
       href: source.href,
     }));
-    expect(allDocsPages).toEqual(projected);
+    expect(docsSearchPages).toEqual(projected);
   });
 
   it("preserves the docsSources iteration order entry-by-entry", () => {
     for (let i = 0; i < docsSources.length; i++) {
-      expect(allDocsPages[i]).toEqual({
+      expect(docsSearchPages[i]).toEqual({
         name: docsSources[i].title,
         href: docsSources[i].href,
       });
@@ -22,7 +22,7 @@ describe("allDocsPages", () => {
   });
 
   it("exposes only the { name, href } shape and does not leak the upstream raw MDX", () => {
-    for (const page of allDocsPages) {
+    for (const page of docsSearchPages) {
       expect(Object.keys(page).sort()).toEqual(["href", "name"]);
       expect(typeof page.name).toBe("string");
       expect(typeof page.href).toBe("string");
@@ -36,8 +36,8 @@ describe("allDocsPages", () => {
     const sourceConfigIdx = docsSources.findIndex((s) => s.href === "/configuration");
     const sourceRootIdx = docsSources.findIndex((s) => s.href === "/");
     expect(sourceFoundryIdx).toBeGreaterThanOrEqual(0);
-    expect(allDocsPages[sourceFoundryIdx]).toEqual({ name: "Foundry", href: "/foundry" });
-    expect(allDocsPages[sourceConfigIdx]).toEqual({ name: "Configuration", href: "/configuration" });
-    expect(allDocsPages[sourceRootIdx]).toEqual({ name: "Overview", href: "/" });
+    expect(docsSearchPages[sourceFoundryIdx]).toEqual({ name: "Foundry", href: "/foundry" });
+    expect(docsSearchPages[sourceConfigIdx]).toEqual({ name: "Configuration", href: "/configuration" });
+    expect(docsSearchPages[sourceRootIdx]).toEqual({ name: "Overview", href: "/" });
   });
 });

@@ -2,7 +2,7 @@
  * Derived docs-page title map.
  *
  * Every docs route in this Next.js app is registered in
- * `./docs-navigation.ts`'s `allDocsPages` constant with a canonical
+ * `./docs-pages.ts`'s `allDocsPages` constant with a canonical
  * `name` and `href`. This module projects that registry into the
  * slug-keyed `PAGE_TITLES` map that `page-metadata.ts` (document
  * title, OG metadata, Twitter card) and the OG image routes at
@@ -89,7 +89,7 @@ export const PAGE_TITLES: Record<string, string> = (() => {
         `page-titles: PAGE_TITLE_OVERRIDES key ${JSON.stringify(overrideSlug)} ` +
           `does not correspond to any slug derived from allDocsPages. Remove ` +
           `the stale override from apps/web/lib/page-titles.ts or add the ` +
-          `corresponding page to allDocsPages in apps/web/lib/docs-navigation.ts.`,
+          `corresponding page to allDocsPages in apps/web/lib/docs-pages.ts.`,
       );
     }
   }

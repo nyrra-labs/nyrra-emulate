@@ -273,7 +273,7 @@ describe("app/ directory bidirectional coverage (no orphan routes in either dire
 
 describe("no second hand-maintained docs route list anywhere in apps/web consumers", () => {
   // Every runtime consumer of the docs page registry should funnel
-  // through allDocsPages from `./docs-navigation` rather than carry
+  // through allDocsPages from `./docs-pages` rather than carry
   // its own parallel slug array. This grep-level guard scans every
   // file that has historically been a candidate for a parallel list
   // and asserts that none of them contain the full docs slug set.
@@ -327,7 +327,7 @@ describe("no second hand-maintained docs route list anywhere in apps/web consume
       expect(
         present.length,
         `${relPath} contains ${present.length} docs slug literals (${present.join(", ")}); ` +
-          `use allDocsPages from @/lib/docs-navigation instead of a parallel list`,
+          `use allDocsPages from @/lib/docs-pages instead of a parallel list`,
       ).toBeLessThanOrEqual(2);
     }
   });
@@ -363,6 +363,49 @@ describe("no second hand-maintained docs route list anywhere in apps/web consume
       const src = readFileSync(filePath, "utf-8");
       const count = DOCS_SLUG_LITERALS.filter((slug) => src.includes(`"${slug}"`)).length;
       expect(count).toBeLessThan(pagesCount);
+    }
+  });
+
+  it("non-nav consumers import allDocsPages from ./docs-pages, not from ./docs-navigation", () => {
+    // Source-level import-direction guard. Non-nav consumers of the
+    // registry (page-titles, search-index, docs-files, and the Svelte
+    // shell's page-titles projection) must import `allDocsPages` from
+    // the canonical `docs-pages.ts` module. `docs-navigation.ts`
+    // re-exports the symbol for backward compat, but only navigation-
+    // specific code should import from it. A regression that points a
+    // non-nav consumer at `docs-navigation.ts` would silently work at
+    // runtime (same symbol) but re-entrench the stale naming; this
+    // guard catches it at test time with a precise error.
+    const NON_NAV_CONSUMERS: ReadonlyArray<string> = [
+      "apps/web/lib/page-titles.ts",
+      "apps/web/lib/search-index.ts",
+      "apps/web/lib/docs-files.ts",
+      "apps/web-svelte/src/lib/page-titles.ts",
+    ];
+    // Matches: import { allDocsPages, ... } from "<anything>/docs-pages"
+    // (single or double quotes, any leading path segments).
+    const DOCS_PAGES_IMPORT = /import\s*\{[^}]*\ballDocsPages\b[^}]*\}\s*from\s*["'][^"']*docs-pages["']/;
+    // Matches: import { allDocsPages, ... } from "<anything>/docs-navigation"
+    const DOCS_NAVIGATION_IMPORT = /import\s*\{[^}]*\ballDocsPages\b[^}]*\}\s*from\s*["'][^"']*docs-navigation["']/;
+    for (const relPath of NON_NAV_CONSUMERS) {
+      const filePath = resolve(REPO_ROOT, relPath);
+      expect(
+        existsSync(filePath),
+        `guarded consumer ${relPath} is missing from the repo`,
+      ).toBe(true);
+      const src = readFileSync(filePath, "utf-8");
+      expect(
+        DOCS_PAGES_IMPORT.test(src),
+        `${relPath} must import allDocsPages from a docs-pages module (the canonical registry), ` +
+          `but no matching import was found. Update the import to './docs-pages' or ` +
+          `'../../../web/lib/docs-pages' depending on workspace.`,
+      ).toBe(true);
+      expect(
+        DOCS_NAVIGATION_IMPORT.test(src),
+        `${relPath} imports allDocsPages from a docs-navigation module. ` +
+          `docs-navigation.ts re-exports the symbol for backward compat, but non-nav ` +
+          `consumers must point at the canonical docs-pages.ts instead.`,
+      ).toBe(false);
     }
   });
 });

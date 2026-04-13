@@ -3,7 +3,7 @@
  *
  * Source of truth and derivation:
  *
- *   - The upstream `apps/web/lib/docs-navigation.ts` `allDocsPages`
+ *   - The upstream `apps/web/lib/docs-pages.ts` `allDocsPages`
  *     catalog is the default source for both the implemented slug set
  *     and the per-slug names. Importing the catalog directly means a
  *     future upstream rename (e.g. "Vercel API" → "Vercel APIs") flows

@@ -11,7 +11,7 @@
  *   - `PAGE_TITLES` in `./page-titles.ts` is the single source of
  *     truth for every implemented docs slug → human-visible title.
  *     It is itself derived from the upstream
- *     `apps/web/lib/docs-navigation.ts` `allDocsPages` catalog with
+ *     `apps/web/lib/docs-pages.ts` `allDocsPages` catalog with
  *     one explicit local override for the root label (the Svelte
  *     shell uses "Overview" instead of upstream's "Getting Started").
  *     Search hits therefore read the same as the Next.js docs
