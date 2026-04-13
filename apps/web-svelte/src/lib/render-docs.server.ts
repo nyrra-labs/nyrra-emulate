@@ -50,6 +50,7 @@ const P_CLASS = "mb-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral
 const UL_CLASS = "mb-4 list-disc space-y-1 pl-5 text-sm";
 const OL_CLASS = "mb-4 list-decimal space-y-1 pl-5 text-sm";
 const LI_CLASS = "text-neutral-600 dark:text-neutral-400";
+const STRONG_CLASS = "font-medium text-neutral-900 dark:text-neutral-100";
 const INLINE_CODE_CLASS =
   "rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800";
 const LINK_CLASS =
@@ -143,6 +144,10 @@ export async function renderDocsHtml(rawMdx: string): Promise<string> {
       },
       codespan({ text }) {
         return `<code class="${INLINE_CODE_CLASS}">${text}</code>`;
+      },
+      strong({ tokens }) {
+        const text = this.parser.parseInline(tokens);
+        return `<strong class="${STRONG_CLASS}">${text}</strong>`;
       },
       link({ href, title, tokens }) {
         const text = this.parser.parseInline(tokens);
