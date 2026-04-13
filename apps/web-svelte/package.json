@@ -23,7 +23,7 @@
   "devDependencies": {
     "@eslint/js": "^9",
     "@sveltejs/adapter-cloudflare": "^7",
-    "@sveltejs/vite-plugin-svelte": "^5",
+    "@sveltejs/vite-plugin-svelte": "^7.0.0",
     "@tailwindcss/vite": "^4",
     "eslint": "^9",
     "eslint-plugin-svelte": "^3",
@@ -33,7 +33,7 @@
     "tailwindcss": "^4",
     "typescript": "^5",
     "typescript-eslint": "^8",
-    "vite": "^6",
+    "vite": "^8.0.8",
     "wrangler": "^4.81.1"
   }
 }
