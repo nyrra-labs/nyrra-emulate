@@ -2,12 +2,12 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { allDocsPages } from "../../../../../apps/web/lib/docs-navigation";
+import { allDocsPages } from "../docs-navigation";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-// apps/web-svelte/src/lib/__tests__ → repo root is 5 levels up.
-const REPO_ROOT = resolve(__dirname, "../../../../..");
+// apps/web/lib/__tests__ → repo root is 4 levels up.
+const REPO_ROOT = resolve(__dirname, "../../../..");
 const APPS_WEB_APP = resolve(REPO_ROOT, "apps/web/app");
 
 /**

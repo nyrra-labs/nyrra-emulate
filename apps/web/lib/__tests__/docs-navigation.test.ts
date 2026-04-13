@@ -4,7 +4,7 @@ import {
   docsNavAllItems,
   docsNavSections,
   NAV_LABEL_OVERRIDES,
-} from "../../../../../apps/web/lib/docs-navigation";
+} from "../docs-navigation";
 
 const SERVICE_HREF_REFERENCE: readonly string[] = [
   "/vercel",
