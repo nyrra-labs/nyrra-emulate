@@ -9,19 +9,21 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",
-    "type-check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
+    "test": "vitest run",
+    "type-check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "deploy:dry-run": "rm -rf .svelte-kit/cloudflare && vite build && wrangler deploy --dry-run",
+    "preview:worker": "rm -rf .svelte-kit/cloudflare && vite build && wrangler dev --local --ip 127.0.0.1 --port 8788 --show-interactive-dev-session=false",
+    "preview:worker:stop": "bash scripts/stop-preview-worker.sh"
   },
   "dependencies": {
-    "@resvg/resvg-js": "^2.6.2",
     "@sveltejs/kit": "^2",
-    "satori": "^0.26.0",
-    "satori-html": "^0.3.2",
+    "marked": "^18.0.0",
     "shiki": "4.0.2"
   },
   "devDependencies": {
     "@eslint/js": "^9",
-    "@sveltejs/adapter-auto": "^7",
-    "@sveltejs/vite-plugin-svelte": "^5",
+    "@sveltejs/adapter-cloudflare": "^7",
+    "@sveltejs/vite-plugin-svelte": "^7.0.0",
     "@tailwindcss/vite": "^4",
     "eslint": "^9",
     "eslint-plugin-svelte": "^3",
@@ -31,6 +33,7 @@
     "tailwindcss": "^4",
     "typescript": "^5",
     "typescript-eslint": "^8",
-    "vite": "^6"
+    "vite": "^8.0.8",
+    "wrangler": "^4.81.1"
   }
 }

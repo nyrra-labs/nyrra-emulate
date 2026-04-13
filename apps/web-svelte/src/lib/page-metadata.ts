@@ -31,56 +31,105 @@
  * `metadataBase` auto-resolution; SvelteKit has no equivalent so we compute
  * the absolute canonical URL inline.
  *
- * The Open Graph and Twitter image URLs point at the SvelteKit /og endpoints
- * (`apps/web-svelte/src/routes/og/+server.ts` for the root and
- * `apps/web-svelte/src/routes/og/[...slug]/+server.ts` for non-root). The
- * endpoints use satori + @resvg/resvg-js to render the same 1200x630 brand
- * card the apps/web Next.js docs ship from `app/og/og-image.tsx`, with the
- * same fonts (Geist-Regular.ttf, GeistPixel-Square.ttf) copied byte-for-byte
- * from `apps/web/public/`.
+ * Open Graph and Twitter image URLs point at a single static social card at
+ * `apps/web-svelte/static/og-default.png`. Every page shares the same image.
+ * The dynamic satori + @resvg/resvg-js renderer that apps/web uses is not
+ * compatible with the Cloudflare Workers runtime this app deploys to, so the
+ * static fallback is the deployment-foundation simplification: one PNG,
+ * served as a plain static asset, no runtime font reads, no Node-only image
+ * pipeline. If per-page social cards are reintroduced later, the apps/web
+ * Next.js site remains the authoritative source of the dynamic layout.
+ *
+ * Upstream-branded constants (`SITE_NAME`, non-root `PAGE_SITE_DESCRIPTION`,
+ * OG / Twitter fixed fields, and the `suffixWithSiteName` / `ogImageAlt`
+ * helpers) are imported from `./upstream-site-metadata`, which re-exports
+ * them from `apps/web/lib/site-metadata.ts`. The FoundryCI-specific facts
+ * below (`BASE_URL`, root title / description / site name, and the
+ * FoundryCI per-page overrides for `/foundry` and `/configuration`) stay
+ * local to this file — the Svelte app is FoundryCI-branded and should not
+ * import its own root hero copy from the upstream emulate docs.
  */
 import { PAGE_TITLES } from "./page-titles";
+import { FOUNDRYCI_SITE_NAME } from "./foundryci-branding";
+import {
+  OG_IMAGE_HEIGHT,
+  OG_IMAGE_WIDTH,
+  OG_LOCALE,
+  OG_TYPE,
+  PAGE_SITE_DESCRIPTION,
+  SITE_NAME,
+  TWITTER_CARD,
+  ogImageAlt,
+  suffixWithSiteName,
+} from "./upstream-site-metadata";
 
-const SITE_NAME = "emulate";
-const BASE_URL = "https://emulate.dev";
+const BASE_URL = "https://foundryci.com";
+const OG_IMAGE_PATH = "/og-default.png";
+const OG_IMAGE_URL = `${BASE_URL}${OG_IMAGE_PATH}`;
 
 /**
- * Root page title and description. Mirrors `apps/web/app/layout.tsx` exactly,
- * including the literal `&` (not "and") in "CI & Sandboxes" and the trailing
- * "Not mocks." sentence in the description.
+ * Root page title, description, and site name. The Svelte shell is
+ * branded as FoundryCI by Nyrra, so the root metadata diverges from the
+ * upstream `apps/web` values: the document `<title>` and OG title both
+ * lead with the FoundryCI brand, the description names FoundryCI as a
+ * Nyrra project while preserving explicit upstream credit to emulate
+ * by Vercel Labs, and the OG site name matches the brand the visible
+ * header shows. Non-root pages still expand into `${displayTitle} |
+ * emulate` via `SITE_NAME` so per-service titles stay aligned with the
+ * upstream Next.js docs.
  */
-const ROOT_TITLE = "emulate | Local API Emulation for CI & Sandboxes";
+const ROOT_TITLE = `${FOUNDRYCI_SITE_NAME} | Local Foundry Emulation`;
 const ROOT_DESCRIPTION =
-  "Local drop-in replacement services for CI and no-network sandboxes. Fully stateful, production-fidelity API emulation. Not mocks.";
+  "Local Palantir Foundry emulation for CI and no-network sandboxes. FoundryCI is a Nyrra project built on emulate by Vercel Labs. Not mocks.";
+const ROOT_SITE_NAME = FOUNDRYCI_SITE_NAME;
 
 /**
- * Description for every non-root page. Mirrors `apps/web/lib/page-metadata.ts`
- * exactly. Note that this string does NOT include the "Not mocks." sentence
- * — apps/web intentionally varies the description between the layout default
- * (root) and the per-page metadata (non-root).
+ * Per-page FoundryCI metadata overrides. Pages keyed in this map opt out of
+ * the generic `${displayTitle} | emulate` upstream-mirroring path and instead
+ * ship FoundryCI-branded title/description/siteName/OG-image-alt that match
+ * the root metadata's FoundryCI by Nyrra positioning. Other non-root pages
+ * (vercel, github, google, ...) still expand into the generic suffix via
+ * `SITE_NAME` so per-service titles stay aligned with the upstream Next.js
+ * docs and the search index continues to mirror the upstream display names.
+ *
+ * Add an entry here only when a page is FoundryCI-critical enough to deserve
+ * brand-leading metadata. Today that is `/foundry` (the actual Foundry docs)
+ * and `/configuration` (the seed config reference, which leads with Foundry
+ * users / OAuth clients / runtimes even though it also covers the supporting
+ * emulate base layer).
  */
-const PAGE_DESCRIPTION =
-  "Local drop-in replacement services for CI and no-network sandboxes. Fully stateful, production-fidelity API emulation.";
+const FOUNDRYCI_PAGE_METADATA: Record<string, { title: string; description: string }> = {
+  foundry: {
+    title: `Foundry | ${FOUNDRYCI_SITE_NAME}`,
+    description:
+      "Local Palantir Foundry emulation: OAuth 2.0, current-user lookup, and compute-module runtime. FoundryCI by Nyrra, built on emulate by Vercel Labs.",
+  },
+  configuration: {
+    title: `Configuration | ${FOUNDRYCI_SITE_NAME}`,
+    description:
+      "Seed config for FoundryCI: Foundry users, OAuth clients, runtimes, and the supporting emulate services. By Nyrra, built on emulate by Vercel Labs.",
+  },
+};
 
 export type PageMetadata = {
   title: string;
   description: string;
   openGraph: {
-    type: "website";
-    locale: "en_US";
+    type: typeof OG_TYPE;
+    locale: typeof OG_LOCALE;
     siteName: string;
     title: string;
     description: string;
     url: string;
     image: {
       url: string;
-      width: 1200;
-      height: 630;
+      width: typeof OG_IMAGE_WIDTH;
+      height: typeof OG_IMAGE_HEIGHT;
       alt: string;
     };
   };
   twitter: {
-    card: "summary_large_image";
+    card: typeof TWITTER_CARD;
     title: string;
     description: string;
     image: string;
@@ -91,31 +140,29 @@ export function pageMetadata(slug: string): PageMetadata | null {
   if (slug === "") {
     // Root page: render the layout default values verbatim. apps/web's
     // `openGraph.url` for the root has no trailing slash, so we mirror
-    // that exactly. The root OG image is served from `/og`, mirroring
-    // `apps/web/app/og/route.tsx`.
-    const rootImageUrl = `${BASE_URL}/og`;
+    // that exactly. The OG image is the shared static social card.
     return {
       title: ROOT_TITLE,
       description: ROOT_DESCRIPTION,
       openGraph: {
-        type: "website",
-        locale: "en_US",
-        siteName: SITE_NAME,
+        type: OG_TYPE,
+        locale: OG_LOCALE,
+        siteName: ROOT_SITE_NAME,
         title: ROOT_TITLE,
         description: ROOT_DESCRIPTION,
         url: BASE_URL,
         image: {
-          url: rootImageUrl,
-          width: 1200,
-          height: 630,
-          alt: "emulate",
+          url: OG_IMAGE_URL,
+          width: OG_IMAGE_WIDTH,
+          height: OG_IMAGE_HEIGHT,
+          alt: ROOT_SITE_NAME,
         },
       },
       twitter: {
-        card: "summary_large_image",
+        card: TWITTER_CARD,
         title: ROOT_TITLE,
         description: ROOT_DESCRIPTION,
-        image: rootImageUrl,
+        image: OG_IMAGE_URL,
       },
     };
   }
@@ -124,37 +171,68 @@ export function pageMetadata(slug: string): PageMetadata | null {
   if (title === undefined) return null;
 
   const displayTitle = title.replace(/\n/g, " ");
+  const url = `${BASE_URL}/${slug}`;
+
+  const foundryciOverride = FOUNDRYCI_PAGE_METADATA[slug];
+  if (foundryciOverride !== undefined) {
+    // FoundryCI-critical page: lead with the FoundryCI brand in every
+    // metadata surface. The OG image alt text uses the bare displayTitle
+    // plus the FoundryCI site name so screen readers describe the card
+    // as "<page> - FoundryCI by Nyrra" rather than "<page> - emulate".
+    const { title: foundryTitle, description: foundryDescription } = foundryciOverride;
+    return {
+      title: foundryTitle,
+      description: foundryDescription,
+      openGraph: {
+        type: OG_TYPE,
+        locale: OG_LOCALE,
+        siteName: ROOT_SITE_NAME,
+        title: foundryTitle,
+        description: foundryDescription,
+        url,
+        image: {
+          url: OG_IMAGE_URL,
+          width: OG_IMAGE_WIDTH,
+          height: OG_IMAGE_HEIGHT,
+          alt: `${displayTitle} - ${ROOT_SITE_NAME}`,
+        },
+      },
+      twitter: {
+        card: TWITTER_CARD,
+        title: foundryTitle,
+        description: foundryDescription,
+        image: OG_IMAGE_URL,
+      },
+    };
+  }
+
   // Pre-expand the apps/web title.template = "%s | emulate" so the rendered
   // document <title> matches what Next.js produces (e.g.
   // "Programmatic API | emulate"), not the bare displayTitle.
-  const fullTitle = `${displayTitle} | ${SITE_NAME}`;
-  const url = `${BASE_URL}/${slug}`;
-  // Per-page OG image is served from `/og/${slug}`, mirroring
-  // `apps/web/app/og/[...slug]/route.tsx`.
-  const imageUrl = `${BASE_URL}/og/${slug}`;
+  const fullTitle = suffixWithSiteName(displayTitle);
 
   return {
     title: fullTitle,
-    description: PAGE_DESCRIPTION,
+    description: PAGE_SITE_DESCRIPTION,
     openGraph: {
-      type: "website",
-      locale: "en_US",
+      type: OG_TYPE,
+      locale: OG_LOCALE,
       siteName: SITE_NAME,
       title: fullTitle,
-      description: PAGE_DESCRIPTION,
+      description: PAGE_SITE_DESCRIPTION,
       url,
       image: {
-        url: imageUrl,
-        width: 1200,
-        height: 630,
-        alt: `${displayTitle} - ${SITE_NAME}`,
+        url: OG_IMAGE_URL,
+        width: OG_IMAGE_WIDTH,
+        height: OG_IMAGE_HEIGHT,
+        alt: ogImageAlt(displayTitle),
       },
     },
     twitter: {
-      card: "summary_large_image",
+      card: TWITTER_CARD,
       title: fullTitle,
-      description: PAGE_DESCRIPTION,
-      image: imageUrl,
+      description: PAGE_SITE_DESCRIPTION,
+      image: OG_IMAGE_URL,
     },
   };
 }

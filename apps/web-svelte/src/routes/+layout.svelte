@@ -5,6 +5,8 @@
 	import MobileNav from '$lib/components/MobileNav.svelte';
 	import PageMeta from '$lib/components/PageMeta.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
+	import { NYRRA_PARENT_LABEL, NYRRA_URL } from '$lib/foundryci-branding';
+	import { GITHUB_REPO_URL } from '$lib/upstream-site-metadata';
 	import '../app.css';
 
 	let { children }: { children: Snippet } = $props();
@@ -12,15 +14,43 @@
 
 <PageMeta pathname={page.url.pathname} />
 
-<Header />
-<MobileNav />
-<div class="mx-auto max-w-5xl px-6 py-8 lg:py-12">
-	<div class="flex gap-12">
-		<Sidebar />
-		<main class="min-w-0 flex-1">
-			<article class="max-w-none">
-				{@render children()}
-			</article>
-		</main>
+<div class="flex min-h-screen flex-col">
+	<Header />
+	<MobileNav />
+	<div class="mx-auto w-full max-w-5xl flex-1 px-6 py-8 lg:py-12">
+		<div class="flex gap-12">
+			<Sidebar />
+			<main class="min-w-0 flex-1">
+				<article class="max-w-none">
+					{@render children()}
+				</article>
+			</main>
+		</div>
 	</div>
+	<footer class="border-t border-neutral-200 dark:border-neutral-800">
+		<div
+			class="mx-auto flex max-w-5xl flex-col gap-2 px-6 py-6 text-xs text-neutral-500 sm:flex-row sm:items-center sm:justify-between dark:text-neutral-500"
+		>
+			<div>
+				Built on
+				<a
+					href={GITHUB_REPO_URL}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="text-neutral-700 underline decoration-neutral-300 underline-offset-2 transition-colors hover:text-neutral-900 hover:decoration-neutral-900 dark:text-neutral-300 dark:decoration-neutral-700 dark:hover:text-neutral-100 dark:hover:decoration-neutral-100"
+					>emulate by Vercel Labs</a
+				>.
+			</div>
+			<div>
+				A
+				<a
+					href={NYRRA_URL}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="text-neutral-700 underline decoration-neutral-300 underline-offset-2 transition-colors hover:text-neutral-900 hover:decoration-neutral-900 dark:text-neutral-300 dark:decoration-neutral-700 dark:hover:text-neutral-100 dark:hover:decoration-neutral-100"
+					>{NYRRA_PARENT_LABEL}</a
+				> project.
+			</div>
+		</div>
+	</footer>
 </div>

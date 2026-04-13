@@ -16,7 +16,12 @@ The default startup set starts with sensible defaults. No config file needed:
 - **Slack** on `http://localhost:4003`
 - **Apple** on `http://localhost:4004`
 - **Microsoft** on `http://localhost:4005`
-- **AWS** on `http://localhost:4006`
+- **Okta** on `http://localhost:4006`
+- **AWS** on `http://localhost:4007`
+- **Resend** on `http://localhost:4008`
+- **Stripe** on `http://localhost:4009`
+- **MongoDB Atlas** on `http://localhost:4010`
+- **Clerk** on `http://localhost:4011`
 
 Foundry is available when you enable it explicitly with `emulate --service foundry` or include `foundry:` in the seed config. The current Foundry slice covers OAuth 2.0, current-user lookup, and compute-module runtime plus contour job routes.
 
@@ -874,13 +879,81 @@ packages/
     slack/          # Slack Web API, OAuth v2, incoming webhooks
     apple/          # Apple Sign In / OIDC
     microsoft/      # Microsoft Entra ID OAuth 2.0 / OIDC + Graph /me
+    clerk/          # Clerk users + organizations + OAuth applications
     foundry/        # Foundry OAuth 2.0 + compute modules + current user
     aws/            # AWS S3, SQS, IAM, STS
+    okta/           # Okta identity provider / OIDC
+    mongoatlas/     # MongoDB Atlas Admin API + Data API
+    resend/         # Resend email API
+    stripe/         # Stripe billing and payments API
 apps/
-  web/              # Documentation site (Next.js)
+  web-svelte/       # Deployable docs site (SvelteKit + Cloudflare adapter)
+  web/              # Upstream Next.js docs / content source (not deployed)
 ```
 
 The core provides a generic `Store` with typed `Collection<T>` instances supporting CRUD, indexing, filtering, and pagination. Each service plugin registers its routes on the shared Hono app and uses the store for state.
+
+## Docs Site
+
+The deployable docs app in this repo is `apps/web-svelte`. Build it with:
+
+```bash
+pnpm --filter web-svelte build
+```
+
+The build emits a Cloudflare adapter output under `apps/web-svelte/.svelte-kit/cloudflare/`, containing the prerendered HTML for every docs route, the worker entry, and the static assets.
+
+`apps/web` is still in the repo as the upstream Next.js docs source. It is not the deployed docs app, but its MDX files under `apps/web/app/**/page.mdx` remain the single source of truth for docs page content. The Svelte app pulls them at build time through the shared registry at `apps/web-svelte/src/lib/docs-source.ts`, which uses Vite's eager `?raw` glob to inline every upstream MDX file as a build-time string.
+
+To update docs content, edit the relevant `apps/web/app/<slug>/page.mdx` file, then re-verify the Svelte build:
+
+```bash
+pnpm --filter web-svelte type-check
+pnpm --filter web-svelte build
+pnpm --filter web-svelte lint
+```
+
+If the Svelte build fails on an upstream MDX change, or a page renders an upstream construct incorrectly, the fix usually lives in one of two shared files rather than in the route components:
+
+- `apps/web-svelte/src/lib/mdx-to-markdown.ts` strips MDX-only artifacts (`export`/`import` lines, JSX-only `<div className="...">` blocks) before the raw string reaches the markdown parser. Add new strip rules here when upstream MDX introduces MDX-only syntax that marked would otherwise choke on.
+- `apps/web-svelte/src/lib/render-docs.server.ts` is the shared marked + Shiki renderer. Add a new renderer method or extend `mapLang` here when upstream MDX uses a markdown construct or fence language the renderer does not yet cover. Every migrated route consumes this renderer through `renderDocsHtmlByHref(href)`, so a single renderer extension reaches every page at once.
+
+Hand-duplicating upstream MDX content into a Svelte route component is the wrong answer: the renderer should learn the construct instead.
+
+The visible shell branding and per-page metadata also live in a small set of shared files rather than in each route:
+
+- `apps/web-svelte/src/lib/components/Header.svelte` owns the header brand cluster (the F mark, the `FoundryCI` wordmark, the `by Nyrra` link, plus the search / GitHub / npm / theme-toggle nav). Edit the wordmark, mark, or brand-link copy here.
+- `apps/web-svelte/src/routes/+layout.svelte` owns the footer attribution row (`Built on emulate by Vercel Labs` and `A Nyrra project`). Edit footer copy or attribution links here.
+- `apps/web-svelte/src/lib/page-metadata.ts` is the single source for `<title>`, meta description, and Open Graph / Twitter metadata. The `ROOT_*` constants drive the homepage card; the `FOUNDRYCI_PAGE_METADATA` map opts FoundryCI-critical pages out of the generic `${displayTitle} | emulate` template.
+- `apps/web-svelte/static/og-default.svg` is the source-of-truth social card (embedded Geist + GeistPixelSquare TTFs); `apps/web-svelte/static/og-default.png` is the rasterized output the build serves. The SVG is the canonical, human-reviewable form.
+
+Per-route components are intentionally thin and should not carry brand strings of their own.
+
+Deploy wiring status: the build emits to `apps/web-svelte/.svelte-kit/cloudflare/` and the repo now ships a minimal `apps/web-svelte/wrangler.toml` plus a `pnpm --filter web-svelte deploy:dry-run` script (backed by a repo-local `wrangler` devDependency pinned in `apps/web-svelte/package.json` so the dry run is reproducible without a global wrangler install). The dry run rebuilds the worker and validates that the generated artifact can be packaged for Cloudflare Workers, with the `nodejs_compat` compatibility flag enabled so the SvelteKit server bundle's `node:async_hooks` import does not fail at runtime. A separate `pnpm --filter web-svelte preview:worker` script boots the same artifact under `wrangler dev --local` on `http://127.0.0.1:8788` for live local request testing without a real Cloudflare account. If an interrupted preview run leaves port 8788 occupied or hung wrangler dev / shell wrapper / workerd processes attached to it, `pnpm --filter web-svelte preview:worker:stop` sends SIGTERM (escalating to SIGKILL after 5 seconds) to the listener on tcp:8788, every process whose command line carries the preview signature `--port 8788 --show-interactive-dev-session=false`, the descendant tree of those processes (which catches the inner workerd runtime children wrangler dev forks on ephemeral ports), and any workerd whose binary path lives in this workspace's pnpm store under `node_modules/.pnpm/@cloudflare+workerd-*` (which catches earlier-phase workerds that became orphaned before wrangler dev took over). It does not touch unrelated wrangler sessions on other ports or workerd processes installed in other repos. To keep fresh installs deterministic for this build / preview / dry-run path, the root `package.json` declares `pnpm.onlyBuiltDependencies = ["esbuild", "workerd"]` (the bundler wrangler and vite invoke plus the runtime `wrangler dev --local` spawns) and `pnpm.ignoredBuiltDependencies` for every unrelated workspace build-script dep (`@mongodb-js/zstd`, `msw`, `node-liblzma`, `sharp`, `unrs-resolver`) so a fresh `pnpm install --frozen-lockfile` exits zero without prompting for build approval. GitHub Actions at `.github/workflows/ci.yml` now runs `pnpm --filter web-svelte deploy:dry-run` as its final job step on every push to `main` and every pull request, so a regression in the Cloudflare packaging path (vite build, the SvelteKit Cloudflare adapter, the wrangler bundle) surfaces as a red CI run before merge. There is still no CI workflow that pushes to a real Cloudflare account, and no custom domain, route, or `account_id` is encoded in the wrangler.toml. If a real deploy wrapper or CI workflow lands, or if the production docs domain changes from the value currently encoded in `apps/web-svelte/src/lib/page-metadata.ts`, this README section, `apps/web-svelte/wrangler.toml`, and `apps/web-svelte/src/lib/page-metadata.ts` must be updated together so the documented build path, the deployed hostname, and the metadata `BASE_URL` stay in lockstep.
+
+Upstream docs sync: the upstream `apps/web/app/**/page.mdx` content lives in the `upstream` remote (`git@github.com:vercel-labs/emulate.git`), and the canonical branch is `upstream/main`. To pull upstream docs changes into the current branch, run `git fetch upstream` and then bring the relevant `apps/web` docs changes from `upstream/main` into the current branch (merge, cherry-pick, or hand-apply, whichever fits the change). After the merge, rerun `pnpm --filter web-svelte type-check`, `pnpm --filter web-svelte build`, and `pnpm --filter web-svelte lint` to verify the Svelte site still renders.
+
+If upstream drift breaks the Svelte site, the fix usually belongs in one of these shared files:
+
+- `apps/web-svelte/src/lib/docs-source.ts` when the upstream slug set or directory layout changes.
+- `apps/web-svelte/src/lib/mdx-to-markdown.ts` when upstream introduces new MDX-only artifacts that need stripping.
+- `apps/web-svelte/src/lib/render-docs.server.ts` when upstream uses a markdown construct or fence language the renderer does not yet cover.
+- The route and title metadata files (`apps/web-svelte/src/lib/page-titles.ts`, `apps/web-svelte/src/lib/nav.ts`) only when the upstream slug set changes and a new route needs to be implemented; the Phase 7 nav contract in `nav.ts` will fail the build at module init if any of these surfaces drift apart.
+
+Adding a new upstream-backed route: every non-root upstream-backed page is served by a single generic dynamic route at `apps/web-svelte/src/routes/[slug]/+page.svelte` plus its `+page.server.ts` loader, so adding a new page no longer requires a new route directory. The implemented docs slug set is also a single source of truth: `apps/web-svelte/src/lib/page-titles.ts` is the authoritative `PAGE_TITLES` map, and `apps/web-svelte/src/lib/docs-source.ts` derives `docsSources` from it via the slug→href convention. There is no second title map to keep in lockstep. When upstream lands a new `apps/web/app/<slug>/page.mdx` that the Svelte app does not yet surface, the minimum set of edits is:
+
+- `apps/web-svelte/src/lib/page-titles.ts`: typically NO local edit needed. `PAGE_TITLES` is the single source of truth for the implemented docs slug set, but it is itself derived from the upstream `allDocsPages` catalog in `apps/web/lib/docs-navigation.ts` with one explicit local override (`PAGE_TITLE_OVERRIDES`) for the root label ("Overview" instead of upstream's "Getting Started"). When upstream's normal contributor flow adds a new docs page to BOTH `apps/web/app/<slug>/page.mdx` AND `apps/web/lib/docs-navigation.ts` in the same change, `PAGE_TITLES` picks up the new entry automatically and the new page reaches the generic `[slug]` route's `EntryGenerator`, the search index, and the per-page metadata resolver without any local edit. Add a `PAGE_TITLE_OVERRIDES` entry only if the new page needs a different visible title in this Svelte shell than upstream uses (rare). The `docs-source.ts` registry validates the slug set in BOTH directions at module init: every `PAGE_TITLES` entry must have a matching upstream MDX file at `apps/web/app/<slug>/page.mdx`, AND every upstream MDX file must be either surfaced via `PAGE_TITLES` or explicitly listed in `INTENTIONALLY_UNSURFACED_UPSTREAM_HREFS` in the same file. So an upstream sync that adds a new MDX file but forgets to update `apps/web/lib/docs-navigation.ts` (or vice versa) fails the build with a precise error pointing at the half-applied change. The unsurfaced allowlist is empty today; keep it that way unless an upstream-only page is genuinely intentional.
+- `apps/web-svelte/src/lib/nav.ts`: add the new href to the appropriate section, or add the bare slug to `INTENTIONALLY_HIDDEN` in the same file if the route should be reachable via direct URL but not visible in the sidebar / mobile-nav.
+
+No new files under `apps/web-svelte/src/routes/` are needed for an upstream-backed page; the generic `[slug]` route picks up the new entry automatically. Then rerun `pnpm --filter web-svelte type-check`, `pnpm --filter web-svelte build`, and `pnpm --filter web-svelte lint`. The Phase 7 nav contract and the docs-source registry validation both fire at module init if any of these surfaces are missing.
+
+Search indexing: there is no separate search page list to maintain. Once a new upstream-backed slug is wired through the shared docs-source registry and route flow above, both the in-app search index and the search-result name catalog are derived automatically:
+
+- `apps/web-svelte/src/lib/search-index.ts` derives the search index from the bundled `docsSources` content. The upstream MDX raw strings are inlined at build time via the `?raw` glob in `docs-source.ts`, but `getSearchIndex()` itself runs lazily on first call (typically from `/api/search`), pipes each MDX raw through `mdxToCleanMarkdown` plus a small markdown-stripping pass, and caches the result in-module so subsequent calls reuse it.
+- `apps/web-svelte/src/lib/docs-search-pages.ts` is a thin adapter over the same `docsSources` registry; it exists so any future consumer that wants the lightweight `{ name, href }` projection still has it.
+- `apps/web-svelte/src/routes/api/search/+server.ts` serves results via `getSearchIndex()`, scoring title matches above content matches and returning short snippets around the first matched term.
+
+If upstream MDX changes cause bad search snippets or missing search hits, the fix usually belongs in `apps/web-svelte/src/lib/mdx-to-markdown.ts` (when MDX-only artifacts leak into the search content and need stripping), `apps/web-svelte/src/lib/search-index.ts` (when the search-specific markdown-stripping pass that normalizes each entry's content needs adjusting), or `apps/web-svelte/src/routes/api/search/+server.ts` (when the ranking weights or snippet shape need adjusting), not in any per-route component.
 
 ## Auth
 

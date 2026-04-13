@@ -1,4 +1,7 @@
 import type { ServicePlugin, Store, AppKeyResolver, AuthFallback } from "@emulators/core";
+import { DEFAULT_SERVICE_NAMES, SERVICE_NAMES, type ServiceName } from "./service-names";
+
+export { DEFAULT_SERVICE_NAMES, SERVICE_NAMES, type ServiceName } from "./service-names";
 
 export interface LoadedService {
   plugin: ServicePlugin;
@@ -13,26 +16,6 @@ export interface ServiceEntry {
   defaultFallback(svcSeedConfig?: Record<string, unknown>): AuthFallback;
   initConfig: Record<string, unknown>;
 }
-
-const DEFAULT_SERVICE_NAME_LIST = [
-  "vercel",
-  "github",
-  "google",
-  "slack",
-  "apple",
-  "microsoft",
-  "okta",
-  "aws",
-  "resend",
-  "stripe",
-  "mongoatlas",
-  "clerk",
-] as const;
-const EXTRA_SERVICE_NAME_LIST = ["foundry"] as const;
-const SERVICE_NAME_LIST = [...DEFAULT_SERVICE_NAME_LIST, ...EXTRA_SERVICE_NAME_LIST] as const;
-export type ServiceName = (typeof SERVICE_NAME_LIST)[number];
-export const SERVICE_NAMES: readonly ServiceName[] = SERVICE_NAME_LIST;
-export const DEFAULT_SERVICE_NAMES: readonly ServiceName[] = DEFAULT_SERVICE_NAME_LIST;
 
 export const SERVICE_REGISTRY: Record<ServiceName, ServiceEntry> = {
   vercel: {

@@ -25,5 +25,18 @@
   "packageManager": "pnpm@10.11.0",
   "engines": {
     "node": ">=22"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "workerd"
+    ],
+    "ignoredBuiltDependencies": [
+      "@mongodb-js/zstd",
+      "msw",
+      "node-liblzma",
+      "sharp",
+      "unrs-resolver"
+    ]
   }
 }

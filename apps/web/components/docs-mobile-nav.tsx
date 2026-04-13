@@ -4,54 +4,14 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Sheet, SheetTrigger, SheetContent, SheetTitle } from "@/components/ui/sheet";
-
-type NavSection = {
-  title?: string;
-  items: { href: string; label: string }[];
-};
-
-const sections: NavSection[] = [
-  {
-    items: [
-      { href: "/", label: "Getting Started" },
-      { href: "/programmatic-api", label: "Programmatic API" },
-      { href: "/configuration", label: "Configuration" },
-      { href: "/nextjs", label: "Next.js Integration" },
-    ],
-  },
-  {
-    title: "Services",
-    items: [
-      { href: "/vercel", label: "Vercel" },
-      { href: "/github", label: "GitHub" },
-      { href: "/google", label: "Google" },
-      { href: "/slack", label: "Slack" },
-      { href: "/apple", label: "Apple" },
-      { href: "/microsoft", label: "Microsoft Entra ID" },
-      { href: "/aws", label: "AWS" },
-      { href: "/okta", label: "Okta" },
-      { href: "/mongoatlas", label: "MongoDB Atlas" },
-      { href: "/resend", label: "Resend" },
-      { href: "/stripe", label: "Stripe" },
-    ],
-  },
-  {
-    title: "Reference",
-    items: [
-      { href: "/authentication", label: "Authentication" },
-      { href: "/architecture", label: "Architecture" },
-    ],
-  },
-];
-
-const allItems = sections.flatMap((s) => s.items);
+import { docsNavAllItems, docsNavSections } from "@/lib/docs-navigation";
 
 export function DocsMobileNav() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
   const currentPage = useMemo(() => {
-    return allItems.find((page) => page.href === pathname) ?? allItems[0];
+    return docsNavAllItems.find((page) => page.href === pathname) ?? docsNavAllItems[0];
   }, [pathname]);
 
   return (
@@ -84,7 +44,7 @@ export function DocsMobileNav() {
       <SheetContent side="left" className="overflow-y-auto p-6" showCloseButton={false}>
         <SheetTitle className="mb-6">Table of Contents</SheetTitle>
         <nav className="space-y-6">
-          {sections.map((section, i) => (
+          {docsNavSections.map((section, i) => (
             <div key={i}>
               {section.title && (
                 <div className="mb-2 text-xs font-medium uppercase tracking-wider text-neutral-400 dark:text-neutral-600">
