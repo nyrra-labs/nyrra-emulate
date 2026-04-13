@@ -31,3 +31,5 @@ jobs:
       - run: pnpm lint
 
       - run: pnpm test
+
+      - run: pnpm --filter web-svelte deploy:dry-run
