@@ -75,7 +75,7 @@ jobs:
           PREVIEW_ALIAS: pr-${{ github.event.pull_request.number }}
         run: |
           set -euo pipefail
-          output="$(pnpm --filter web-svelte deploy:preview 2>&1)"
+          output="$(pnpm --filter web-svelte deploy:preview 2>&1)" || { printf '%s\n' "$output" >&2; exit 1; }
           printf '%s\n' "$output"
 
           version_id="$(printf '%s\n' "$output" | sed -n 's/^Current Version ID: //p; s/^Version ID: //p' | tail -n 1)"
