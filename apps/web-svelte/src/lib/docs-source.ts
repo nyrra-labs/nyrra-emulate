@@ -25,9 +25,18 @@
  *
  *   - Upstream raw MDX is pulled via Vite's eager `?raw` glob over
  *     `apps/web/app/**\/page.mdx`. The registry validates at module init
- *     that every `PAGE_TITLES` entry has a matching upstream MDX file,
- *     so adding a slug to `PAGE_TITLES` without the upstream MDX present
- *     aborts the build with a precise error.
+ *     in BOTH directions:
+ *
+ *       (forward) every `PAGE_TITLES` entry must have a matching upstream
+ *       MDX file, so adding a slug to `PAGE_TITLES` without the upstream
+ *       MDX present aborts the build with a precise error.
+ *
+ *       (reverse) every upstream MDX page must be either surfaced via
+ *       `PAGE_TITLES` or explicitly listed in
+ *       `INTENTIONALLY_UNSURFACED_UPSTREAM_HREFS` below. Adding a new
+ *       upstream MDX file (e.g. via an upstream sync) without surfacing
+ *       it in `PAGE_TITLES` aborts the build with a precise error,
+ *       forcing a conscious decision instead of silent drift.
  *
  *   - The Svelte route surface for non-root docs pages is a single
  *     generic `src/routes/[slug]/+page.svelte` whose `+page.server.ts`
@@ -55,6 +64,28 @@ function hrefToUpstreamMdxKey(href: string): string {
   // "/vercel" -> "../../../web/app/vercel/page.mdx"
   return href === "/" ? "../../../web/app/page.mdx" : `../../../web/app/${href.slice(1)}/page.mdx`;
 }
+
+function upstreamMdxKeyToHref(key: string): string {
+  // "../../../web/app/page.mdx" -> "/"
+  // "../../../web/app/foundry/page.mdx" -> "/foundry"
+  // "../../../web/app/some/nested/page.mdx" -> "/some/nested"
+  const inner = key.replace(/^\.\.\/\.\.\/\.\.\/web\/app\//, "").replace(/\/?page\.mdx$/, "");
+  return inner === "" ? "/" : `/${inner}`;
+}
+
+/**
+ * Allowlist of upstream `apps/web/app/<slug>/page.mdx` hrefs that are
+ * intentionally NOT surfaced in this Svelte app yet. The reverse parity
+ * guard below skips entries in this set so a future upstream-only page
+ * can ship without forcing an immediate Svelte surfacing in the same
+ * commit, AS LONG AS the omission is conscious and tracked here.
+ *
+ * Today this set is empty: every upstream `page.mdx` has a matching
+ * `PAGE_TITLES` entry. Add an href here only with a comment explaining
+ * why the page is upstream-only, and remove the entry once the page is
+ * surfaced in `PAGE_TITLES`.
+ */
+const INTENTIONALLY_UNSURFACED_UPSTREAM_HREFS: ReadonlySet<string> = new Set<string>();
 
 export type DocsSource = {
   title: string;
@@ -84,3 +115,24 @@ export const docsSources: readonly DocsSource[] = Object.entries(PAGE_TITLES).ma
     return { href, title, raw };
   },
 );
+
+// Reverse parity guard: every upstream `apps/web/app/**\/page.mdx` page
+// must either be surfaced via `PAGE_TITLES` or explicitly listed in
+// `INTENTIONALLY_UNSURFACED_UPSTREAM_HREFS`. This catches the case where
+// an upstream sync brings in a new page that the Svelte app has not yet
+// chosen to render. The check runs after `docsSources` is built so a
+// failure inside the forward map does not mask a failure here.
+const surfacedHrefs = new Set(docsSources.map((source) => source.href));
+for (const mdxKey of Object.keys(upstreamMdxRaw)) {
+  const upstreamHref = upstreamMdxKeyToHref(mdxKey);
+  if (surfacedHrefs.has(upstreamHref)) continue;
+  if (INTENTIONALLY_UNSURFACED_UPSTREAM_HREFS.has(upstreamHref)) continue;
+  throw new Error(
+    `docs-source: upstream MDX at ${mdxKey} (href ${JSON.stringify(upstreamHref)}) ` +
+      `is not surfaced via PAGE_TITLES and is not in ` +
+      `INTENTIONALLY_UNSURFACED_UPSTREAM_HREFS. Add a PAGE_TITLES entry to surface ` +
+      `the page, or add ${JSON.stringify(upstreamHref)} to ` +
+      `INTENTIONALLY_UNSURFACED_UPSTREAM_HREFS in apps/web-svelte/src/lib/docs-source.ts ` +
+      `to acknowledge it as intentionally not yet surfaced.`,
+  );
+}
