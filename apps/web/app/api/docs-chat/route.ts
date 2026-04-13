@@ -4,6 +4,7 @@ import { convertToModelMessages, stepCountIs, streamText } from "ai";
 import type { ModelMessage, UIMessage } from "ai";
 import { createBashTool } from "bash-tool";
 import { headers } from "next/headers";
+import { buildDocsChatOpeningSummary } from "@/lib/docs-chat-summary";
 import { allDocsPages } from "@/lib/docs-navigation";
 import { mdxToCleanMarkdown } from "@/lib/mdx-to-markdown";
 import { minuteRateLimit, dailyRateLimit } from "@/lib/rate-limit";
@@ -12,11 +13,13 @@ export const maxDuration = 60;
 
 const DEFAULT_MODEL = "anthropic/claude-haiku-4.5";
 
-const SYSTEM_PROMPT = `You are a helpful documentation assistant for emulate, a local drop-in replacement for Vercel, GitHub, Google, Slack, Apple, Microsoft, Okta, AWS, Resend, Stripe, MongoDB Atlas, Clerk, and Foundry APIs used in CI and no-network sandboxes.
-
-emulate provides fully stateful, production-fidelity API emulation, not mocks. The CLI is installed as the "emulate" npm package and run via "npx emulate" or just "emulate". It also supports a programmatic API via createEmulator and a Next.js adapter (@emulators/adapter-next) for embedding emulators in your app.
-
-You have access to the full emulate documentation via the bash and readFile tools. The docs are available as markdown files in the /workspace/ directory.
+// Tool-usage rules tail of the system prompt. The opening product
+// summary (supported-service list, programmatic-API mention, Next.js
+// adapter mention) is composed at request time by
+// `buildDocsChatOpeningSummary` in `@/lib/docs-chat-summary` so it
+// stays in lockstep with the runtime SERVICE_NAMES constant and the
+// upstream programmatic-api/nextjs docs pages.
+const SYSTEM_PROMPT_RULES = `You have access to the full emulate documentation via the bash and readFile tools. The docs are available as markdown files in the /workspace/ directory.
 
 When answering questions:
 - Use the bash tool to list files (ls /workspace/) or search for content (grep -r "keyword" /workspace/)
@@ -94,13 +97,14 @@ export async function POST(req: Request) {
   const { messages }: { messages: UIMessage[] } = await req.json();
 
   const docsFiles = await loadDocsFiles();
+  const systemPrompt = `${buildDocsChatOpeningSummary(docsFiles)}\n\n${SYSTEM_PROMPT_RULES}`;
   const {
     tools: { bash, readFile: readFileTool },
   } = await createBashTool({ files: docsFiles });
 
   const result = streamText({
     model: DEFAULT_MODEL,
-    system: SYSTEM_PROMPT,
+    system: systemPrompt,
     messages: await convertToModelMessages(messages),
     stopWhen: stepCountIs(5),
     tools: { bash, readFile: readFileTool },

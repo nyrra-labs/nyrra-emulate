@@ -11,7 +11,17 @@ const __dirname = dirname(__filename);
 const REPO_ROOT = resolve(__dirname, "../../../../..");
 
 const PAGE_MDX_PATH = resolve(REPO_ROOT, "apps/web/app/page.mdx");
-const ROUTE_TS_PATH = resolve(REPO_ROOT, "apps/web/app/api/docs-chat/route.ts");
+
+// The sibling docs-chat route.ts previously carried its own hand-
+// authored comma list which this test file used to parse. That drift
+// surface was removed: the docs-chat opening summary now derives its
+// service list at request time via
+// `apps/web/lib/docs-chat-summary.ts`'s `buildDocsChatOpeningSummary`,
+// which funnels the runtime `SERVICE_NAMES` constant through the same
+// `STARTUP_LABEL_OVERRIDES` map this file uses. Helper-level
+// correctness is covered by `docs-chat-summary.test.ts`; this file
+// keeps its page.mdx parity surface as the last remaining hand-
+// authored full supported list in the repo.
 
 /**
  * Resolves a runtime service name to its human-visible label using the
@@ -28,16 +38,15 @@ function resolveLabel(name: string): string {
 /**
  * Expected full supported-service label sequence derived from the
  * runtime `SERVICE_NAMES` constant. This is the 13-entry ordering
- * (12 default services + foundry) that both `apps/web/app/page.mdx`
- * and `apps/web/app/api/docs-chat/route.ts` reference in their
- * full-support prose sentences.
+ * (12 default services + foundry) that `apps/web/app/page.mdx`
+ * references in its full-support intro prose sentence.
  */
 const expectedFullSupportedLabels: string[] = SERVICE_NAMES.map(resolveLabel);
 
 /**
  * Parses the full supported-service list out of a docs file's text
  * by slicing between the well-known `drop-in replacement for ` start
- * marker and the following ` APIs` end marker. Both files have
+ * marker and the following ` APIs` end marker. The page.mdx file has
  * exactly one `drop-in replacement for X APIs` sentence, so first-
  * match semantics are unambiguous. The extracted list text has
  * Oxford-comma English form (`A, B, C, and D`), which is split on
@@ -71,45 +80,31 @@ describe("source docs full supported service list parity", () => {
     expect(labels).toEqual(expectedFullSupportedLabels);
   });
 
-  it("apps/web/app/api/docs-chat/route.ts SYSTEM_PROMPT matches the runtime SERVICE_NAMES order", () => {
-    const text = readFileSync(ROUTE_TS_PATH, "utf-8");
+  it("apps/web/app/page.mdx includes Clerk in the full supported list", () => {
+    const text = readFileSync(PAGE_MDX_PATH, "utf-8");
     const labels = parseFullSupportedList(text);
-    expect(labels).toEqual(expectedFullSupportedLabels);
+    expect(labels).toContain("Clerk");
   });
 
-  it("both source docs include Clerk in the full supported list", () => {
-    for (const path of [PAGE_MDX_PATH, ROUTE_TS_PATH]) {
-      const text = readFileSync(path, "utf-8");
-      const labels = parseFullSupportedList(text);
-      expect(labels).toContain("Clerk");
-    }
+  it("apps/web/app/page.mdx includes Foundry in the full supported list (the full set includes it)", () => {
+    const text = readFileSync(PAGE_MDX_PATH, "utf-8");
+    const labels = parseFullSupportedList(text);
+    expect(labels).toContain("Foundry");
   });
 
-  it("both source docs include Foundry in the full supported list (the full set includes it)", () => {
-    for (const path of [PAGE_MDX_PATH, ROUTE_TS_PATH]) {
-      const text = readFileSync(path, "utf-8");
-      const labels = parseFullSupportedList(text);
-      expect(labels).toContain("Foundry");
-    }
+  it("apps/web/app/page.mdx has exactly SERVICE_NAMES.length entries (12 default + foundry = 13)", () => {
+    const text = readFileSync(PAGE_MDX_PATH, "utf-8");
+    const labels = parseFullSupportedList(text);
+    expect(labels.length).toBe(SERVICE_NAMES.length);
   });
 
-  it("both source docs have exactly SERVICE_NAMES.length entries (12 default + foundry = 13)", () => {
-    for (const path of [PAGE_MDX_PATH, ROUTE_TS_PATH]) {
-      const text = readFileSync(path, "utf-8");
-      const labels = parseFullSupportedList(text);
-      expect(labels.length).toBe(SERVICE_NAMES.length);
-    }
-  });
-
-  it("Foundry is the last entry in both source docs (matching the runtime SERVICE_NAME_LIST order)", () => {
+  it("Foundry is the last entry in apps/web/app/page.mdx (matching the runtime SERVICE_NAME_LIST order)", () => {
     // SERVICE_NAME_LIST concatenates DEFAULT_SERVICE_NAME_LIST with
     // EXTRA_SERVICE_NAME_LIST = ["foundry"], so foundry is always the
     // last entry. If a future change inserts foundry elsewhere in the
     // sequence, this assertion surfaces the drift explicitly.
-    for (const path of [PAGE_MDX_PATH, ROUTE_TS_PATH]) {
-      const text = readFileSync(path, "utf-8");
-      const labels = parseFullSupportedList(text);
-      expect(labels[labels.length - 1]).toBe("Foundry");
-    }
+    const text = readFileSync(PAGE_MDX_PATH, "utf-8");
+    const labels = parseFullSupportedList(text);
+    expect(labels[labels.length - 1]).toBe("Foundry");
   });
 });
