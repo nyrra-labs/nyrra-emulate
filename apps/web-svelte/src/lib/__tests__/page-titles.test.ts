@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { docsSources } from "../docs-source";
 import { PAGE_TITLES, getPageTitle } from "../page-titles";
 
 describe("PAGE_TITLES root and brand entries", () => {
@@ -48,22 +47,9 @@ describe("getPageTitle behavior", () => {
   });
 });
 
-describe("PAGE_TITLES ↔ docsSources parity", () => {
-  it("every non-root PAGE_TITLES slug maps to an implemented docsSources entry with matching title", () => {
-    const sourceByHref = new Map(docsSources.map((s) => [s.href, s]));
-    for (const slug of Object.keys(PAGE_TITLES)) {
-      if (slug === "") continue;
-      const href = `/${slug}`;
-      const source = sourceByHref.get(href);
-      expect(source, `expected docsSources entry for href ${href}`).toBeDefined();
-      expect(source!.title).toBe(PAGE_TITLES[slug]);
-    }
-  });
-
-  it("every docsSources entry corresponds to a PAGE_TITLES slug with matching title", () => {
-    for (const source of docsSources) {
-      const slug = source.href === "/" ? "" : source.href.slice(1);
-      expect(PAGE_TITLES[slug]).toBe(source.title);
-    }
-  });
-});
+// PAGE_TITLES ↔ docsSources parity is no longer asserted here. After
+// the title-registry consolidation, docsSources is a derived projection
+// of PAGE_TITLES — there is no second hand-maintained map to keep in
+// lockstep. The single derivation-proof assertion lives in
+// docs-source.test.ts ("is the derived projection of PAGE_TITLES with
+// the slug→href convention").

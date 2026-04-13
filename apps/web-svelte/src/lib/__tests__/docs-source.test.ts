@@ -2,8 +2,6 @@ import { describe, expect, it } from "vitest";
 import { docsSources } from "../docs-source";
 import { PAGE_TITLES } from "../page-titles";
 
-const slugForHref = (href: string) => (href === "/" ? "" : href.slice(1));
-
 describe("docsSources", () => {
   it("registers every implemented Svelte route once with non-empty upstream MDX", () => {
     const hrefs = docsSources.map((s) => s.href);
@@ -15,11 +13,18 @@ describe("docsSources", () => {
     }
   });
 
-  it("stays in lockstep with PAGE_TITLES on the implemented set", () => {
-    for (const source of docsSources) {
-      const slug = slugForHref(source.href);
-      expect(PAGE_TITLES[slug]).toBe(source.title);
-    }
+  it("is the derived projection of PAGE_TITLES with the slug→href convention", () => {
+    // PAGE_TITLES is the single source of truth for the implemented
+    // docs slug set. docsSources derives from it via the slug→href
+    // convention ("" -> "/", "foundry" -> "/foundry"), so this test
+    // pins both the entry-set parity and the iteration order in one
+    // assertion. A regression that broke the derivation would change
+    // the projected (href, title) pair for at least one entry.
+    const expected = Object.entries(PAGE_TITLES).map(([slug, title]) => ({
+      href: slug === "" ? "/" : `/${slug}`,
+      title,
+    }));
+    expect(docsSources.map(({ href, title }) => ({ href, title }))).toEqual(expected);
   });
 
   it("includes the FoundryCI brand routes the metadata module overrides", () => {
