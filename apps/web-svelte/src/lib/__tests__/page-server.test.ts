@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { load, prerender } from "../../routes/+page.server";
+import { DEFAULT_SERVICE_NAMES } from "../../../../../packages/emulate/src/registry";
 
 const SHIKI_THEMES_CLASS = 'class="shiki shiki-themes vercel-light vercel-dark"';
 
@@ -14,11 +15,14 @@ function isShikiHtml(html: string): boolean {
 
 // SvelteKit's auto-generated `PageServerLoad` types the load return as
 // `void | Omit<App.PageData, ...>`, and `App.PageData` does not declare
-// the `codeBlocks` field this load returns at runtime. Asserting the
-// concrete runtime shape at the test boundary is the cleanest way to
-// keep the assertions readable without widening the global type.
+// the `codeBlocks` / `defaultStartupServices` fields this load returns
+// at runtime. Asserting the concrete runtime shape at the test boundary
+// is the cleanest way to keep the assertions readable without widening
+// the global type.
+type StartupService = { name: string; label: string; port: number };
 type RootLoadData = {
   codeBlocks: { quickStart: string; cli: string };
+  defaultStartupServices: readonly StartupService[];
 };
 
 async function callLoad(): Promise<RootLoadData> {
@@ -56,5 +60,26 @@ describe("root +page.server.ts", () => {
     expect(data.codeBlocks.cli).toContain("--service");
     expect(data.codeBlocks.cli).toContain("--port");
     expect(data.codeBlocks.cli).toContain("foundry");
+  });
+
+  it("load() exposes defaultStartupServices derived from runtime DEFAULT_SERVICE_NAMES in exact order", async () => {
+    const data = await callLoad();
+    expect(data.defaultStartupServices.length).toBe(DEFAULT_SERVICE_NAMES.length);
+    expect(data.defaultStartupServices.map((s) => s.name)).toEqual([...DEFAULT_SERVICE_NAMES]);
+  });
+
+  it("load()'s defaultStartupServices includes Clerk and excludes Foundry from the default set", async () => {
+    const data = await callLoad();
+    const names = data.defaultStartupServices.map((s) => s.name);
+    expect(names).toContain("clerk");
+    expect(names).not.toContain("foundry");
+  });
+
+  it("load()'s defaultStartupServices uses port 4000 as the base and increments by one per entry", async () => {
+    const data = await callLoad();
+    expect(data.defaultStartupServices[0].port).toBe(4000);
+    for (let i = 0; i < data.defaultStartupServices.length; i++) {
+      expect(data.defaultStartupServices[i].port).toBe(4000 + i);
+    }
   });
 });

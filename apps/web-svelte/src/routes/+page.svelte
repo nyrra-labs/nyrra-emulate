@@ -74,74 +74,25 @@
 	services:
 </p>
 
+<!--
+	The default startup service list is derived from the runtime
+	`DEFAULT_SERVICE_NAMES` constant in `packages/emulate/src/registry.ts`
+	via `$lib/default-services.server.ts`, so a future change to the
+	default startup set in the CLI flows into this list automatically
+	without a parallel local edit. Each entry's port is `4000 + index`,
+	matching the CLI's `basePort + i` allocation in
+	`packages/emulate/src/commands/start.ts`.
+-->
 <ul class="mb-4 list-disc space-y-1 pl-5 text-sm">
-	<li class="text-neutral-600 dark:text-neutral-400">
-		<strong class="font-medium text-neutral-900 dark:text-neutral-100">Vercel</strong> on
-		<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
-			>http://localhost:4000</code
-		>
-	</li>
-	<li class="text-neutral-600 dark:text-neutral-400">
-		<strong class="font-medium text-neutral-900 dark:text-neutral-100">GitHub</strong> on
-		<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
-			>http://localhost:4001</code
-		>
-	</li>
-	<li class="text-neutral-600 dark:text-neutral-400">
-		<strong class="font-medium text-neutral-900 dark:text-neutral-100">Google</strong> on
-		<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
-			>http://localhost:4002</code
-		>
-	</li>
-	<li class="text-neutral-600 dark:text-neutral-400">
-		<strong class="font-medium text-neutral-900 dark:text-neutral-100">Slack</strong> on
-		<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
-			>http://localhost:4003</code
-		>
-	</li>
-	<li class="text-neutral-600 dark:text-neutral-400">
-		<strong class="font-medium text-neutral-900 dark:text-neutral-100">Apple</strong> on
-		<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
-			>http://localhost:4004</code
-		>
-	</li>
-	<li class="text-neutral-600 dark:text-neutral-400">
-		<strong class="font-medium text-neutral-900 dark:text-neutral-100">Microsoft</strong> on
-		<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
-			>http://localhost:4005</code
-		>
-	</li>
-	<li class="text-neutral-600 dark:text-neutral-400">
-		<strong class="font-medium text-neutral-900 dark:text-neutral-100">AWS</strong> on
-		<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
-			>http://localhost:4006</code
-		>
-	</li>
-	<li class="text-neutral-600 dark:text-neutral-400">
-		<strong class="font-medium text-neutral-900 dark:text-neutral-100">Okta</strong> on
-		<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
-			>http://localhost:4007</code
-		>
-	</li>
-	<li class="text-neutral-600 dark:text-neutral-400">
-		<strong class="font-medium text-neutral-900 dark:text-neutral-100">MongoDB Atlas</strong>
-		on
-		<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
-			>http://localhost:4008</code
-		>
-	</li>
-	<li class="text-neutral-600 dark:text-neutral-400">
-		<strong class="font-medium text-neutral-900 dark:text-neutral-100">Resend</strong> on
-		<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
-			>http://localhost:4009</code
-		>
-	</li>
-	<li class="text-neutral-600 dark:text-neutral-400">
-		<strong class="font-medium text-neutral-900 dark:text-neutral-100">Stripe</strong> on
-		<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
-			>http://localhost:4010</code
-		>
-	</li>
+	{#each data.defaultStartupServices as service (service.name)}
+		<li class="text-neutral-600 dark:text-neutral-400">
+			<strong class="font-medium text-neutral-900 dark:text-neutral-100">{service.label}</strong>
+			on
+			<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
+				>http://localhost:{service.port}</code
+			>
+		</li>
+	{/each}
 </ul>
 
 <h2 class="mb-4 mt-12 text-lg font-semibold text-neutral-900 dark:text-neutral-100">CLI</h2>
