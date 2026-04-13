@@ -2,6 +2,7 @@ import { convertToModelMessages, stepCountIs, streamText } from "ai";
 import type { ModelMessage, UIMessage } from "ai";
 import { createBashTool } from "bash-tool";
 import { headers } from "next/headers";
+import { APPS_WEB_ROOT } from "@/lib/apps-web-root";
 import { buildDocsChatOpeningSummary } from "@/lib/docs-chat-summary";
 import { loadDocsFilesFromRoot } from "@/lib/docs-files";
 import { minuteRateLimit, dailyRateLimit } from "@/lib/rate-limit";
@@ -68,7 +69,7 @@ export async function POST(req: Request) {
 
   const { messages }: { messages: UIMessage[] } = await req.json();
 
-  const docsFiles = await loadDocsFilesFromRoot(/* turbopackIgnore: true */ process.cwd());
+  const docsFiles = await loadDocsFilesFromRoot(APPS_WEB_ROOT);
   const systemPrompt = `${buildDocsChatOpeningSummary(docsFiles)}\n\n${SYSTEM_PROMPT_RULES}`;
   const {
     tools: { bash, readFile: readFileTool },

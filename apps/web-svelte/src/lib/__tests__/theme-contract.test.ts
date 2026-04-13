@@ -376,6 +376,13 @@ function runBootstrapScript(opts: { stored: string | null; systemLight: boolean 
 }
 
 describe("app.html theme bootstrap script precedence", () => {
+  it("uses the shared Nyrra SVG as the browser tab icon", () => {
+    const html = readFileSync(APP_HTML_PATH, "utf-8");
+    expect(html).toContain(
+      '<link rel="icon" type="image/svg+xml" href="%sveltekit.assets%/nyrra-logo-5-colors.svg" />',
+    );
+  });
+
   it("stored 'light' wins over a dark system preference", () => {
     expect(runBootstrapScript({ stored: "light", systemLight: false }).hasDarkClass).toBe(false);
   });

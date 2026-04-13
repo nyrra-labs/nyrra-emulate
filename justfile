@@ -3,6 +3,9 @@ set shell := ["bash", "-eu", "-o", "pipefail", "-c"]
 build:
   pnpm --filter web-svelte build
 
+dev-docs:
+  pnpm --filter web-svelte dev
+
 build-all:
   pnpm build
 

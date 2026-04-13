@@ -30,6 +30,9 @@
 /** Nyrra (FoundryCI parent organization) homepage URL. */
 export const NYRRA_URL = "https://nyrra.ai";
 
+/** Shared local Nyrra logo asset used in the header and browser tab icon. */
+export const NYRRA_LOGO_PATH = "/nyrra-logo-5-colors.svg";
+
 /**
  * Bare FoundryCI product name. Used for the Header wordmark span,
  * the Header "home" aria-label, and as a building block for the

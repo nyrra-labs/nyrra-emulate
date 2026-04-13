@@ -3,6 +3,7 @@
 	import ThemeToggle from './ThemeToggle.svelte';
 	import {
 		FOUNDRYCI_BRAND,
+		NYRRA_LOGO_PATH,
 		NYRRA_PARENT_LABEL,
 		NYRRA_URL,
 	} from '$lib/foundryci-branding';
@@ -13,15 +14,7 @@
 	<div class="flex h-14 items-center justify-between gap-6 px-4">
 		<div class="flex items-center gap-3">
 			<a href="/" class="flex items-center gap-2" aria-label={`${FOUNDRYCI_BRAND} home`}>
-				<svg
-					viewBox="0 0 16 16"
-					width="18"
-					height="18"
-					fill="currentColor"
-					aria-hidden="true"
-				>
-					<path d="M3 2 H13 V4 H5 V7 H11 V9 H5 V14 H3 Z" />
-				</svg>
+				<img src={NYRRA_LOGO_PATH} alt="" aria-hidden="true" class="h-[18px] w-[18px]" />
 				<span class="font-pixel text-lg leading-none">{FOUNDRYCI_BRAND}</span>
 			</a>
 			<span class="hidden text-neutral-300 sm:inline dark:text-neutral-700" aria-hidden="true">

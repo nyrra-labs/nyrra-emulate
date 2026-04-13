@@ -1,5 +1,6 @@
 import { readFile } from "fs/promises";
 import { join } from "path";
+import { APPS_WEB_ROOT } from "./apps-web-root";
 import { allDocsPages } from "./docs-pages";
 import { mdxToCleanMarkdown } from "./mdx-to-markdown";
 
@@ -78,7 +79,7 @@ export async function buildSearchIndexFromRoot(docsRoot: string): Promise<IndexE
 
 export async function getSearchIndex(): Promise<IndexEntry[]> {
   if (cached) return cached;
-  cached = await buildSearchIndexFromRoot(/* turbopackIgnore: true */ process.cwd());
+  cached = await buildSearchIndexFromRoot(APPS_WEB_ROOT);
   return cached;
 }
 
