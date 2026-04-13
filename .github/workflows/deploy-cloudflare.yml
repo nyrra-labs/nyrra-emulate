@@ -88,12 +88,13 @@ jobs:
             node -e 'const fs = require("node:fs"); const payload = JSON.parse(fs.readFileSync(0, "utf8")); console.log(payload.result.subdomain);' \
               <<<"$subdomain_response"
           )"
-          preview_url="https://${PREVIEW_ALIAS}-${WORKER_NAME}.${workers_subdomain}.workers.dev"
 
-          if [ -z "$preview_url" ]; then
-            echo "Failed to determine preview URL" >&2
+          if [ -z "$workers_subdomain" ]; then
+            echo "Failed to determine workers subdomain" >&2
             exit 1
           fi
+
+          preview_url="https://${PREVIEW_ALIAS}-${WORKER_NAME}.${workers_subdomain}.workers.dev"
 
           echo "preview_url=$preview_url" >> "$GITHUB_OUTPUT"
           echo "version_id=$version_id" >> "$GITHUB_OUTPUT"
