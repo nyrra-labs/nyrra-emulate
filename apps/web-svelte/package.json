@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@sveltejs/kit": "^2",
+    "marked": "^18.0.0",
     "shiki": "4.0.2"
   },
   "devDependencies": {
