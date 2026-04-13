@@ -1,10 +1,7 @@
 /**
  * Authoritative list of every doc page that exists as an implemented
  * `+page.svelte` route in apps/web-svelte. This list is the source of truth
- * for the search index — it includes the hidden `/foundry` page that
- * intentionally does not appear in the sidebar (`src/lib/nav.ts`), because
- * the sidebar is the human-visible browse surface and search is allowed to
- * surface routes that the sidebar deliberately omits.
+ * for the search index.
  *
  * Result titles mirror the human names from apps/web/lib/docs-navigation.ts
  * so search hits read the same as the Next.js docs ("Vercel API",

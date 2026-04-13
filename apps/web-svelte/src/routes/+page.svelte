@@ -98,15 +98,18 @@
 </ul>
 
 <p class="mb-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
-	Foundry is available when you enable it explicitly with <code
-		class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
+	Palantir <a
+		class="text-neutral-900 underline decoration-neutral-300 underline-offset-2 hover:decoration-neutral-900 dark:text-neutral-100 dark:decoration-neutral-700 dark:hover:decoration-neutral-100"
+		href="/foundry">Foundry</a
+	> is a first-class emulator covering OAuth 2.0, current-user lookup, and compute-module runtime plus
+	contour job routes. Start it with
+	<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
 		>emulate --service foundry</code
 	>
 	or include
 	<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
 		>foundry:</code
-	> in the seed config. The current Foundry slice covers OAuth 2.0, current-user lookup, and compute-module
-	runtime plus contour routes.
+	> in the seed config.
 </p>
 
 <h2 class="mb-4 mt-12 text-lg font-semibold text-neutral-900 dark:text-neutral-100">CLI</h2>

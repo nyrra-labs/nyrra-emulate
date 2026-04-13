@@ -19,6 +19,7 @@ export const sections: NavSection[] = [
   {
     title: "Services",
     items: [
+      { href: "/foundry", label: "Foundry" },
       { href: "/vercel", label: "Vercel" },
       { href: "/github", label: "GitHub" },
       { href: "/google", label: "Google" },
