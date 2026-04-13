@@ -8,6 +8,8 @@ import { DocsChat } from "@/components/docs-chat";
 import { DocsMobileNav } from "@/components/docs-mobile-nav";
 import { DocsNav } from "@/components/docs-nav";
 import {
+  GITHUB_REPO_URL,
+  NPM_PACKAGE_URL,
   OG_IMAGE_HEIGHT,
   OG_IMAGE_WIDTH,
   OG_LOCALE,
@@ -19,6 +21,8 @@ import {
   SITE_URL,
   TITLE_TEMPLATE,
   TWITTER_CARD,
+  VERCEL_ATTRIBUTION_TITLE,
+  VERCEL_ATTRIBUTION_URL,
 } from "@/lib/site-metadata";
 import { cookies } from "next/headers";
 import "./globals.css";
@@ -59,7 +63,7 @@ function Header() {
     <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-sm dark:bg-neutral-950/90">
       <div className="flex h-14 items-center justify-between px-4 gap-6">
         <div className="flex items-center gap-2">
-          <Link href="https://vercel.com" title="Made with love by Vercel">
+          <Link href={VERCEL_ATTRIBUTION_URL} title={VERCEL_ATTRIBUTION_TITLE}>
             <svg
               data-testid="geist-icon"
               height="18"
@@ -89,13 +93,13 @@ function Header() {
             </svg>
           </span>
           <Link href="/">
-            <span className={`${GeistPixelSquare.className} text-lg`}>emulate</span>
+            <span className={`${GeistPixelSquare.className} text-lg`}>{SITE_NAME}</span>
           </Link>
         </div>
         <nav className="flex items-center gap-4">
           <Search />
           <a
-            href="https://github.com/vercel-labs/emulate"
+            href={GITHUB_REPO_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 text-sm text-neutral-500 hover:text-neutral-900 transition-colors dark:text-neutral-400 dark:hover:text-neutral-100"
@@ -105,7 +109,7 @@ function Header() {
             </svg>
           </a>
           <a
-            href="https://www.npmjs.com/package/emulate"
+            href={NPM_PACKAGE_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm text-neutral-500 hover:text-neutral-900 transition-colors dark:text-neutral-400 dark:hover:text-neutral-100"

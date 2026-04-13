@@ -3,6 +3,8 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
+  GITHUB_REPO_URL,
+  NPM_PACKAGE_URL,
   OG_IMAGE_HEIGHT,
   OG_IMAGE_WIDTH,
   OG_LOCALE,
@@ -15,6 +17,8 @@ import {
   SITE_URL,
   TITLE_TEMPLATE,
   TWITTER_CARD,
+  VERCEL_ATTRIBUTION_TITLE,
+  VERCEL_ATTRIBUTION_URL,
   ogImageAlt,
   suffixWithSiteName,
 } from "../../../../../apps/web/lib/site-metadata";
@@ -26,6 +30,7 @@ const REPO_ROOT = resolve(__dirname, "../../../../..");
 const APPS_WEB_LAYOUT_PATH = resolve(REPO_ROOT, "apps/web/app/layout.tsx");
 const APPS_WEB_PAGE_METADATA_PATH = resolve(REPO_ROOT, "apps/web/lib/page-metadata.ts");
 const APPS_WEB_SITE_METADATA_PATH = resolve(REPO_ROOT, "apps/web/lib/site-metadata.ts");
+const APPS_WEB_OG_IMAGE_PATH = resolve(REPO_ROOT, "apps/web/app/og/og-image.tsx");
 
 describe("site-metadata.ts constant values", () => {
   it("SITE_NAME is 'emulate'", () => {
@@ -75,6 +80,32 @@ describe("site-metadata.ts constant values", () => {
 
   it("TWITTER_CARD is 'summary_large_image'", () => {
     expect(TWITTER_CARD).toBe("summary_large_image");
+  });
+
+  it("GITHUB_REPO_URL is the canonical vercel-labs/emulate GitHub URL", () => {
+    expect(GITHUB_REPO_URL).toBe("https://github.com/vercel-labs/emulate");
+  });
+
+  it("GITHUB_REPO_URL is a valid absolute URL that `new URL()` can parse", () => {
+    expect(() => new URL(GITHUB_REPO_URL)).not.toThrow();
+    expect(new URL(GITHUB_REPO_URL).hostname).toBe("github.com");
+  });
+
+  it("NPM_PACKAGE_URL is the canonical npmjs.com/package/emulate URL", () => {
+    expect(NPM_PACKAGE_URL).toBe("https://www.npmjs.com/package/emulate");
+  });
+
+  it("NPM_PACKAGE_URL is a valid absolute URL that `new URL()` can parse", () => {
+    expect(() => new URL(NPM_PACKAGE_URL)).not.toThrow();
+    expect(new URL(NPM_PACKAGE_URL).hostname).toBe("www.npmjs.com");
+  });
+
+  it("VERCEL_ATTRIBUTION_URL is 'https://vercel.com'", () => {
+    expect(VERCEL_ATTRIBUTION_URL).toBe("https://vercel.com");
+  });
+
+  it("VERCEL_ATTRIBUTION_TITLE is the 'Made with love by Vercel' tooltip string", () => {
+    expect(VERCEL_ATTRIBUTION_TITLE).toBe("Made with love by Vercel");
   });
 });
 
@@ -214,6 +245,38 @@ describe("apps/web/app/layout.tsx delegates site metadata to the shared module",
     expect(src).not.toMatch(/\bwidth:\s*1200\b/);
     expect(src).not.toMatch(/\bheight:\s*630\b/);
   });
+
+  it("Header references GITHUB_REPO_URL (not the literal GitHub URL)", () => {
+    const src = readFileSync(APPS_WEB_LAYOUT_PATH, "utf-8");
+    expect(src).toContain("href={GITHUB_REPO_URL}");
+    expect(src).not.toContain('"https://github.com/vercel-labs/emulate"');
+  });
+
+  it("Header references NPM_PACKAGE_URL (not the literal npm URL)", () => {
+    const src = readFileSync(APPS_WEB_LAYOUT_PATH, "utf-8");
+    expect(src).toContain("href={NPM_PACKAGE_URL}");
+    expect(src).not.toContain('"https://www.npmjs.com/package/emulate"');
+  });
+
+  it("Header references VERCEL_ATTRIBUTION_URL + VERCEL_ATTRIBUTION_TITLE (not the literal Vercel URL or tooltip)", () => {
+    const src = readFileSync(APPS_WEB_LAYOUT_PATH, "utf-8");
+    expect(src).toContain("href={VERCEL_ATTRIBUTION_URL}");
+    expect(src).toContain("title={VERCEL_ATTRIBUTION_TITLE}");
+    expect(src).not.toContain('"https://vercel.com"');
+    expect(src).not.toContain('"Made with love by Vercel"');
+  });
+
+  it("Header renders the wordmark via {SITE_NAME} inside the GeistPixelSquare span", () => {
+    const src = readFileSync(APPS_WEB_LAYOUT_PATH, "utf-8");
+    // The wordmark lives in the GeistPixelSquare-branded <span>. After
+    // the refactor the literal "emulate" JSX text becomes {SITE_NAME}
+    // interpolation so a future rename only touches site-metadata.ts.
+    expect(src).toContain("GeistPixelSquare.className");
+    expect(src).toContain(">{SITE_NAME}</span>");
+    // The bare JSX text "emulate" (wrapped in a span without an
+    // interpolation) must NOT appear anywhere in the file.
+    expect(src).not.toMatch(/>\s*emulate\s*</);
+  });
 });
 
 describe("apps/web/lib/page-metadata.ts delegates site metadata to the shared module", () => {
@@ -276,6 +339,40 @@ describe("apps/web/lib/page-metadata.ts delegates site metadata to the shared mo
   });
 });
 
+describe("apps/web/app/og/og-image.tsx delegates the wordmark to SITE_NAME", () => {
+  it("imports SITE_NAME from @/lib/site-metadata", () => {
+    const src = readFileSync(APPS_WEB_OG_IMAGE_PATH, "utf-8");
+    expect(src).toContain('import { SITE_NAME } from "@/lib/site-metadata"');
+  });
+
+  it("renders the OG image wordmark via {SITE_NAME} interpolation", () => {
+    const src = readFileSync(APPS_WEB_OG_IMAGE_PATH, "utf-8");
+    // After the refactor the bare JSX text "emulate" in the OG
+    // renderer's GeistPixelSquare <span> becomes {SITE_NAME} so the
+    // rendered OG image and the HTML Header wordmark share one source.
+    expect(src).toContain("{SITE_NAME}");
+  });
+
+  it("does NOT carry the literal 'emulate' JSX text anywhere (wordmark only appears via interpolation)", () => {
+    const src = readFileSync(APPS_WEB_OG_IMAGE_PATH, "utf-8");
+    // The only JSX text in the OG renderer that displays the brand
+    // name is the GeistPixelSquare wordmark span. After the refactor
+    // it reads `{SITE_NAME}` instead of the bare text `emulate`, so
+    // `>emulate<` should not appear anywhere in the file.
+    expect(src).not.toMatch(/>\s*emulate\s*</);
+  });
+
+  it("still renders the separator '/' literal between the Vercel triangle and the wordmark (layout preserved)", () => {
+    const src = readFileSync(APPS_WEB_OG_IMAGE_PATH, "utf-8");
+    // The OG image header is: [Vercel triangle] [separator slash] [emulate wordmark].
+    // The separator slash is a layout element, not a brand constant,
+    // so it remains a literal. This test pins that the separator
+    // survives the wordmark refactor and did not get accidentally
+    // collapsed into the SITE_NAME interpolation.
+    expect(src).toMatch(/>\s*\/\s*</);
+  });
+});
+
 describe("site-metadata.ts is the one source of each literal", () => {
   it("the brand name 'emulate' literal is defined in site-metadata.ts", () => {
     const src = readFileSync(APPS_WEB_SITE_METADATA_PATH, "utf-8");
@@ -290,5 +387,25 @@ describe("site-metadata.ts is the one source of each literal", () => {
   it("the '%s | emulate' title template literal is defined in site-metadata.ts", () => {
     const src = readFileSync(APPS_WEB_SITE_METADATA_PATH, "utf-8");
     expect(src).toContain('"%s | emulate"');
+  });
+
+  it("the GitHub repo URL literal is defined in site-metadata.ts", () => {
+    const src = readFileSync(APPS_WEB_SITE_METADATA_PATH, "utf-8");
+    expect(src).toContain('"https://github.com/vercel-labs/emulate"');
+  });
+
+  it("the npm package URL literal is defined in site-metadata.ts", () => {
+    const src = readFileSync(APPS_WEB_SITE_METADATA_PATH, "utf-8");
+    expect(src).toContain('"https://www.npmjs.com/package/emulate"');
+  });
+
+  it("the 'https://vercel.com' parent attribution URL literal is defined in site-metadata.ts", () => {
+    const src = readFileSync(APPS_WEB_SITE_METADATA_PATH, "utf-8");
+    expect(src).toContain('"https://vercel.com"');
+  });
+
+  it("the 'Made with love by Vercel' attribution tooltip literal is defined in site-metadata.ts", () => {
+    const src = readFileSync(APPS_WEB_SITE_METADATA_PATH, "utf-8");
+    expect(src).toContain('"Made with love by Vercel"');
   });
 });

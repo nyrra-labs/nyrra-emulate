@@ -101,6 +101,36 @@ export const OG_LOCALE = "en_US";
 export const TWITTER_CARD = "summary_large_image" as const;
 
 /**
+ * Canonical GitHub repository URL for emulate. Used by the docs-site
+ * header's GitHub icon link and by any other surface that wants to
+ * deep-link to the upstream repo. Kept here so a future repo move
+ * (e.g. org rename, fork promotion) only needs one edit.
+ */
+export const GITHUB_REPO_URL = "https://github.com/vercel-labs/emulate";
+
+/**
+ * Canonical npm package URL for emulate. Used by the docs-site
+ * header's "npm" link. Kept here so a future package rename or scope
+ * change only needs one edit.
+ */
+export const NPM_PACKAGE_URL = "https://www.npmjs.com/package/emulate";
+
+/**
+ * Parent-company attribution URL shown in the docs-site header next
+ * to the parent-brand icon. The companion `VERCEL_ATTRIBUTION_TITLE`
+ * constant carries the accompanying hover tooltip text; both are
+ * kept here as a pair so a future rebrand or attribution-policy
+ * change touches exactly one file.
+ */
+export const VERCEL_ATTRIBUTION_URL = "https://vercel.com";
+
+/**
+ * Hover-tooltip text for the parent-company attribution link in the
+ * docs-site header. See `VERCEL_ATTRIBUTION_URL`.
+ */
+export const VERCEL_ATTRIBUTION_TITLE = "Made with love by Vercel";
+
+/**
  * Suffixes a short page title with " | emulate". Used by
  * `pageMetadata(slug)` to build `openGraph.title` and `twitter.title`
  * strings for every non-root docs page.
