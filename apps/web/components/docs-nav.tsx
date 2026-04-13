@@ -2,45 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-type NavSection = {
-  title?: string;
-  items: { href: string; label: string }[];
-};
-
-const sections: NavSection[] = [
-  {
-    items: [
-      { href: "/", label: "Getting Started" },
-      { href: "/programmatic-api", label: "Programmatic API" },
-      { href: "/configuration", label: "Configuration" },
-      { href: "/nextjs", label: "Next.js Integration" },
-    ],
-  },
-  {
-    title: "Services",
-    items: [
-      { href: "/vercel", label: "Vercel" },
-      { href: "/github", label: "GitHub" },
-      { href: "/google", label: "Google" },
-      { href: "/slack", label: "Slack" },
-      { href: "/apple", label: "Apple" },
-      { href: "/microsoft", label: "Microsoft Entra ID" },
-      { href: "/aws", label: "AWS" },
-      { href: "/okta", label: "Okta" },
-      { href: "/mongoatlas", label: "MongoDB Atlas" },
-      { href: "/resend", label: "Resend" },
-      { href: "/stripe", label: "Stripe" },
-    ],
-  },
-  {
-    title: "Reference",
-    items: [
-      { href: "/authentication", label: "Authentication" },
-      { href: "/architecture", label: "Architecture" },
-    ],
-  },
-];
+import { docsNavSections } from "@/lib/docs-navigation";
 
 function Sidebar() {
   const pathname = usePathname();
@@ -48,7 +10,7 @@ function Sidebar() {
   return (
     <aside className="hidden w-56 shrink-0 lg:block">
       <nav className="sticky top-20 space-y-6">
-        {sections.map((section, i) => (
+        {docsNavSections.map((section, i) => (
           <div key={i}>
             {section.title && (
               <div className="mb-2 px-3 text-xs font-medium uppercase tracking-wider text-neutral-400 dark:text-neutral-600">
