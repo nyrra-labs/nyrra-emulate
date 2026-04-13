@@ -39,10 +39,29 @@
  * served as a plain static asset, no runtime font reads, no Node-only image
  * pipeline. If per-page social cards are reintroduced later, the apps/web
  * Next.js site remains the authoritative source of the dynamic layout.
+ *
+ * Upstream-branded constants (`SITE_NAME`, non-root `PAGE_SITE_DESCRIPTION`,
+ * OG / Twitter fixed fields, and the `suffixWithSiteName` / `ogImageAlt`
+ * helpers) are imported from `./upstream-site-metadata`, which re-exports
+ * them from `apps/web/lib/site-metadata.ts`. The FoundryCI-specific facts
+ * below (`BASE_URL`, root title / description / site name, and the
+ * FoundryCI per-page overrides for `/foundry` and `/configuration`) stay
+ * local to this file — the Svelte app is FoundryCI-branded and should not
+ * import its own root hero copy from the upstream emulate docs.
  */
 import { PAGE_TITLES } from "./page-titles";
+import {
+  OG_IMAGE_HEIGHT,
+  OG_IMAGE_WIDTH,
+  OG_LOCALE,
+  OG_TYPE,
+  PAGE_SITE_DESCRIPTION,
+  SITE_NAME,
+  TWITTER_CARD,
+  ogImageAlt,
+  suffixWithSiteName,
+} from "./upstream-site-metadata";
 
-const SITE_NAME = "emulate";
 const BASE_URL = "https://foundryci.com";
 const OG_IMAGE_PATH = "/og-default.png";
 const OG_IMAGE_URL = `${BASE_URL}${OG_IMAGE_PATH}`;
@@ -62,15 +81,6 @@ const ROOT_TITLE = "FoundryCI by Nyrra | Local Foundry Emulation";
 const ROOT_DESCRIPTION =
   "Local Palantir Foundry emulation for CI and no-network sandboxes. FoundryCI is a Nyrra project built on emulate by Vercel Labs. Not mocks.";
 const ROOT_SITE_NAME = "FoundryCI by Nyrra";
-
-/**
- * Description for every non-root page. Mirrors `apps/web/lib/page-metadata.ts`
- * exactly. Note that this string does NOT include the "Not mocks." sentence
- * — apps/web intentionally varies the description between the layout default
- * (root) and the per-page metadata (non-root).
- */
-const PAGE_DESCRIPTION =
-  "Local drop-in replacement services for CI and no-network sandboxes. Fully stateful, production-fidelity API emulation.";
 
 /**
  * Per-page FoundryCI metadata overrides. Pages keyed in this map opt out of
@@ -104,21 +114,21 @@ export type PageMetadata = {
   title: string;
   description: string;
   openGraph: {
-    type: "website";
-    locale: "en_US";
+    type: typeof OG_TYPE;
+    locale: typeof OG_LOCALE;
     siteName: string;
     title: string;
     description: string;
     url: string;
     image: {
       url: string;
-      width: 1200;
-      height: 630;
+      width: typeof OG_IMAGE_WIDTH;
+      height: typeof OG_IMAGE_HEIGHT;
       alt: string;
     };
   };
   twitter: {
-    card: "summary_large_image";
+    card: typeof TWITTER_CARD;
     title: string;
     description: string;
     image: string;
@@ -134,21 +144,21 @@ export function pageMetadata(slug: string): PageMetadata | null {
       title: ROOT_TITLE,
       description: ROOT_DESCRIPTION,
       openGraph: {
-        type: "website",
-        locale: "en_US",
+        type: OG_TYPE,
+        locale: OG_LOCALE,
         siteName: ROOT_SITE_NAME,
         title: ROOT_TITLE,
         description: ROOT_DESCRIPTION,
         url: BASE_URL,
         image: {
           url: OG_IMAGE_URL,
-          width: 1200,
-          height: 630,
+          width: OG_IMAGE_WIDTH,
+          height: OG_IMAGE_HEIGHT,
           alt: ROOT_SITE_NAME,
         },
       },
       twitter: {
-        card: "summary_large_image",
+        card: TWITTER_CARD,
         title: ROOT_TITLE,
         description: ROOT_DESCRIPTION,
         image: OG_IMAGE_URL,
@@ -173,21 +183,21 @@ export function pageMetadata(slug: string): PageMetadata | null {
       title: foundryTitle,
       description: foundryDescription,
       openGraph: {
-        type: "website",
-        locale: "en_US",
+        type: OG_TYPE,
+        locale: OG_LOCALE,
         siteName: ROOT_SITE_NAME,
         title: foundryTitle,
         description: foundryDescription,
         url,
         image: {
           url: OG_IMAGE_URL,
-          width: 1200,
-          height: 630,
+          width: OG_IMAGE_WIDTH,
+          height: OG_IMAGE_HEIGHT,
           alt: `${displayTitle} - ${ROOT_SITE_NAME}`,
         },
       },
       twitter: {
-        card: "summary_large_image",
+        card: TWITTER_CARD,
         title: foundryTitle,
         description: foundryDescription,
         image: OG_IMAGE_URL,
@@ -198,29 +208,29 @@ export function pageMetadata(slug: string): PageMetadata | null {
   // Pre-expand the apps/web title.template = "%s | emulate" so the rendered
   // document <title> matches what Next.js produces (e.g.
   // "Programmatic API | emulate"), not the bare displayTitle.
-  const fullTitle = `${displayTitle} | ${SITE_NAME}`;
+  const fullTitle = suffixWithSiteName(displayTitle);
 
   return {
     title: fullTitle,
-    description: PAGE_DESCRIPTION,
+    description: PAGE_SITE_DESCRIPTION,
     openGraph: {
-      type: "website",
-      locale: "en_US",
+      type: OG_TYPE,
+      locale: OG_LOCALE,
       siteName: SITE_NAME,
       title: fullTitle,
-      description: PAGE_DESCRIPTION,
+      description: PAGE_SITE_DESCRIPTION,
       url,
       image: {
         url: OG_IMAGE_URL,
-        width: 1200,
-        height: 630,
-        alt: `${displayTitle} - ${SITE_NAME}`,
+        width: OG_IMAGE_WIDTH,
+        height: OG_IMAGE_HEIGHT,
+        alt: ogImageAlt(displayTitle),
       },
     },
     twitter: {
-      card: "summary_large_image",
+      card: TWITTER_CARD,
       title: fullTitle,
-      description: PAGE_DESCRIPTION,
+      description: PAGE_SITE_DESCRIPTION,
       image: OG_IMAGE_URL,
     },
   };

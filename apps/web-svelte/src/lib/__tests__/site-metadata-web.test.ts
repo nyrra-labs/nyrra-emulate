@@ -33,6 +33,22 @@ const APPS_WEB_SITE_METADATA_PATH = resolve(REPO_ROOT, "apps/web/lib/site-metada
 const APPS_WEB_OG_IMAGE_PATH = resolve(REPO_ROOT, "apps/web/app/og/og-image.tsx");
 const APPS_WEB_DOCS_CHAT_PATH = resolve(REPO_ROOT, "apps/web/components/docs-chat.tsx");
 const APPS_WEB_DOCS_CHAT_SUMMARY_PATH = resolve(REPO_ROOT, "apps/web/lib/docs-chat-summary.ts");
+const WEB_SVELTE_PAGE_METADATA_PATH = resolve(
+  REPO_ROOT,
+  "apps/web-svelte/src/lib/page-metadata.ts",
+);
+const WEB_SVELTE_UPSTREAM_META_PATH = resolve(
+  REPO_ROOT,
+  "apps/web-svelte/src/lib/upstream-site-metadata.ts",
+);
+const WEB_SVELTE_HEADER_PATH = resolve(
+  REPO_ROOT,
+  "apps/web-svelte/src/lib/components/Header.svelte",
+);
+const WEB_SVELTE_LAYOUT_PATH = resolve(
+  REPO_ROOT,
+  "apps/web-svelte/src/routes/+layout.svelte",
+);
 
 describe("site-metadata.ts constant values", () => {
   it("SITE_NAME is 'emulate'", () => {
@@ -449,6 +465,185 @@ describe("apps/web/lib/docs-chat-summary.ts delegates product-name branding to S
     expect(src).toContain("programmatic API via");
     expect(src).toContain("Next.js adapter");
     expect(src).toContain("embedding emulators in your app");
+  });
+});
+
+describe("apps/web-svelte/src/lib/upstream-site-metadata.ts re-exports the upstream branding surface", () => {
+  it("re-exports from the canonical apps/web/lib/site-metadata.ts path", () => {
+    const src = readFileSync(WEB_SVELTE_UPSTREAM_META_PATH, "utf-8");
+    expect(src).toContain('from "../../../../apps/web/lib/site-metadata"');
+  });
+
+  it("re-exports every constant the Svelte consumers rely on", () => {
+    const src = readFileSync(WEB_SVELTE_UPSTREAM_META_PATH, "utf-8");
+    const exports = [
+      "GITHUB_REPO_URL",
+      "NPM_PACKAGE_URL",
+      "OG_IMAGE_HEIGHT",
+      "OG_IMAGE_WIDTH",
+      "OG_LOCALE",
+      "OG_TYPE",
+      "PAGE_SITE_DESCRIPTION",
+      "SITE_NAME",
+      "TWITTER_CARD",
+      "ogImageAlt",
+      "suffixWithSiteName",
+    ];
+    for (const name of exports) {
+      expect(
+        src.includes(name),
+        `upstream-site-metadata.ts does not re-export ${name}`,
+      ).toBe(true);
+    }
+  });
+
+  it("does NOT re-export FoundryCI-specific constants that intentionally stay Svelte-local", () => {
+    const src = readFileSync(WEB_SVELTE_UPSTREAM_META_PATH, "utf-8");
+    // The runtime `export { ... } from "..."` block must not contain
+    // any FoundryCI-specific names. Docblock MENTIONS of these names
+    // are intentional (they explain why the constants stay local),
+    // so this assertion scopes itself to the export statement only.
+    const exportMatch = src.match(/export\s*\{[\s\S]*?\}\s*from\s*"[^"]+";/);
+    expect(exportMatch, "upstream-site-metadata.ts should have a runtime `export { ... } from ...` block").not.toBeNull();
+    const exportBlock = exportMatch![0];
+    expect(exportBlock).not.toContain("BASE_URL");
+    expect(exportBlock).not.toContain("ROOT_TITLE");
+    expect(exportBlock).not.toContain("ROOT_DESCRIPTION");
+    expect(exportBlock).not.toContain("ROOT_SITE_NAME");
+    expect(exportBlock).not.toContain("FOUNDRYCI");
+    expect(exportBlock).not.toContain("foundryci.com");
+    expect(exportBlock).not.toContain("OG_IMAGE_PATH");
+  });
+});
+
+describe("apps/web-svelte/src/lib/page-metadata.ts delegates upstream branding to upstream-site-metadata", () => {
+  it("imports SITE_NAME + PAGE_SITE_DESCRIPTION + OG/Twitter fixed fields + helpers from ./upstream-site-metadata", () => {
+    const src = readFileSync(WEB_SVELTE_PAGE_METADATA_PATH, "utf-8");
+    expect(src).toContain('from "./upstream-site-metadata"');
+    const imports = [
+      "SITE_NAME",
+      "PAGE_SITE_DESCRIPTION",
+      "OG_TYPE",
+      "OG_LOCALE",
+      "OG_IMAGE_WIDTH",
+      "OG_IMAGE_HEIGHT",
+      "TWITTER_CARD",
+      "ogImageAlt",
+      "suffixWithSiteName",
+    ];
+    for (const name of imports) {
+      expect(
+        src.includes(name),
+        `apps/web-svelte/src/lib/page-metadata.ts does not import ${name}`,
+      ).toBe(true);
+    }
+  });
+
+  it("no longer declares a local `const SITE_NAME` literal (shared with upstream)", () => {
+    const src = readFileSync(WEB_SVELTE_PAGE_METADATA_PATH, "utf-8");
+    expect(src).not.toMatch(/const\s+SITE_NAME\s*=\s*["']emulate["']/);
+  });
+
+  it("no longer declares a local `const PAGE_DESCRIPTION` literal (shared with upstream PAGE_SITE_DESCRIPTION)", () => {
+    const src = readFileSync(WEB_SVELTE_PAGE_METADATA_PATH, "utf-8");
+    expect(src).not.toMatch(/const\s+PAGE_DESCRIPTION\s*=/);
+  });
+
+  it("no longer hand-writes the production-fidelity description literal (delegates to PAGE_SITE_DESCRIPTION)", () => {
+    const src = readFileSync(WEB_SVELTE_PAGE_METADATA_PATH, "utf-8");
+    // The non-root description string must not appear as a local
+    // literal anymore — it's imported as PAGE_SITE_DESCRIPTION.
+    expect(src).not.toContain(
+      'Local drop-in replacement services for CI and no-network sandboxes. Fully stateful, production-fidelity API emulation."',
+    );
+  });
+
+  it("uses suffixWithSiteName for the non-root title template (not a local `${displayTitle} | emulate` literal)", () => {
+    const src = readFileSync(WEB_SVELTE_PAGE_METADATA_PATH, "utf-8");
+    expect(src).toContain("suffixWithSiteName(displayTitle)");
+    // The old inline form must be gone.
+    expect(src).not.toMatch(/\$\{displayTitle\}\s*\|\s*\$\{SITE_NAME\}/);
+  });
+
+  it("uses ogImageAlt for the non-root image alt text (not a local `${displayTitle} - emulate` literal)", () => {
+    const src = readFileSync(WEB_SVELTE_PAGE_METADATA_PATH, "utf-8");
+    expect(src).toContain("ogImageAlt(displayTitle)");
+    expect(src).not.toMatch(/\$\{displayTitle\}\s*-\s*\$\{SITE_NAME\}/);
+  });
+
+  it("preserves the local FoundryCI-specific facts (BASE_URL, ROOT_TITLE, ROOT_SITE_NAME, FOUNDRYCI_PAGE_METADATA)", () => {
+    const src = readFileSync(WEB_SVELTE_PAGE_METADATA_PATH, "utf-8");
+    // These stay Svelte-local per the task guardrails.
+    expect(src).toContain('const BASE_URL = "https://foundryci.com"');
+    expect(src).toContain('const ROOT_TITLE = "FoundryCI by Nyrra | Local Foundry Emulation"');
+    expect(src).toContain('const ROOT_SITE_NAME = "FoundryCI by Nyrra"');
+    expect(src).toContain("FOUNDRYCI_PAGE_METADATA");
+    // And the FoundryCI per-page overrides for /foundry and /configuration.
+    expect(src).toContain('"Foundry | FoundryCI by Nyrra"');
+    expect(src).toContain('"Configuration | FoundryCI by Nyrra"');
+  });
+
+  it("preserves the local OG image path handling (static /og-default.png)", () => {
+    const src = readFileSync(WEB_SVELTE_PAGE_METADATA_PATH, "utf-8");
+    expect(src).toContain('const OG_IMAGE_PATH = "/og-default.png"');
+    expect(src).toContain("OG_IMAGE_URL = `${BASE_URL}${OG_IMAGE_PATH}`");
+  });
+});
+
+describe("apps/web-svelte/src/lib/components/Header.svelte delegates GitHub/npm links to upstream-site-metadata", () => {
+  it("imports GITHUB_REPO_URL + NPM_PACKAGE_URL from $lib/upstream-site-metadata", () => {
+    const src = readFileSync(WEB_SVELTE_HEADER_PATH, "utf-8");
+    expect(src).toContain("from '$lib/upstream-site-metadata'");
+    expect(src).toContain("GITHUB_REPO_URL");
+    expect(src).toContain("NPM_PACKAGE_URL");
+  });
+
+  it("GitHub icon anchor references {GITHUB_REPO_URL} (not the literal URL)", () => {
+    const src = readFileSync(WEB_SVELTE_HEADER_PATH, "utf-8");
+    expect(src).toContain("href={GITHUB_REPO_URL}");
+    expect(src).not.toContain('"https://github.com/vercel-labs/emulate"');
+  });
+
+  it("npm link anchor references {NPM_PACKAGE_URL} (not the literal URL)", () => {
+    const src = readFileSync(WEB_SVELTE_HEADER_PATH, "utf-8");
+    expect(src).toContain("href={NPM_PACKAGE_URL}");
+    expect(src).not.toContain('"https://www.npmjs.com/package/emulate"');
+  });
+
+  it("preserves the FoundryCI-local Nyrra attribution link", () => {
+    const src = readFileSync(WEB_SVELTE_HEADER_PATH, "utf-8");
+    // The Nyrra attribution is Svelte-local (FoundryCI parent) and
+    // does not flow through the upstream branding surface.
+    expect(src).toContain('"https://nyrra.ai"');
+    expect(src).toContain("by Nyrra");
+    expect(src).toContain("FoundryCI");
+  });
+});
+
+describe("apps/web-svelte/src/routes/+layout.svelte footer delegates the GitHub link to upstream-site-metadata", () => {
+  it("imports GITHUB_REPO_URL from $lib/upstream-site-metadata", () => {
+    const src = readFileSync(WEB_SVELTE_LAYOUT_PATH, "utf-8");
+    expect(src).toContain("from '$lib/upstream-site-metadata'");
+    expect(src).toContain("GITHUB_REPO_URL");
+  });
+
+  it("footer 'Built on emulate by Vercel Labs' link references {GITHUB_REPO_URL} (not the literal URL)", () => {
+    const src = readFileSync(WEB_SVELTE_LAYOUT_PATH, "utf-8");
+    expect(src).toContain("href={GITHUB_REPO_URL}");
+    expect(src).not.toContain('"https://github.com/vercel-labs/emulate"');
+  });
+
+  it("preserves the 'emulate by Vercel Labs' link text as the footer's visible attribution label", () => {
+    // The visible label is intentional FoundryCI attribution copy
+    // (not a branding constant) and must survive the refactor unchanged.
+    const src = readFileSync(WEB_SVELTE_LAYOUT_PATH, "utf-8");
+    expect(src).toContain(">emulate by Vercel Labs</a");
+  });
+
+  it("preserves the FoundryCI-local Nyrra attribution footer link", () => {
+    const src = readFileSync(WEB_SVELTE_LAYOUT_PATH, "utf-8");
+    expect(src).toContain('"https://nyrra.ai"');
+    expect(src).toContain(">Nyrra</a");
   });
 });
 

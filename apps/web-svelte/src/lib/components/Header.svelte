@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Search from './Search.svelte';
 	import ThemeToggle from './ThemeToggle.svelte';
+	import { GITHUB_REPO_URL, NPM_PACKAGE_URL } from '$lib/upstream-site-metadata';
 </script>
 
 <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-sm dark:bg-neutral-950/90">
@@ -46,7 +47,7 @@
 		<nav class="flex items-center gap-4">
 			<Search />
 			<a
-				href="https://github.com/vercel-labs/emulate"
+				href={GITHUB_REPO_URL}
 				target="_blank"
 				rel="noopener noreferrer"
 				aria-label="GitHub repository"
@@ -59,7 +60,7 @@
 				</svg>
 			</a>
 			<a
-				href="https://www.npmjs.com/package/emulate"
+				href={NPM_PACKAGE_URL}
 				target="_blank"
 				rel="noopener noreferrer"
 				class="text-sm text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"

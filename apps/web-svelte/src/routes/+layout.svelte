@@ -5,6 +5,7 @@
 	import MobileNav from '$lib/components/MobileNav.svelte';
 	import PageMeta from '$lib/components/PageMeta.svelte';
 	import Sidebar from '$lib/components/Sidebar.svelte';
+	import { GITHUB_REPO_URL } from '$lib/upstream-site-metadata';
 	import '../app.css';
 
 	let { children }: { children: Snippet } = $props();
@@ -32,7 +33,7 @@
 			<div>
 				Built on
 				<a
-					href="https://github.com/vercel-labs/emulate"
+					href={GITHUB_REPO_URL}
 					target="_blank"
 					rel="noopener noreferrer"
 					class="text-neutral-700 underline decoration-neutral-300 underline-offset-2 transition-colors hover:text-neutral-900 hover:decoration-neutral-900 dark:text-neutral-300 dark:decoration-neutral-700 dark:hover:text-neutral-100 dark:hover:decoration-neutral-100"
