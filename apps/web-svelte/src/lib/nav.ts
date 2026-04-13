@@ -10,7 +10,7 @@ export type NavSection = {
 export const sections: NavSection[] = [
   {
     items: [
-      { href: "/", label: "Getting Started" },
+      { href: "/", label: "Overview" },
       { href: "/programmatic-api", label: "Programmatic API" },
       { href: "/configuration", label: "Configuration" },
       { href: "/nextjs", label: "Next.js Integration" },

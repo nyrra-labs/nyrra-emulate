@@ -48,13 +48,20 @@ const OG_IMAGE_PATH = "/og-default.png";
 const OG_IMAGE_URL = `${BASE_URL}${OG_IMAGE_PATH}`;
 
 /**
- * Root page title and description. Mirrors `apps/web/app/layout.tsx` exactly,
- * including the literal `&` (not "and") in "CI & Sandboxes" and the trailing
- * "Not mocks." sentence in the description.
+ * Root page title, description, and site name. The Svelte shell is
+ * branded as FoundryCI by Nyrra, so the root metadata diverges from the
+ * upstream `apps/web` values: the document `<title>` and OG title both
+ * lead with the FoundryCI brand, the description names FoundryCI as a
+ * Nyrra project while preserving explicit upstream credit to emulate
+ * by Vercel Labs, and the OG site name matches the brand the visible
+ * header shows. Non-root pages still expand into `${displayTitle} |
+ * emulate` via `SITE_NAME` so per-service titles stay aligned with the
+ * upstream Next.js docs.
  */
-const ROOT_TITLE = "emulate | Local API Emulation for CI & Sandboxes";
+const ROOT_TITLE = "FoundryCI by Nyrra | Local Foundry Emulation";
 const ROOT_DESCRIPTION =
-  "Local drop-in replacement services for CI and no-network sandboxes. Fully stateful, production-fidelity API emulation. Not mocks.";
+  "Local Palantir Foundry emulation for CI and no-network sandboxes. FoundryCI is a Nyrra project built on emulate by Vercel Labs. Not mocks.";
+const ROOT_SITE_NAME = "FoundryCI by Nyrra";
 
 /**
  * Description for every non-root page. Mirrors `apps/web/lib/page-metadata.ts`
@@ -101,7 +108,7 @@ export function pageMetadata(slug: string): PageMetadata | null {
       openGraph: {
         type: "website",
         locale: "en_US",
-        siteName: SITE_NAME,
+        siteName: ROOT_SITE_NAME,
         title: ROOT_TITLE,
         description: ROOT_DESCRIPTION,
         url: BASE_URL,
@@ -109,7 +116,7 @@ export function pageMetadata(slug: string): PageMetadata | null {
           url: OG_IMAGE_URL,
           width: 1200,
           height: 630,
-          alt: "emulate",
+          alt: ROOT_SITE_NAME,
         },
       },
       twitter: {

@@ -66,7 +66,7 @@ const IMPLEMENTED_HREFS: ReadonlySet<string> = new Set(
  * relevance score.
  */
 const HREF_TITLES: Record<string, string> = {
-  "/": "Getting Started",
+  "/": "Overview",
   "/programmatic-api": "Programmatic API",
   "/configuration": "Configuration",
   "/nextjs": "Next.js Integration",
