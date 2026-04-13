@@ -1,12 +1,9 @@
-import { readFile } from "fs/promises";
-import { join } from "path";
 import { convertToModelMessages, stepCountIs, streamText } from "ai";
 import type { ModelMessage, UIMessage } from "ai";
 import { createBashTool } from "bash-tool";
 import { headers } from "next/headers";
 import { buildDocsChatOpeningSummary } from "@/lib/docs-chat-summary";
-import { allDocsPages } from "@/lib/docs-navigation";
-import { mdxToCleanMarkdown } from "@/lib/mdx-to-markdown";
+import { loadDocsFilesFromRoot } from "@/lib/docs-files";
 import { minuteRateLimit, dailyRateLimit } from "@/lib/rate-limit";
 
 export const maxDuration = 60;
@@ -30,31 +27,6 @@ When answering questions:
 - If the docs don't cover a topic, say so honestly
 - Do NOT include source references or file paths in your response
 - Do NOT use emojis in your responses`;
-
-async function loadDocsFiles(): Promise<Record<string, string>> {
-  const files: Record<string, string> = {};
-
-  const results = await Promise.allSettled(
-    allDocsPages.map(async (page) => {
-      const slug = page.href.replace(/^\//, "");
-      const cwd = /* turbopackIgnore: true */ process.cwd();
-      const filePath = slug ? join(cwd, "app", slug, "page.mdx") : join(cwd, "app", "page.mdx");
-
-      const raw = await readFile(filePath, "utf-8");
-      const md = mdxToCleanMarkdown(raw);
-      const fileName = slug ? `/${slug}.md` : "/index.md";
-      return { fileName, md };
-    }),
-  );
-
-  for (const result of results) {
-    if (result.status === "fulfilled") {
-      files[result.value.fileName] = result.value.md;
-    }
-  }
-
-  return files;
-}
 
 function addCacheControl(messages: ModelMessage[]): ModelMessage[] {
   if (messages.length === 0) return messages;
@@ -96,7 +68,7 @@ export async function POST(req: Request) {
 
   const { messages }: { messages: UIMessage[] } = await req.json();
 
-  const docsFiles = await loadDocsFiles();
+  const docsFiles = await loadDocsFilesFromRoot(/* turbopackIgnore: true */ process.cwd());
   const systemPrompt = `${buildDocsChatOpeningSummary(docsFiles)}\n\n${SYSTEM_PROMPT_RULES}`;
   const {
     tools: { bash, readFile: readFileTool },
