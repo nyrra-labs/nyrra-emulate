@@ -11,8 +11,8 @@
     "lint": "eslint .",
     "test": "vitest run",
     "type-check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-    "deploy:dry-run": "vite build && wrangler deploy --dry-run",
-    "preview:worker": "vite build && wrangler dev --local --ip 127.0.0.1 --port 8788 --show-interactive-dev-session=false",
+    "deploy:dry-run": "rm -rf .svelte-kit/cloudflare && vite build && wrangler deploy --dry-run",
+    "preview:worker": "rm -rf .svelte-kit/cloudflare && vite build && wrangler dev --local --ip 127.0.0.1 --port 8788 --show-interactive-dev-session=false",
     "preview:worker:stop": "bash scripts/stop-preview-worker.sh"
   },
   "dependencies": {
