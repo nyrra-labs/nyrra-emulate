@@ -39,6 +39,12 @@ concurrency:
   group: deploy-cloudflare-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+env:
+  APP_NAME: FoundryCI docs
+  APP_SLUG: foundryci-docs
+  PRODUCTION_DOMAIN: foundryci.com
+  WORKER_NAME: foundryci-docs
+
 jobs:
   preview:
     if: github.event_name == 'pull_request'
@@ -72,11 +78,20 @@ jobs:
           output="$(pnpm --filter web-svelte deploy:preview 2>&1)"
           printf '%s\n' "$output"
 
-          preview_url="$(printf '%s\n' "$output" | grep -Eo 'https://[[:alnum:].-]+\.workers\.dev' | tail -n 1)"
           version_id="$(printf '%s\n' "$output" | sed -n 's/^Current Version ID: //p; s/^Version ID: //p' | tail -n 1)"
+          subdomain_response="$(
+            curl --fail --silent --show-error \
+              --header "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+              "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/workers/subdomain"
+          )"
+          workers_subdomain="$(
+            node -e 'const fs = require("node:fs"); const payload = JSON.parse(fs.readFileSync(0, "utf8")); console.log(payload.result.subdomain);' \
+              <<<"$subdomain_response"
+          )"
+          preview_url="https://${PREVIEW_ALIAS}-${WORKER_NAME}.${workers_subdomain}.workers.dev"
 
           if [ -z "$preview_url" ]; then
-            echo "Failed to parse preview URL from wrangler output" >&2
+            echo "Failed to determine preview URL" >&2
             exit 1
           fi
 
@@ -85,8 +100,8 @@ jobs:
 
       - name: Comment preview deployment on PR
         env:
-          APP_NAME: FoundryCI docs
-          APP_SLUG: foundryci-docs
+          APP_NAME: ${{ env.APP_NAME }}
+          APP_SLUG: ${{ env.APP_SLUG }}
           DEPLOYMENT_URL: ${{ steps.deploy.outputs.preview_url }}
           ENVIRONMENT: preview
           GITHUB_REPOSITORY: ${{ github.repository }}
@@ -135,14 +150,14 @@ jobs:
 
       - name: Comment production deployment on associated PR
         env:
-          APP_NAME: FoundryCI docs
-          APP_SLUG: foundryci-docs
+          APP_NAME: ${{ env.APP_NAME }}
+          APP_SLUG: ${{ env.APP_SLUG }}
           ENVIRONMENT: production
           GITHUB_EVENT_BEFORE: ${{ github.event.before }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_SHA: ${{ github.sha }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PRODUCTION_URL: https://foundryci.com
+          PRODUCTION_URL: https://${{ env.PRODUCTION_DOMAIN }}
           PROVIDER: cloudflare
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           SUMMARY: Production deployment is live on the custom domain.
