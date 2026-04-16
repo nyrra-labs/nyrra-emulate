@@ -4,8 +4,7 @@ import { renderDocsHtml } from "$lib/render-docs.server";
 
 export const prerender = true;
 
-export const entries: EntryGenerator = () =>
-  allNonRootHrefs().map((href) => ({ slug: href.slice(1) }));
+export const entries: EntryGenerator = () => allNonRootHrefs().map((href) => ({ slug: href.slice(1) }));
 
 export const load: PageServerLoad = async ({ params }) => {
   const href = `/${params.slug}`;

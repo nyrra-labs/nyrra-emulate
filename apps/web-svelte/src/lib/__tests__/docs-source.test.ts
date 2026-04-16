@@ -58,20 +58,14 @@ describe("docsSources", () => {
 
 describe("upstream content to PAGE_TITLES parity", () => {
   it("the docs-upstream content set is exactly equal to the surfaced PAGE_TITLES set today", () => {
-    const contentDir = resolve(
-      import.meta.dirname,
-      "../../../../../packages/docs-upstream/generated/content",
-    );
+    const contentDir = resolve(import.meta.dirname, "../../../../../packages/docs-upstream/generated/content");
     const contentHrefs = walkContentHrefs(contentDir);
     const surfacedHrefs = docsSources.map((s) => s.href).sort();
     expect(contentHrefs).toEqual(surfacedHrefs);
   });
 
   it("the current repo state has no upstream pages that need an explicit unsurfaced-allowlist entry", () => {
-    const contentDir = resolve(
-      import.meta.dirname,
-      "../../../../../packages/docs-upstream/generated/content",
-    );
+    const contentDir = resolve(import.meta.dirname, "../../../../../packages/docs-upstream/generated/content");
     const contentHrefs = new Set(walkContentHrefs(contentDir));
     const surfacedHrefs = new Set(docsSources.map((s) => s.href));
     const missing = [...contentHrefs].filter((href) => !surfacedHrefs.has(href));

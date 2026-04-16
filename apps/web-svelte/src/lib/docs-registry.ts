@@ -10,23 +10,17 @@
  */
 import { PAGE_TITLES } from "./page-titles";
 
-const upstreamMdxRaw = import.meta.glob(
-  "../../../../packages/docs-upstream/generated/content/*.mdx",
-  {
-    query: "?raw",
-    import: "default",
-    eager: true,
-  },
-) as Record<string, string>;
+const upstreamMdxRaw = import.meta.glob("../../../../packages/docs-upstream/generated/content/*.mdx", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>;
 
-const localMdRaw = import.meta.glob(
-  "../content/**/*.md",
-  {
-    query: "?raw",
-    import: "default",
-    eager: true,
-  },
-) as Record<string, string>;
+const localMdRaw = import.meta.glob("../content/**/*.md", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>;
 
 export type DocsSourceKind = "upstream" | "local";
 

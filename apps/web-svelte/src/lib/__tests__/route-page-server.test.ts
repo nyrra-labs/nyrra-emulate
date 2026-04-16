@@ -60,8 +60,6 @@ describe("generic [...slug] route load contract", () => {
   });
 
   it("throws for an unregistered slug", async () => {
-    await expect(callLoad("this-route-does-not-exist")).rejects.toThrow(
-      /no registry entry for href/,
-    );
+    await expect(callLoad("this-route-does-not-exist")).rejects.toThrow(/no registry entry for href/);
   });
 });

@@ -10,14 +10,11 @@
  */
 import { PAGE_TITLES } from "./page-titles";
 
-const upstreamMdxRaw = import.meta.glob(
-  "../../../../packages/docs-upstream/generated/content/*.mdx",
-  {
-    query: "?raw",
-    import: "default",
-    eager: true,
-  },
-) as Record<string, string>;
+const upstreamMdxRaw = import.meta.glob("../../../../packages/docs-upstream/generated/content/*.mdx", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>;
 
 function slugToHref(slug: string): string {
   return slug === "" ? "/" : `/${slug}`;
@@ -70,9 +67,7 @@ export const docsSources: readonly DocsSource[] = Object.entries(PAGE_TITLES).ma
 const CONTENT_KEY_PREFIX = "../../../../packages/docs-upstream/generated/content/";
 const surfacedHrefs = new Set(docsSources.map((source) => source.href));
 for (const mdxKey of Object.keys(upstreamMdxRaw)) {
-  const fileName = mdxKey.startsWith(CONTENT_KEY_PREFIX)
-    ? mdxKey.slice(CONTENT_KEY_PREFIX.length)
-    : mdxKey;
+  const fileName = mdxKey.startsWith(CONTENT_KEY_PREFIX) ? mdxKey.slice(CONTENT_KEY_PREFIX.length) : mdxKey;
   const upstreamHref = mdxRelativePathToHref(fileName);
   if (surfacedHrefs.has(upstreamHref)) continue;
   if (INTENTIONALLY_UNSURFACED_UPSTREAM_HREFS.has(upstreamHref)) continue;

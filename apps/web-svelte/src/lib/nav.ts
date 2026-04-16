@@ -7,11 +7,7 @@
  */
 import { PAGE_TITLES } from "./page-titles";
 import { allDocsEntries } from "./docs-registry";
-import {
-  NAV_LABEL_OVERRIDES,
-  REFERENCE_SECTION_HREFS,
-  TOP_SECTION_HREFS,
-} from "docs-upstream";
+import { NAV_LABEL_OVERRIDES, REFERENCE_SECTION_HREFS, TOP_SECTION_HREFS } from "docs-upstream";
 
 export { NAV_LABEL_OVERRIDES, REFERENCE_SECTION_HREFS, TOP_SECTION_HREFS };
 
@@ -46,9 +42,7 @@ const FOUNDRY_CHILDREN: NavItem[] = [
   {
     href: "/foundry/admin/users",
     label: "Admin",
-    children: [
-      { href: "/foundry/admin/users", label: "Users" },
-    ],
+    children: [{ href: "/foundry/admin/users", label: "Users" }],
   },
   {
     href: "/foundry/compute-modules/overview",

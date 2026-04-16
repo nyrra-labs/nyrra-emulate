@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  NAV_LABEL_OVERRIDES,
-  REFERENCE_SECTION_HREFS,
-  TOP_SECTION_HREFS,
-} from "docs-upstream";
+import { NAV_LABEL_OVERRIDES, REFERENCE_SECTION_HREFS, TOP_SECTION_HREFS } from "docs-upstream";
 import { NAV_LABEL_OVERRIDES as svelteNavOverrides, sections } from "../nav";
 
 describe("NAV_LABEL_OVERRIDES canonical shape", () => {

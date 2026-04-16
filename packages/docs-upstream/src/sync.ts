@@ -57,10 +57,7 @@ if (pages.length === 0) {
 const navSectionsSource = fs.readFileSync(path.join(WEB_LIB, "docs-nav-sections.ts"), "utf-8");
 
 function parseStringArray(source: string, varName: string): string[] {
-  const pattern = new RegExp(
-    `export\\s+const\\s+${varName}[^=]*=\\s*\\[([^\\]]+)\\]`,
-    "s",
-  );
+  const pattern = new RegExp(`export\\s+const\\s+${varName}[^=]*=\\s*\\[([^\\]]+)\\]`, "s");
   const match = pattern.exec(source);
   if (!match) return [];
   const items: string[] = [];
@@ -73,10 +70,7 @@ function parseStringArray(source: string, varName: string): string[] {
 }
 
 function parseRecordStringString(source: string, varName: string): Record<string, string> {
-  const pattern = new RegExp(
-    `export\\s+const\\s+${varName}[^=]*=\\s*\\{([^}]+)\\}`,
-    "s",
-  );
+  const pattern = new RegExp(`export\\s+const\\s+${varName}[^=]*=\\s*\\{([^}]+)\\}`, "s");
   const match = pattern.exec(source);
   if (!match) return {};
   // Strip single-line comments before parsing to avoid matching comment content
@@ -152,10 +146,7 @@ const startupLabelOverrides = parseRecordStringString(serviceLabelsSource, "STAR
 
 function copyContentFiles(entries: PageEntry[]): void {
   for (const entry of entries) {
-    const mdxPath =
-      entry.slug === ""
-        ? path.join(WEB_APP, "page.mdx")
-        : path.join(WEB_APP, entry.slug, "page.mdx");
+    const mdxPath = entry.slug === "" ? path.join(WEB_APP, "page.mdx") : path.join(WEB_APP, entry.slug, "page.mdx");
 
     if (!fs.existsSync(mdxPath)) {
       console.error(`sync: missing upstream MDX at ${mdxPath} for slug "${entry.slug}"`);
@@ -227,7 +218,11 @@ export function formatServiceLabelsProse(labels) {
   return formatter.format(labels);
 }
 
-export const allDocsPages = ${JSON.stringify(pages.map((p) => ({ name: p.name, href: p.href })), null, 2)};
+export const allDocsPages = ${JSON.stringify(
+  pages.map((p) => ({ name: p.name, href: p.href })),
+  null,
+  2,
+)};
 
 export const TOP_SECTION_HREFS = ${JSON.stringify(topSectionHrefs)};
 export const REFERENCE_SECTION_HREFS = ${JSON.stringify(referenceSectionHrefs)};
@@ -294,10 +289,7 @@ function writeOrCheck(filePath: string, content: string): boolean {
 function writeOrCheckContent(entries: PageEntry[]): boolean {
   let ok = true;
   for (const entry of entries) {
-    const mdxPath =
-      entry.slug === ""
-        ? path.join(WEB_APP, "page.mdx")
-        : path.join(WEB_APP, entry.slug, "page.mdx");
+    const mdxPath = entry.slug === "" ? path.join(WEB_APP, "page.mdx") : path.join(WEB_APP, entry.slug, "page.mdx");
     const content = fs.readFileSync(mdxPath, "utf-8");
     const targetSlug = entry.slug === "" ? "_root" : entry.slug;
     const targetPath = path.join(CONTENT_DIR, `${targetSlug}.mdx`);
