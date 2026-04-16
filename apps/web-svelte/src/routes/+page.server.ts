@@ -1,21 +1,42 @@
 import type { PageServerLoad } from "./$types";
 import { highlightAll } from "$lib/code-highlight.server";
 import { defaultStartupServices, supportedServices, supportedServicesProse } from "$lib/default-services.server";
-import { rootCodeBlocks } from "$lib/root-code-blocks.server";
-import { rootLowerHalfHtml } from "$lib/root-lower-half.server";
-import { rootQuickStartIntroHtml, rootQuickStartPostListHtml } from "$lib/root-quick-start-prose.server";
 
 export const prerender = true;
 
+const codeBlockDefs = {
+  quickStart: { lang: "bash" as const, code: "npx emulate" },
+  cli: {
+    lang: "bash" as const,
+    code: `# Start the default startup set
+emulate
+
+# Start specific services
+emulate --service vercel,github,foundry
+
+# Custom port
+emulate --port 3000
+
+# Use a seed config file
+emulate --seed config.yaml
+
+# Generate a starter config
+emulate init
+
+# Generate config for a specific service
+emulate init --service foundry
+
+# List available services
+emulate list`,
+  },
+};
+
 export const load: PageServerLoad = async () => {
-  const codeBlocks = await highlightAll(rootCodeBlocks);
+  const codeBlocks = await highlightAll(codeBlockDefs);
   return {
     codeBlocks,
     defaultStartupServices,
     supportedServices,
     supportedServicesProse,
-    rootLowerHalfHtml,
-    rootQuickStartIntroHtml,
-    rootQuickStartPostListHtml,
   };
 };
