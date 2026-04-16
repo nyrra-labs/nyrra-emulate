@@ -10,6 +10,7 @@
  */
 import { PAGE_TITLES } from "./page-titles";
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore Vite injects import.meta.glob; apps/web imports this file under a non-Vite tsconfig for architecture tests.
 const upstreamMdxRaw = import.meta.glob("../../../../packages/docs-upstream/generated/content/*.mdx", {
   query: "?raw",
@@ -17,6 +18,7 @@ const upstreamMdxRaw = import.meta.glob("../../../../packages/docs-upstream/gene
   eager: true,
 }) as Record<string, string>;
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore Vite injects import.meta.glob; apps/web imports this file under a non-Vite tsconfig for architecture tests.
 const localMdRaw = import.meta.glob("../content/**/*.md", {
   query: "?raw",
