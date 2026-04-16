@@ -28,6 +28,22 @@ export default defineConfig(
 		}
 	},
 	{
+		rules: {
+			'no-restricted-imports': [
+				'error',
+				{
+					patterns: [
+						{
+							group: ['**/apps/web/**', '../../../../apps/web/**', '../../../web/**'],
+							message:
+								'Direct imports from apps/web are not allowed. Use packages/docs-upstream instead.'
+						}
+					]
+				}
+			]
+		}
+	},
+	{
 		ignores: ['build/', '.svelte-kit/', 'dist/', '.wrangler/']
 	}
 );
