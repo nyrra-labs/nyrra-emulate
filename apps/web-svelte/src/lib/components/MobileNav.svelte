@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { allItems, sections } from '$lib/nav';
+	import { allFlatItems, sections } from '$lib/nav';
 
 	let open = $state(false);
 
 	const currentPage = $derived(
-		allItems.find((item) => item.href === page.url.pathname) ?? allItems[0]
+		allFlatItems.find((item) => item.href === page.url.pathname) ?? allFlatItems[0]
 	);
 
 	function close() {
@@ -14,6 +14,10 @@
 
 	function onOverlayKey(event: KeyboardEvent) {
 		if (event.key === 'Escape') close();
+	}
+
+	function isActive(href: string): boolean {
+		return page.url.pathname === href;
 	}
 
 	$effect(() => {
@@ -120,18 +124,60 @@
 							</div>
 						{/if}
 						<ul class="space-y-1">
-							{#each section.items as { href, label } (href)}
-								{@const active = page.url.pathname === href}
+							{#each section.items as item (item.href)}
+								{@const active = isActive(item.href)}
 								<li>
 									<a
-										{href}
+										href={item.href}
 										onclick={close}
 										class="block py-2 text-sm transition-colors {active
 											? 'font-medium text-neutral-900 dark:text-neutral-100'
 											: 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100'}"
 									>
-										{label}
+										{item.label}
 									</a>
+									{#if item.children}
+										<ul class="ml-3 space-y-0.5 border-l border-neutral-200 pl-3 dark:border-neutral-800">
+											{#each item.children as child (child.href)}
+												{#if child.children}
+													<li class="pt-2 pb-1">
+														<span class="text-xs font-medium uppercase tracking-wider text-neutral-400 dark:text-neutral-600">
+															{child.label}
+														</span>
+														<ul class="mt-1 space-y-0.5">
+															{#each child.children as gc (gc.href)}
+																{@const gcActive = isActive(gc.href)}
+																<li>
+																	<a
+																		href={gc.href}
+																		onclick={close}
+																		class="block py-1 text-xs transition-colors {gcActive
+																			? 'font-medium text-neutral-900 dark:text-neutral-100'
+																			: 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100'}"
+																	>
+																		{gc.label}
+																	</a>
+																</li>
+															{/each}
+														</ul>
+													</li>
+												{:else}
+													{@const childActive = isActive(child.href)}
+													<li>
+														<a
+															href={child.href}
+															onclick={close}
+															class="block py-1 text-xs transition-colors {childActive
+																? 'font-medium text-neutral-900 dark:text-neutral-100'
+																: 'text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100'}"
+														>
+															{child.label}
+														</a>
+													</li>
+												{/if}
+											{/each}
+										</ul>
+									{/if}
 								</li>
 							{/each}
 						</ul>

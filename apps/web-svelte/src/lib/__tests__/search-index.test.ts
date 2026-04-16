@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { docsSources } from "../docs-source";
+import { allDocsEntries } from "../docs-registry";
 import { getSearchIndex } from "../search-index";
 
 describe("getSearchIndex", () => {
-  it("returns one entry per implemented docs source with a non-empty stripped body", () => {
+  it("returns one entry per docs registry entry with non-empty content", () => {
     const index = getSearchIndex();
-    expect(index.length).toBe(docsSources.length);
+    expect(index.length).toBe(allDocsEntries.length);
     expect(index.length).toBeGreaterThan(0);
     for (const entry of index) {
       expect(entry.title.length).toBeGreaterThan(0);
@@ -14,22 +14,19 @@ describe("getSearchIndex", () => {
     }
   });
 
-  it("indexes the FoundryCI docs route with the expected title and content keyword", () => {
-    const index = getSearchIndex();
-    const foundry = index.find((e) => e.href === "/foundry");
-    expect(foundry).toBeDefined();
-    expect(foundry!.title).toBe("Foundry");
-    expect(foundry!.content).toMatch(/Foundry/i);
-    expect(foundry!.content).not.toMatch(/^import /m);
-    expect(foundry!.content).not.toMatch(/```/);
-  });
-
-  it("indexes a representative non-FoundryCI route with the upstream title", () => {
+  it("indexes upstream docs with the expected title", () => {
     const index = getSearchIndex();
     const vercel = index.find((e) => e.href === "/vercel");
     expect(vercel).toBeDefined();
     expect(vercel!.title).toBe("Vercel API");
     expect(vercel!.content.length).toBeGreaterThan(0);
+  });
+
+  it("indexes local Foundry docs", () => {
+    const index = getSearchIndex();
+    const oauth = index.find((e) => e.href === "/foundry/auth/oauth");
+    expect(oauth).toBeDefined();
+    expect(oauth!.content.length).toBeGreaterThan(0);
   });
 
   it("memoizes the index and returns the same array reference on repeat calls", () => {

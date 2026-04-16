@@ -168,4 +168,27 @@ describe("Foundry compute-module runtime routes", () => {
     const fs = getFoundryStore(store);
     expect(fs.computeModuleSchemas.findBy("runtime_id", runtime.runtimeId)).toHaveLength(1);
   });
+
+  it("allows job inspection without a Module-Auth-Token", async () => {
+    const { app, store } = createFoundryTestApp();
+    const runtime = await createRuntimeSession(app);
+    const job = enqueueComputeModuleJob(store, {
+      runtimeId: runtime.runtimeId,
+      queryType: "health",
+      query: {},
+      source: "runtime-direct",
+    });
+
+    const inspectRes = await app.request(
+      `${base}/_emulate/foundry/compute-modules/runtimes/${runtime.runtimeId}/jobs/${job.job_id}`,
+    );
+
+    expect(inspectRes.status).toBe(200);
+    const inspection = (await inspectRes.json()) as {
+      runtime: { runtime_id: string };
+      job: { job_id: string };
+    };
+    expect(inspection.runtime.runtime_id).toBe(runtime.runtimeId);
+    expect(inspection.job.job_id).toBe(job.job_id);
+  });
 });

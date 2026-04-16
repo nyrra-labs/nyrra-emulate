@@ -3,15 +3,14 @@ import type { AppEnv, RouteContext, ServicePlugin, Store, TokenMap, WebhookDispa
 import type { FoundryOAuthGrantType, FoundryPrincipalType } from "./entities.js";
 import { bindComputeModuleDeployedApp, ensureComputeModuleRuntime } from "./compute-modules/helpers.js";
 import { getFoundryStore } from "./store.js";
-import { oauthRoutes } from "./routes/oauth.js";
-import { adminRoutes } from "./routes/admin.js";
-import { computeModuleRuntimeRoutes } from "./routes/compute-modules-runtime.js";
-import { computeModuleContourRoutes } from "./routes/compute-modules-contour.js";
+import { oauthRoutes, adminRoutes, computeModuleRuntimeRoutes, computeModuleContourRoutes } from "./domains.js";
 import { DEFAULT_ORGANIZATION_RID, DEFAULT_REALM, foundryUserId } from "./helpers.js";
 
 export { getFoundryStore, type FoundryStore } from "./store.js";
 export * from "./entities.js";
 export * from "./compute-modules/entities.js";
+export { FOUNDRY_ROUTES, FOUNDRY_SCOPES, FOUNDRY_GRANT_TYPES } from "./route-registry.js";
+export type { RouteEntry, RouteAuth } from "./route-registry.js";
 
 export interface FoundrySeedConfig {
   port?: number;

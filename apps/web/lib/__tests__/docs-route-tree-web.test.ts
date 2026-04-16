@@ -356,11 +356,12 @@ describe("no second hand-maintained docs route list anywhere in apps/web consume
     // non-nav consumer at `docs-navigation.ts` would silently work at
     // runtime (same symbol) but re-entrench the stale naming; this
     // guard catches it at test time with a precise error.
+    // The Svelte app now imports allDocsPages from the docs-upstream
+    // generated package, not from apps/web directly.
     const NON_NAV_CONSUMERS: ReadonlyArray<string> = [
       "apps/web/lib/page-titles.ts",
       "apps/web/lib/search-index.ts",
       "apps/web/lib/docs-files.ts",
-      "apps/web-svelte/src/lib/page-titles.ts",
     ];
     // Matches: import { allDocsPages, ... } from "<anything>/docs-pages"
     // (single or double quotes, any leading path segments).

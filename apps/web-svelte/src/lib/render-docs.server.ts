@@ -1,40 +1,10 @@
 /**
- * Server-only shared docs renderer.
+ * Server-only docs renderer.
  *
- * Takes the raw upstream MDX string for a single page (sourced from the
- * `./docs-source` registry) and returns a single sanitized HTML string
- * styled with the same Tailwind utility classes the bespoke Svelte docs
- * pages use, so the migrated route is visually indistinguishable from
- * the hand-authored prose it replaces.
- *
- * The pipeline is:
- *
- *   1. Strip MDX-only artifacts (export/import lines, JSX-only `<div
- *      className=...>` blocks) via the same `mdxToCleanMarkdown` helper
- *      the search index uses.
- *   2. Pre-highlight every fenced code block via Shiki using the
- *      project's existing `code-highlight.server` helper, so token
- *      colors and theme variables match the bespoke `<CodeBlock />`
- *      component byte-for-byte.
- *   3. Parse the cleaned markdown with `marked`, using a custom
- *      renderer that:
- *        - applies the Tailwind classes the bespoke pages use for
- *          h1/h2/p/ul/ol/li/code,
- *        - swaps each fenced code block for the same wrapper div
- *          markup `CodeBlock.svelte` emits, with the pre-highlighted
- *          Shiki HTML inlined.
- *
- * The `.server.ts` suffix tells SvelteKit to keep this file off the
- * client bundle. `marked`, the Shiki theme tables, and the cleaned
- * markdown intermediates stay on the server, and the only thing that
- * leaves is the final HTML string consumed via `{@html}` in
- * `+page.svelte`.
- *
- * Trust posture: input is a build-time-bundled string from the sibling
- * `apps/web` MDX files (via Vite's `?raw` glob in `./docs-source`).
- * It is never user input, so the `{@html}` consumption in the route
- * component is safe under the same assumptions the existing
- * `CodeBlock.svelte` component already operates on.
+ * Converts raw MDX/Markdown to styled HTML with Shiki syntax highlighting.
+ * Pipeline: strip MDX artifacts -> highlight code blocks -> render with
+ * Tailwind-classed marked renderer. Input is build-time-bundled content,
+ * never user input, so {@html} consumption is safe.
  */
 import { Marked, type Tokens } from "marked";
 import { docsSources, type DocsSource } from "./docs-source";
@@ -55,6 +25,24 @@ const LINK_CLASS =
 const CODE_BLOCK_OUTER_CLASS =
   "my-4 overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 font-mono text-[13px] dark:border-neutral-800 dark:bg-neutral-900";
 const CODE_BLOCK_INNER_CLASS = "code-block-shiki overflow-x-auto";
+const TABLE_WRAPPER_CLASS = "my-4 overflow-x-auto";
+const TABLE_CLASS = "w-full text-sm";
+const TABLE_HEAD_ROW_CLASS = "border-b border-neutral-200 dark:border-neutral-800";
+const TABLE_BODY_CLASS = "text-neutral-600 dark:text-neutral-400";
+const TABLE_BODY_ROW_CLASS = "border-b border-neutral-100 dark:border-neutral-800/50";
+const TABLE_HEADER_CELL_CLASS = "pb-2 pr-4 font-medium text-neutral-900 dark:text-neutral-100";
+const TABLE_CELL_CLASS = "py-2 pr-4 align-top";
+
+function tableAlignClass(align: Tokens.TableCell["align"]): string {
+  switch (align) {
+    case "center":
+      return "text-center";
+    case "right":
+      return "text-right";
+    default:
+      return "text-left";
+  }
+}
 
 /**
  * Maps a fenced code block's language hint onto the `SupportedLang`
@@ -75,6 +63,8 @@ function mapLang(lang: string | undefined): SupportedLang {
     case "yaml":
     case "yml":
       return "yaml";
+    case "json":
+      return "json";
     case "bash":
     case "sh":
     case "shell":
@@ -130,6 +120,27 @@ export async function renderDocsHtml(rawMdx: string): Promise<string> {
       },
       listitem(item) {
         return `<li class="${LI_CLASS}">${this.parser.parse(item.tokens)}</li>\n`;
+      },
+      table(token) {
+        const headerCells = token.header
+          .map((cell) => {
+            const text = this.parser.parseInline(cell.tokens);
+            return `<th class="${TABLE_HEADER_CELL_CLASS} ${tableAlignClass(cell.align)}">${text}</th>`;
+          })
+          .join("");
+        const bodyRows = token.rows
+          .map((row) => {
+            const cells = row
+              .map((cell) => {
+                const text = this.parser.parseInline(cell.tokens);
+                return `<td class="${TABLE_CELL_CLASS} ${tableAlignClass(cell.align)}">${text}</td>`;
+              })
+              .join("");
+            return `<tr class="${TABLE_BODY_ROW_CLASS}">${cells}</tr>`;
+          })
+          .join("");
+        const body = bodyRows.length > 0 ? `<tbody class="${TABLE_BODY_CLASS}">${bodyRows}</tbody>` : "";
+        return `<div class="${TABLE_WRAPPER_CLASS}"><table class="${TABLE_CLASS}"><thead><tr class="${TABLE_HEAD_ROW_CLASS}">${headerCells}</tr></thead>${body}</table></div>\n`;
       },
       code(token) {
         const html = highlightedByToken.get(token);

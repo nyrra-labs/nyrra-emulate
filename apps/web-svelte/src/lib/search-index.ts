@@ -1,20 +1,10 @@
 /**
  * Build-time-bundled search index for the Svelte docs.
  *
- * Each doc page pulls its raw upstream MDX through the shared
- * `./docs-source` registry, which auto-discovers upstream sources via
- * Vite's eager glob with `?raw`. The strings are parsed through the
- * same mdxToCleanMarkdown + stripMarkdown pipeline that apps/web uses
- * on the server, so result snippets match the Next.js search behavior.
- *
- * Bundling at build time keeps the production deploy of apps/web-svelte
- * self-contained: there are no runtime filesystem reads of the sibling
- * apps/web package, so the Svelte app can ship anywhere a Vite-built
- * SvelteKit app can ship.
- *
- * Mirrors apps/web/lib/search-index.ts.
+ * Uses the unified docs registry (upstream + local) so search covers
+ * all pages regardless of source kind.
  */
-import { docsSources } from "./docs-source";
+import { allDocsEntries } from "./docs-registry";
 import { mdxToCleanMarkdown } from "./mdx-to-markdown";
 
 export type IndexEntry = {
@@ -40,7 +30,7 @@ function stripMarkdown(md: string): string {
 export function getSearchIndex(): IndexEntry[] {
   if (cached) return cached;
 
-  const entries: IndexEntry[] = docsSources.map(({ title, href, raw }) => {
+  const entries: IndexEntry[] = allDocsEntries.map(({ title, href, raw }) => {
     const md = mdxToCleanMarkdown(raw);
     const content = stripMarkdown(md);
     return { title, href, content };

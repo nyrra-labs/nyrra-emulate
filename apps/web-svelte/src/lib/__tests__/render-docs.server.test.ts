@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { highlight } from "../code-highlight.server";
 import { renderDocsHtml, renderDocsHtmlByHref } from "../render-docs.server";
 
 describe("renderDocsHtmlByHref on the root /` page", () => {
@@ -68,5 +69,22 @@ describe("renderDocsHtml direct", () => {
     expect(html).toContain("<p class=");
     expect(html).toContain("A paragraph.");
     expect(html).toContain("code-block-shiki");
+  });
+
+  it("maps json fences to json highlighting instead of the bash fallback", async () => {
+    const code = ["{", '  "enabled": true,', '  "service": "foundry"', "}"].join("\n");
+    const md = ["```json", code, "```", ""].join("\n");
+    const expected = await highlight(code, "json");
+    const html = await renderDocsHtml(md);
+    expect(html).toContain(expected);
+  });
+
+  it("renders markdown tables with the same overflow and table utility classes as the root page", async () => {
+    const md = ["| Name | Value |", "|---|---:|", "| Foundry | 1 |", ""].join("\n");
+    const html = await renderDocsHtml(md);
+    expect(html).toContain('class="my-4 overflow-x-auto"');
+    expect(html).toContain('<table class="w-full text-sm">');
+    expect(html).toContain("text-right");
+    expect(html).toContain("text-neutral-900");
   });
 });

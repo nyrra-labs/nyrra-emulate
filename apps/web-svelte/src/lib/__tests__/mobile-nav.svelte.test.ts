@@ -62,6 +62,12 @@ describe("MobileNav.svelte SSR closed trigger", () => {
     expect(body).toMatch(/<span[^>]*>\s*Apple\s*<\/span>/);
     expect(body).not.toMatch(/<span[^>]*>\s*Apple Sign In\s*<\/span>/);
   });
+
+  it("prefers the leaf Foundry page label over the duplicated group header label", () => {
+    const body = renderMobileNav("/foundry/auth/oauth");
+    expect(body).toMatch(/<span[^>]*>\s*OAuth 2\.0\s*<\/span>/);
+    expect(body).not.toMatch(/<span[^>]*>\s*Auth\s*<\/span>/);
+  });
 });
 
 describe("MobileNav.svelte SSR closed-state drawer absence", () => {

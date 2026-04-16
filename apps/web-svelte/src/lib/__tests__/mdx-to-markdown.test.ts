@@ -67,6 +67,23 @@ describe("mdxToCleanMarkdown synthetic fixtures", () => {
     expect(out).toContain("echo hi");
     expect(out).toContain("```");
   });
+
+  it("preserves import and export lines inside fenced code blocks while still stripping top-level directives", () => {
+    const input = [
+      'import { Code } from "../components/code";',
+      'export const meta = { title: "Foo" };',
+      "",
+      "```typescript",
+      'import { createHash } from "crypto";',
+      "export const answer = 42;",
+      "```",
+    ].join("\n");
+    const out = mdxToCleanMarkdown(input);
+    expect(out).not.toContain("../components/code");
+    expect(out).not.toContain('title: "Foo"');
+    expect(out).toContain('import { createHash } from "crypto";');
+    expect(out).toContain("export const answer = 42;");
+  });
 });
 
 describe("mdxToCleanMarkdown on real upstream fixtures", () => {

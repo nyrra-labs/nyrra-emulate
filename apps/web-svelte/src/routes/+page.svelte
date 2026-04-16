@@ -66,27 +66,10 @@
 
 <CodeBlock html={data.codeBlocks.quickStart} />
 
-<!--
-	The Quick Start intro paragraph below and the post-list Foundry-
-	availability paragraph further down are derived from upstream
-	`apps/web/app/page.mdx` via `$lib/root-quick-start-prose.server.ts`,
-	so future upstream edits to either fragment flow into this page
-	automatically. The runtime-derived default-startup list still sits
-	between them, so the Quick Start section reads: upstream intro
-	prose -> runtime list -> upstream post-list prose -> CLI heading.
--->
-<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-{@html data.rootQuickStartIntroHtml}
+<p class="mb-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
+	The default startup set starts with sensible defaults. No config file needed:
+</p>
 
-<!--
-	The default startup service list is derived from the runtime
-	`DEFAULT_SERVICE_NAMES` constant in `packages/emulate/src/registry.ts`
-	via `$lib/default-services.server.ts`, so a future change to the
-	default startup set in the CLI flows into this list automatically
-	without a parallel local edit. Each entry's port is `4000 + index`,
-	matching the CLI's `basePort + i` allocation in
-	`packages/emulate/src/commands/start.ts`.
--->
 <ul class="mb-4 list-disc space-y-1 pl-5 text-sm">
 	{#each data.defaultStartupServices as service (service.name)}
 		<li class="text-neutral-600 dark:text-neutral-400">
@@ -99,24 +82,80 @@
 	{/each}
 </ul>
 
-<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-{@html data.rootQuickStartPostListHtml}
+<p class="mb-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
+	Foundry is available when you enable it explicitly with
+	<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
+		>emulate --service foundry</code
+	>
+	or include
+	<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
+		>foundry:</code
+	>
+	in the seed config. The current Foundry slice covers OAuth 2.0, current-user lookup, and
+	compute-module runtime plus contour routes.
+</p>
 
 <h2 class="mb-4 mt-12 text-lg font-semibold text-neutral-900 dark:text-neutral-100">CLI</h2>
 
 <CodeBlock html={data.codeBlocks.cli} />
 
-<!--
-	The Options / Programmatic API / Next.js Integration sections
-	below are derived from upstream `apps/web/app/page.mdx` via the
-	shared `renderDocsHtml` pipeline (see
-	`$lib/root-lower-half.server.ts`), so any future upstream edit to
-	those sections flows into this page automatically. The
-	Foundry-first hero, the Start with Foundry section, the derived
-	default startup list, and the Quick Start / CLI code blocks above
-	remain hand-authored or upstream-code-block-sourced separately.
--->
-<div class="docs-content">
-	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
-	{@html data.rootLowerHalfHtml}
+<h2 class="mb-4 mt-12 text-lg font-semibold text-neutral-900 dark:text-neutral-100">Options</h2>
+
+<div class="my-4 overflow-x-auto">
+	<table class="w-full text-sm">
+		<thead>
+			<tr class="border-b border-neutral-200 dark:border-neutral-800">
+				<th class="pb-2 pr-4 text-left font-medium text-neutral-900 dark:text-neutral-100">Flag</th>
+				<th class="pb-2 pr-4 text-left font-medium text-neutral-900 dark:text-neutral-100">Default</th>
+				<th class="pb-2 text-left font-medium text-neutral-900 dark:text-neutral-100">Description</th>
+			</tr>
+		</thead>
+		<tbody class="text-neutral-600 dark:text-neutral-400">
+			<tr class="border-b border-neutral-100 dark:border-neutral-800/50">
+				<td class="py-2 pr-4"><code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800">-p, --port</code></td>
+				<td class="py-2 pr-4"><code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800">4000</code></td>
+				<td class="py-2">Base port (auto-increments per service)</td>
+			</tr>
+			<tr class="border-b border-neutral-100 dark:border-neutral-800/50">
+				<td class="py-2 pr-4"><code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800">-s, --service</code></td>
+				<td class="py-2 pr-4">default startup set</td>
+				<td class="py-2">Comma-separated services to enable</td>
+			</tr>
+			<tr>
+				<td class="py-2 pr-4"><code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800">--seed</code></td>
+				<td class="py-2 pr-4">auto-detect</td>
+				<td class="py-2">Path to seed config (YAML or JSON)</td>
+			</tr>
+		</tbody>
+	</table>
 </div>
+
+<p class="mb-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
+	The port can also be set via
+	<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800">EMULATE_PORT</code>
+	or
+	<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800">PORT</code>
+	environment variables.
+</p>
+
+<h2 class="mb-4 mt-12 text-lg font-semibold text-neutral-900 dark:text-neutral-100">Programmatic API</h2>
+
+<p class="mb-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
+	You can also use emulate as a library in your tests. See the
+	<a
+		class="text-neutral-900 underline decoration-neutral-300 underline-offset-2 hover:decoration-neutral-900 dark:text-neutral-100 dark:decoration-neutral-700 dark:hover:decoration-neutral-100"
+		href="/programmatic-api">Programmatic API</a
+	> page for
+	<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800">createEmulator</code>,
+	Vitest/Jest setup, and instance methods.
+</p>
+
+<h2 class="mb-4 mt-12 text-lg font-semibold text-neutral-900 dark:text-neutral-100">Next.js Integration</h2>
+
+<p class="mb-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
+	Embed emulators directly in your Next.js app so they run on the same origin. See the
+	<a
+		class="text-neutral-900 underline decoration-neutral-300 underline-offset-2 hover:decoration-neutral-900 dark:text-neutral-100 dark:decoration-neutral-700 dark:hover:decoration-neutral-100"
+		href="/nextjs">Next.js Integration</a
+	> page for setup instructions.
+</p>

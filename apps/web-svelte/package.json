@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@sveltejs/kit": "^2",
+    "docs-upstream": "workspace:*",
     "marked": "^18.0.0",
     "shiki": "4.0.2"
   },
