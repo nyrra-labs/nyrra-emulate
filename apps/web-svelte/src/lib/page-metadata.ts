@@ -50,6 +50,7 @@
  * import its own root hero copy from the upstream emulate docs.
  */
 import { PAGE_TITLES } from "./page-titles";
+import { docsEntryByHref } from "./docs-registry";
 import { FOUNDRYCI_SITE_NAME } from "./foundryci-branding";
 import {
   OG_IMAGE_HEIGHT,
@@ -167,19 +168,31 @@ export function pageMetadata(slug: string): PageMetadata | null {
     };
   }
 
-  const title = PAGE_TITLES[slug];
-  if (title === undefined) return null;
+  // Look up title from upstream PAGE_TITLES first, then docs registry
+  let title = PAGE_TITLES[slug];
+  if (title === undefined) {
+    const href = `/${slug}`;
+    const entry = docsEntryByHref.get(href);
+    if (!entry) return null;
+    title = entry.title;
+  }
 
   const displayTitle = title.replace(/\n/g, " ");
   const url = `${BASE_URL}/${slug}`;
 
+  // All foundry/* pages get FoundryCI-branded metadata
+  const isFoundryPage = slug === "foundry" || slug.startsWith("foundry/");
   const foundryciOverride = FOUNDRYCI_PAGE_METADATA[slug];
-  if (foundryciOverride !== undefined) {
+  if (foundryciOverride !== undefined || (isFoundryPage && !foundryciOverride)) {
     // FoundryCI-critical page: lead with the FoundryCI brand in every
     // metadata surface. The OG image alt text uses the bare displayTitle
     // plus the FoundryCI site name so screen readers describe the card
     // as "<page> - FoundryCI by Nyrra" rather than "<page> - emulate".
-    const { title: foundryTitle, description: foundryDescription } = foundryciOverride;
+    const defaultFoundryMeta = {
+      title: `${displayTitle} | ${FOUNDRYCI_SITE_NAME}`,
+      description: `${displayTitle} for FoundryCI. Local Palantir Foundry emulation by Nyrra, built on emulate by Vercel Labs.`,
+    };
+    const { title: foundryTitle, description: foundryDescription } = foundryciOverride ?? defaultFoundryMeta;
     return {
       title: foundryTitle,
       description: foundryDescription,

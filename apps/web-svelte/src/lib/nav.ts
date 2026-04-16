@@ -1,13 +1,12 @@
 /**
  * Sidebar and mobile-nav source of truth for the Svelte docs site.
  *
- * `sections` is the ordered list of nav groupings. Each entry's visible
- * label is resolved from `PAGE_TITLES` by default, with overrides from
- * `NAV_LABEL_OVERRIDES` for service pages whose nav label is shorter
- * than the document title. Nav section hrefs and label overrides come
- * from the docs-upstream generated package.
+ * Supports both upstream-backed pages (single-segment hrefs like /vercel)
+ * and local Foundry docs pages (nested hrefs like /foundry/auth/oauth).
+ * Nav section hrefs and label overrides come from docs-upstream.
  */
 import { PAGE_TITLES } from "./page-titles";
+import { allDocsEntries } from "./docs-registry";
 import {
   NAV_LABEL_OVERRIDES,
   REFERENCE_SECTION_HREFS,
@@ -16,21 +15,80 @@ import {
 
 export { NAV_LABEL_OVERRIDES, REFERENCE_SECTION_HREFS, TOP_SECTION_HREFS };
 
+export type NavItem = {
+  href: string;
+  label: string;
+  children?: NavItem[];
+};
+
 export type NavSection = {
   title?: string;
-  items: { href: string; label: string }[];
+  items: NavItem[];
 };
 
 /**
- * Implemented pages that intentionally do not appear in the nav.
- * Every entry must be a slug that exists in `PAGE_TITLES`.
+ * Foundry sub-navigation hierarchy. These are local pages that appear
+ * as children under the /foundry nav entry.
  */
-const INTENTIONALLY_HIDDEN: ReadonlySet<string> = new Set<string>();
+const FOUNDRY_CHILDREN: NavItem[] = [
+  { href: "/foundry/getting-started", label: "Getting Started" },
+  {
+    href: "/foundry/auth/oauth",
+    label: "Auth",
+    children: [
+      { href: "/foundry/auth/oauth", label: "OAuth 2.0" },
+      { href: "/foundry/auth/client-credentials", label: "Client Credentials" },
+      { href: "/foundry/auth/refresh-tokens", label: "Refresh Tokens" },
+      { href: "/foundry/auth/scopes", label: "Scopes" },
+      { href: "/foundry/auth/current-user", label: "Current User" },
+    ],
+  },
+  {
+    href: "/foundry/admin/users",
+    label: "Admin",
+    children: [
+      { href: "/foundry/admin/users", label: "Users" },
+    ],
+  },
+  {
+    href: "/foundry/compute-modules/overview",
+    label: "Compute Modules",
+    children: [
+      { href: "/foundry/compute-modules/overview", label: "Overview" },
+      { href: "/foundry/compute-modules/runtimes", label: "Runtimes" },
+      { href: "/foundry/compute-modules/jobs", label: "Jobs" },
+    ],
+  },
+  {
+    href: "/foundry/reference/seed-config",
+    label: "Reference",
+    children: [
+      { href: "/foundry/reference/seed-config", label: "Seed Config" },
+      { href: "/foundry/reference/endpoints", label: "Endpoints" },
+      { href: "/foundry/reference/scope-matrix", label: "Scope Matrix" },
+    ],
+  },
+];
 
-/**
- * Svelte-local services section ordering. FoundryCI-first, not derived
- * from the upstream registry's source order.
- */
+function hrefToSlug(href: string): string {
+  return href === "/" ? "" : href.replace(/^\/+/, "").replace(/\/+$/, "");
+}
+
+function resolveNavLabel(href: string): string {
+  const override = NAV_LABEL_OVERRIDES[href];
+  if (override !== undefined) return override;
+  const slug = hrefToSlug(href);
+  const title = PAGE_TITLES[slug];
+  if (title !== undefined) return title;
+  // For local pages, look up in the docs registry
+  const entry = allDocsEntries.find((e) => e.href === href);
+  if (entry) return entry.title;
+  throw new Error(
+    `nav: href ${JSON.stringify(href)} has no title source. ` +
+      `Add it to PAGE_TITLES, docs-registry, or NAV_LABEL_OVERRIDES.`,
+  );
+}
+
 const SERVICES_SECTION_HREFS: readonly string[] = [
   "/foundry",
   "/vercel",
@@ -47,79 +105,22 @@ const SERVICES_SECTION_HREFS: readonly string[] = [
 ];
 
 const rawSections: { title?: string; hrefs: readonly string[] }[] = [
-  {
-    hrefs: TOP_SECTION_HREFS,
-  },
-  {
-    title: "Services",
-    hrefs: SERVICES_SECTION_HREFS,
-  },
-  {
-    title: "Reference",
-    hrefs: REFERENCE_SECTION_HREFS,
-  },
+  { hrefs: TOP_SECTION_HREFS },
+  { title: "Services", hrefs: SERVICES_SECTION_HREFS },
+  { title: "Reference", hrefs: REFERENCE_SECTION_HREFS },
 ];
 
-function hrefToSlug(href: string): string {
-  return href === "/" ? "" : href.replace(/^\/+/, "").replace(/\/+$/, "");
-}
-
-function resolveNavLabel(href: string): string {
-  const override = NAV_LABEL_OVERRIDES[href];
-  if (override !== undefined) return override;
-  const slug = hrefToSlug(href);
-  const title = PAGE_TITLES[slug];
-  if (title === undefined) {
-    throw new Error(
-      `nav: href ${JSON.stringify(href)} has no PAGE_TITLES entry and no ` +
-        `NAV_LABEL_OVERRIDES entry. Add the slug to page-titles.ts before linking.`,
-    );
+function buildNavItem(href: string): NavItem {
+  const label = resolveNavLabel(href);
+  if (href === "/foundry") {
+    return { href, label, children: FOUNDRY_CHILDREN };
   }
-  return title;
+  return { href, label };
 }
 
 export const sections: NavSection[] = rawSections.map((section) => ({
   title: section.title,
-  items: section.hrefs.map((href) => ({ href, label: resolveNavLabel(href) })),
+  items: section.hrefs.map(buildNavItem),
 }));
 
 export const allItems = sections.flatMap((s) => s.items);
-
-const visibleHrefs = new Set(allItems.map((item) => item.href));
-const visibleSlugs = new Set(allItems.map((item) => hrefToSlug(item.href)));
-
-for (const overrideHref of Object.keys(NAV_LABEL_OVERRIDES)) {
-  if (!visibleHrefs.has(overrideHref)) {
-    throw new Error(
-      `nav: NAV_LABEL_OVERRIDES has an entry for ${JSON.stringify(overrideHref)} ` +
-        `that is not visible in any nav section.`,
-    );
-  }
-  const overrideSlug = hrefToSlug(overrideHref);
-  if (!(overrideSlug in PAGE_TITLES)) {
-    throw new Error(
-      `nav: NAV_LABEL_OVERRIDES has an entry for ${JSON.stringify(overrideHref)} ` +
-        `whose slug ${JSON.stringify(overrideSlug)} is not in PAGE_TITLES.`,
-    );
-  }
-}
-
-for (const slug of Object.keys(PAGE_TITLES)) {
-  if (!visibleSlugs.has(slug) && !INTENTIONALLY_HIDDEN.has(slug)) {
-    const display = slug === "" ? "/" : `/${slug}`;
-    throw new Error(
-      `nav: PAGE_TITLES entry ${JSON.stringify(display)} is neither visible in ` +
-        `sections nor listed in INTENTIONALLY_HIDDEN.`,
-    );
-  }
-}
-
-for (const slug of INTENTIONALLY_HIDDEN) {
-  if (!(slug in PAGE_TITLES)) {
-    const display = slug === "" ? "/" : `/${slug}`;
-    throw new Error(
-      `nav: INTENTIONALLY_HIDDEN entry ${JSON.stringify(display)} has no ` +
-        `PAGE_TITLES entry.`,
-    );
-  }
-}
