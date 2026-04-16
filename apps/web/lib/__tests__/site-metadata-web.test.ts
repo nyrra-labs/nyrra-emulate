@@ -459,9 +459,9 @@ describe("apps/web/lib/docs-chat-summary.ts delegates product-name branding to S
 });
 
 describe("apps/web-svelte/src/lib/upstream-site-metadata.ts re-exports the upstream branding surface", () => {
-  it("re-exports from the canonical apps/web/lib/site-metadata.ts path", () => {
+  it("re-exports from the docs-upstream generated package", () => {
     const src = readFileSync(WEB_SVELTE_UPSTREAM_META_PATH, "utf-8");
-    expect(src).toContain('from "../../../../apps/web/lib/site-metadata"');
+    expect(src).toContain('from "docs-upstream"');
   });
 
   it("re-exports every constant the Svelte consumers rely on", () => {

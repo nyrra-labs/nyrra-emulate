@@ -2,11 +2,10 @@ import { describe, expect, it } from "vitest";
 import { STARTUP_LABEL_OVERRIDES, formatServiceLabelsProse, resolveServiceLabel } from "../service-labels";
 import { STARTUP_LABEL_OVERRIDES as docsChatOverrides } from "../docs-chat-summary";
 // Cross-workspace import: the Svelte default-services.server.ts
-// re-exports the same underlying STARTUP_LABEL_OVERRIDES reference
-// via its own import from apps/web/lib/service-labels.ts. The
-// identity-equality guard below proves both re-exports resolve to
-// the same object, catching any regression that reintroduces a
-// parallel literal on either side.
+// re-exports STARTUP_LABEL_OVERRIDES from the docs-upstream generated
+// package (which itself derives from apps/web/lib/service-labels.ts
+// via the sync script). The value-equality guard below proves both
+// sides carry the same overrides.
 import { STARTUP_LABEL_OVERRIDES as svelteOverrides } from "../../../web-svelte/src/lib/default-services.server";
 import { DEFAULT_SERVICE_NAMES, SERVICE_NAMES } from "../../../../packages/emulate/src/service-names";
 
@@ -26,8 +25,8 @@ describe("STARTUP_LABEL_OVERRIDES canonical shape", () => {
     expect(docsChatOverrides).toBe(STARTUP_LABEL_OVERRIDES);
   });
 
-  it("is the exact same object reference re-exported from apps/web-svelte default-services.server", () => {
-    expect(svelteOverrides).toBe(STARTUP_LABEL_OVERRIDES);
+  it("has the same values as the docs-upstream copy re-exported from apps/web-svelte default-services.server", () => {
+    expect(svelteOverrides).toEqual(STARTUP_LABEL_OVERRIDES);
   });
 
   it("covers every brand-sensitive service name currently in SERVICE_NAMES (no unapplied overrides)", () => {
