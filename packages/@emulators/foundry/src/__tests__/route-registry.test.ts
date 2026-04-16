@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { FOUNDRY_ROUTES } from "../route-registry.js";
+import {
+  FOUNDRY_GRANT_TYPES as EXPORTED_FOUNDRY_GRANT_TYPES,
+  FOUNDRY_ROUTES as EXPORTED_FOUNDRY_ROUTES,
+  FOUNDRY_SCOPES as EXPORTED_FOUNDRY_SCOPES,
+} from "../index.js";
+import { FOUNDRY_ROUTES, FOUNDRY_SCOPES, FOUNDRY_GRANT_TYPES } from "../route-registry.js";
 
 function routeAuth(method: string, path: string): string | undefined {
   return FOUNDRY_ROUTES.find((route) => route.method === method && route.path === path)?.auth;
@@ -10,6 +15,12 @@ function routeScopes(method: string, path: string): readonly string[] | undefine
 }
 
 describe("FOUNDRY_ROUTES auth metadata", () => {
+  it("re-exports route metadata from the package entrypoint", () => {
+    expect(EXPORTED_FOUNDRY_ROUTES).toBe(FOUNDRY_ROUTES);
+    expect(EXPORTED_FOUNDRY_SCOPES).toBe(FOUNDRY_SCOPES);
+    expect(EXPORTED_FOUNDRY_GRANT_TYPES).toBe(FOUNDRY_GRANT_TYPES);
+  });
+
   it("marks the token endpoint as form-authenticated rather than header-authenticated", () => {
     expect(routeAuth("POST", "/multipass/api/oauth2/token")).toBe("none");
   });

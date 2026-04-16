@@ -20,6 +20,8 @@ import {
 export { getFoundryStore, type FoundryStore } from "./store.js";
 export * from "./entities.js";
 export * from "./compute-modules/entities.js";
+export { FOUNDRY_ROUTES, FOUNDRY_SCOPES, FOUNDRY_GRANT_TYPES } from "./route-registry.js";
+export type { RouteEntry, RouteAuth } from "./route-registry.js";
 
 export interface FoundrySeedConfig {
   port?: number;

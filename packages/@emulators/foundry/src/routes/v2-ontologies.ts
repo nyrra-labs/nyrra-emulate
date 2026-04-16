@@ -28,7 +28,7 @@ export function v2OntologyRoutes({ app, store }: RouteContext): void {
       pageToken,
     );
 
-    return c.json({ data: page.data });
+    return c.json({ data: page.data, nextPageToken: page.nextPageToken || undefined });
   });
 
   app.post("/api/v2/ontologies/:ontology/queries/:queryApiName/execute", requireAuth(), async (c) => {

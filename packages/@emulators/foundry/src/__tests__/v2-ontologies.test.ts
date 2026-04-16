@@ -56,16 +56,17 @@ describe("Foundry v2 ontology routes", () => {
       headers: authHeader("ont-read"),
     });
     expect(res1.status).toBe(200);
-    const body1 = (await res1.json()) as { data: unknown[] };
+    const body1 = (await res1.json()) as { data: unknown[]; nextPageToken?: string };
     expect(body1.data).toHaveLength(1);
+    expect(body1.nextPageToken).toBeDefined();
 
-    const nextPageToken = Buffer.from("1").toString("base64url");
-    const res2 = await app.request(`${base}/api/v2/ontologies?pageSize=1&pageToken=${nextPageToken}`, {
+    const res2 = await app.request(`${base}/api/v2/ontologies?pageSize=1&pageToken=${body1.nextPageToken}`, {
       headers: authHeader("ont-read"),
     });
     expect(res2.status).toBe(200);
-    const body2 = (await res2.json()) as { data: unknown[] };
+    const body2 = (await res2.json()) as { data: unknown[]; nextPageToken?: string };
     expect(body2.data).toHaveLength(1);
+    expect(body2.nextPageToken).toBeUndefined();
   });
 
   it("GET /api/v2/ontologies requires api:ontologies-read", async () => {
