@@ -124,3 +124,24 @@ export const sections: NavSection[] = rawSections.map((section) => ({
 }));
 
 export const allItems = sections.flatMap((s) => s.items);
+
+/** Flat list of every nav item including nested children, for page lookups. */
+function flattenItems(items: NavItem[]): NavItem[] {
+  const result: NavItem[] = [];
+  for (const item of items) {
+    result.push(item);
+    if (item.children) {
+      for (const child of item.children) {
+        result.push(child);
+        if (child.children) {
+          for (const grandchild of child.children) {
+            result.push(grandchild);
+          }
+        }
+      }
+    }
+  }
+  return result;
+}
+
+export const allFlatItems = flattenItems(allItems);
