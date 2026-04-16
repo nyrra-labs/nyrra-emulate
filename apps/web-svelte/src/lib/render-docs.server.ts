@@ -45,6 +45,8 @@ function mapLang(lang: string | undefined): SupportedLang {
     case "yaml":
     case "yml":
       return "yaml";
+    case "json":
+      return "json";
     case "bash":
     case "sh":
     case "shell":

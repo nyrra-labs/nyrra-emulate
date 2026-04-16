@@ -268,14 +268,28 @@ export type ManifestPage = {
 // 7. Write or check
 // ---------------------------------------------------------------------------
 
-function writeOrCheck(filePath: string, content: string): boolean {
+function normalizeManifestForCheck(content: string): string {
+  try {
+    const parsed = JSON.parse(content) as { generatedAt?: string };
+    delete parsed.generatedAt;
+    return JSON.stringify(parsed, null, 2) + "\n";
+  } catch {
+    return content;
+  }
+}
+
+function writeOrCheck(
+  filePath: string,
+  content: string,
+  normalizeForCheck: (content: string) => string = (value) => value,
+): boolean {
   if (checkMode) {
     if (!fs.existsSync(filePath)) {
       console.error(`CHECK FAILED: missing ${path.relative(ROOT, filePath)}`);
       return false;
     }
     const existing = fs.readFileSync(filePath, "utf-8");
-    if (existing !== content) {
+    if (normalizeForCheck(existing) !== normalizeForCheck(content)) {
       console.error(`CHECK FAILED: stale ${path.relative(ROOT, filePath)}`);
       return false;
     }
@@ -298,16 +312,13 @@ function writeOrCheckContent(entries: PageEntry[]): boolean {
   return ok;
 }
 
-// Strip generatedAt from manifest for deterministic check
 const manifestForWrite = JSON.stringify(manifest, null, 2) + "\n";
-// For check mode, compare without the date
-const manifestNoDate = { ...manifest, generatedAt: undefined };
 
 let allOk = true;
 
 if (!writeOrCheck(path.join(GENERATED, "index.js"), indexJs)) allOk = false;
 if (!writeOrCheck(path.join(GENERATED, "index.d.ts"), indexDts)) allOk = false;
-if (!writeOrCheck(path.join(GENERATED, "manifest.json"), manifestForWrite)) allOk = false;
+if (!writeOrCheck(path.join(GENERATED, "manifest.json"), manifestForWrite, normalizeManifestForCheck)) allOk = false;
 if (!writeOrCheck(path.join(GENERATED, "nav.json"), JSON.stringify(nav, null, 2) + "\n")) allOk = false;
 if (!writeOrCheckContent(pages)) allOk = false;
 

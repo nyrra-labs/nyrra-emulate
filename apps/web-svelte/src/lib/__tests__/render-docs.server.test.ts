@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { highlight } from "../code-highlight.server";
 import { renderDocsHtml, renderDocsHtmlByHref } from "../render-docs.server";
 
 describe("renderDocsHtmlByHref on the root /` page", () => {
@@ -68,5 +69,13 @@ describe("renderDocsHtml direct", () => {
     expect(html).toContain("<p class=");
     expect(html).toContain("A paragraph.");
     expect(html).toContain("code-block-shiki");
+  });
+
+  it("maps json fences to json highlighting instead of the bash fallback", async () => {
+    const code = ["{", '  "enabled": true,', '  "service": "foundry"', "}"].join("\n");
+    const md = ["```json", code, "```", ""].join("\n");
+    const expected = await highlight(code, "json");
+    const html = await renderDocsHtml(md);
+    expect(html).toContain(expected);
   });
 });

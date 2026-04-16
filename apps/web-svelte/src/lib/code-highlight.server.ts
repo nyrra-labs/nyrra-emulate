@@ -147,7 +147,7 @@ const vercelLightTheme = {
   ],
 };
 
-export type SupportedLang = "bash" | "yaml" | "typescript";
+export type SupportedLang = "bash" | "json" | "yaml" | "typescript";
 
 export async function highlight(code: string, lang: SupportedLang = "typescript"): Promise<string> {
   return await codeToHtml(code.trim(), {

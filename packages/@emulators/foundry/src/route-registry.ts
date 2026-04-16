@@ -6,7 +6,7 @@
  * scope matrices, and coverage assertions.
  */
 
-export type RouteAuth = "bearer" | "module-auth-token" | "client-basic" | "none";
+export type RouteAuth = "bearer" | "module-auth-token" | "none";
 
 export type RouteEntry = {
   method: string;
@@ -46,7 +46,7 @@ export const FOUNDRY_ROUTES: readonly RouteEntry[] = [
     path: "/multipass/api/oauth2/token",
     domain: "auth",
     description: "Token exchange. Supports authorization_code, refresh_token, and client_credentials grants.",
-    auth: "client-basic",
+    auth: "none",
     category: "OAuth",
   },
 
@@ -67,7 +67,7 @@ export const FOUNDRY_ROUTES: readonly RouteEntry[] = [
     path: "/_emulate/foundry/compute-modules/runtimes",
     domain: "compute-modules",
     description: "Create or reset a runtime session. Returns moduleAuthToken and polling URLs.",
-    auth: "bearer",
+    auth: "none",
     category: "Runtime Control",
   },
   {
@@ -102,7 +102,7 @@ export const FOUNDRY_ROUTES: readonly RouteEntry[] = [
     path: "/_emulate/foundry/compute-modules/runtimes/:runtimeId/jobs/:jobId",
     domain: "compute-modules",
     description: "Inspect a job's state, schemas, and result.",
-    auth: "module-auth-token",
+    auth: "none",
     category: "Runtime Control",
   },
 

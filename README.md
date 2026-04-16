@@ -719,7 +719,7 @@ Behavior notes:
 - `offline_access` returns refresh tokens and refresh rotates them
 - `client_credentials` creates a service principal whose username matches `client_id`
 - `getCurrent` requires the `api:admin-read` scope
-- Runtime routes require the exact `Module-Auth-Token` header returned by the control route
+- Runtime polling, schema, and result routes require the exact `Module-Auth-Token` header returned by the control route
 - Contour routes require bearer auth and return raw `application/octet-stream` bodies for both single JSON and streaming outputs
 
 ## AWS

@@ -34,7 +34,7 @@ export default defineConfig(
 				{
 					patterns: [
 						{
-							group: ['**/apps/web/**', '../../../../apps/web/**', '../../../web/**'],
+							regex: '^(?:\\.\\./)+(?:apps/web|web)/|^apps/web/',
 							message:
 								'Direct imports from apps/web are not allowed. Use packages/docs-upstream instead.'
 						}

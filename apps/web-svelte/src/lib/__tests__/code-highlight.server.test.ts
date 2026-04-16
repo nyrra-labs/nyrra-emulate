@@ -39,6 +39,13 @@ describe("highlight", () => {
     expect(html).toContain("enabled");
   });
 
+  it("renders json with the same Shiki dual-theme wrapper", async () => {
+    const html = await highlight('{"enabled":true,"service":"foundry"}', "json");
+    expect(isShikiHtml(html)).toBe(true);
+    expect(html).toContain("enabled");
+    expect(html).toContain("foundry");
+  });
+
   it("trims leading/trailing whitespace from the input before tokenizing", async () => {
     const padded = await highlight("\n\nnpx emulate\n\n", "bash");
     const trimmed = await highlight("npx emulate", "bash");
@@ -56,16 +63,18 @@ describe("highlightAll", () => {
   it("preserves the requested keys, insertion order, and maps each to Shiki HTML", async () => {
     const blocks: Record<string, { lang: SupportedLang; code: string }> = {
       first: { lang: "bash", code: "echo first" },
+      json: { lang: "json", code: '{"ok":true}' },
       second: { lang: "typescript", code: "const second = 2;" },
       third: { lang: "yaml", code: "third: 3" },
     };
     const out = await highlightAll(blocks);
-    expect(Object.keys(out)).toEqual(["first", "second", "third"]);
+    expect(Object.keys(out)).toEqual(["first", "json", "second", "third"]);
     for (const key of Object.keys(out)) {
       expect(isShikiHtml(out[key])).toBe(true);
     }
     expect(out.first).toContain("echo");
     expect(out.first).toContain("first");
+    expect(out.json).toContain("ok");
     expect(out.second).toContain("const");
     expect(out.second).toContain("second");
     expect(out.third).toContain("third");

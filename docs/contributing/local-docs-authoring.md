@@ -10,15 +10,12 @@ Local docs pages live in `apps/web-svelte/src/content/` as Markdown files. They 
    - `src/content/foundry/auth/oauth.md` serves at `/foundry/auth/oauth`
    - `src/content/foundry/getting-started.md` serves at `/foundry/getting-started`
 
-2. Add frontmatter with at minimum a `title`:
+2. Start the file with an H1 heading. The local docs registry derives the page title from the first H1:
    ```markdown
-   ---
-   title: OAuth 2.0
-   description: Foundry OAuth 2.0 authorization and token exchange
-   ---
+   # OAuth 2.0
    ```
 
-3. Add the page to the docs registry in `src/lib/docs-registry.ts` with `kind: "local"`.
+3. No registry edit is needed. `src/lib/docs-registry.ts` auto-discovers local Markdown files under `src/content/`.
 
 4. Add the page to the nav structure in `src/lib/nav.ts` under the appropriate section.
 
@@ -59,4 +56,4 @@ The local Foundry docs use a nested hierarchy:
 
 ## Metadata
 
-Page metadata (title, description, OG tags) is resolved from the docs registry. Local pages specify their title and description in the registry entry or via Markdown frontmatter. FoundryCI-branded pages get brand-leading metadata automatically.
+Page metadata (title, description, OG tags) is resolved centrally. Local pages supply their title through the first H1, while descriptions and FoundryCI branding come from `src/lib/page-metadata.ts`.

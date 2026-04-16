@@ -188,7 +188,7 @@ The response returns:
 - `postSchemaUri`
 - `postResultUri`
 
-Point a real `@palantir/compute-module` container at those URLs, send `Module-Auth-Token` on runtime routes, and use the contour routes for app-facing execution:
+Point a real `@palantir/compute-module` container at those URLs, send `Module-Auth-Token` on runtime polling, schema, and result routes, and use the contour routes for app-facing execution:
 
 ```bash
 curl -X POST http://localhost:4000/contour-backend-multiplexer/api/module-group-multiplexer/compute-modules/jobs/execute \
