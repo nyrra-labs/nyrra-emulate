@@ -26,7 +26,7 @@ The default startup set starts with sensible defaults:
 | Microsoft | 4005        |
 | AWS       | 4006        |
 
-Foundry is opt-in. Start it explicitly with `npx emulate --service foundry`, or include `foundry:` in the seed config so service inference enables it. The current Foundry slice covers OAuth, current-user lookup, and compute-module runtime plus contour routes.
+Foundry is opt-in. Start it explicitly with `npx emulate --service foundry`, or include `foundry:` in the seed config so service inference enables it. When Foundry runs on its own, it uses `http://localhost:4000`; if you start multiple services together, ports are assigned in `--service` order from the base port. The current Foundry slice covers OAuth, current-user lookup, and compute-module runtime plus contour routes.
 
 ## CLI
 

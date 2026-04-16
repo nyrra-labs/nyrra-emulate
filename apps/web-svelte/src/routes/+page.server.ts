@@ -5,7 +5,7 @@ import { defaultStartupServices, supportedServices, supportedServicesProse } fro
 export const prerender = true;
 
 const codeBlockDefs = {
-  quickStart: { lang: "bash" as const, code: "npx emulate" },
+  quickStart: { lang: "bash" as const, code: "npx emulate --service foundry" },
   cli: {
     lang: "bash" as const,
     code: `# Start the default startup set

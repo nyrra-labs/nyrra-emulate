@@ -18,6 +18,10 @@ npx emulate --service foundry
 # http://localhost:4000
 ```
 
+`http://localhost:4000` is guaranteed when Foundry is running on its own. If you start multiple
+services in one process, ports are assigned in `--service` order from the base port, so Foundry may
+land on a later port.
+
 Or programmatically:
 
 ```typescript

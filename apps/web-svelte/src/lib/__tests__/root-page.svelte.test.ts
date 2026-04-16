@@ -72,6 +72,14 @@ describe("root +page.svelte SSR landing copy", () => {
     expect(body).toMatch(/<h2[^>]*>[\s\S]*Start with Foundry[\s\S]*<\/h2>/);
   });
 
+  it("renders the Foundry quick start and explicit localhost:4000 guidance", () => {
+    const { body } = renderRoot();
+    expect(body).toContain("Foundry Quick Start");
+    expect(body).toContain("FOUNDRY_EMULATOR_URL=http://localhost:4000");
+    expect(body).toContain("only service");
+    expect(body).toContain("first service in the list");
+  });
+
   it("links to /foundry and /configuration from the Foundry-first section", () => {
     const { body } = renderRoot();
     expect(body).toMatch(/href="\/foundry"/);
@@ -90,7 +98,8 @@ describe("root +page.svelte SSR landing copy", () => {
 
   it("renders all major H2 headings", () => {
     const { body } = renderRoot();
-    expect(body).toContain("Quick Start");
+    expect(body).toContain("Foundry Quick Start");
+    expect(body).toContain("Default Startup Set");
     expect(body).toContain("CLI");
     expect(body).toContain("Options");
     expect(body).toContain("Programmatic API");
