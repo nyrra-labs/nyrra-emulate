@@ -123,17 +123,17 @@ export const allItems = sections.flatMap((s) => s.items);
 function flattenItems(items: NavItem[]): NavItem[] {
   const result: NavItem[] = [];
   for (const item of items) {
-    result.push(item);
     if (item.children) {
       for (const child of item.children) {
-        result.push(child);
         if (child.children) {
           for (const grandchild of child.children) {
             result.push(grandchild);
           }
         }
+        result.push(child);
       }
     }
+    result.push(item);
   }
   return result;
 }
