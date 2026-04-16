@@ -1,0 +1,67 @@
+# Foundry
+
+Palantir Foundry emulation with OAuth 2.0, current-user lookup, and compute-module runtime plus contour job routes.
+
+## OAuth and Current User Endpoints
+
+- `GET /multipass/api/oauth2/authorize` - authorization endpoint (shows user picker)
+- `POST /multipass/api/oauth2/authorize/callback` - internal user-picker form callback
+- `POST /multipass/api/oauth2/token` - token exchange (authorization code, refresh token, client credentials)
+- `GET /api/v2/admin/users/getCurrent` - current user lookup
+
+## Authorization Code Flow
+
+1. Redirect the user to `/multipass/api/oauth2/authorize` with `client_id`, `redirect_uri`, `response_type=code`, `scope`, `state`, and optional PKCE parameters
+2. The emulator renders a seeded user picker
+3. On selection, the emulator redirects to `redirect_uri` with `code` and `state`
+4. Exchange the code at `POST /multipass/api/oauth2/token`
+
+## PKCE and Refresh Tokens
+
+PKCE supports `S256`. Include `code_challenge` and `code_challenge_method` on authorize, then send `code_verifier` to the token endpoint.
+
+`offline_access` returns a refresh token. Refresh token exchange rotates the refresh token.
+
+## Client Credentials
+
+`grant_type=client_credentials` returns an access token only. The emulator creates or reuses a service principal whose username matches `client_id`.
+
+## Current User
+
+`GET /api/v2/admin/users/getCurrent` requires a bearer token with the `api:admin-read` scope.
+
+Auth code and refresh flows return a seeded human principal. Client credentials returns the service principal.
+
+## Compute Module Endpoints
+
+- `POST /_emulate/foundry/compute-modules/runtimes` - create or reset a runtime session and return runtime URLs plus `Module-Auth-Token`
+- `GET /_emulate/foundry/compute-modules/runtimes/:runtimeId/job` - runtime poll route that returns `computeModuleJobV1` or `204 No Content`
+- `POST /_emulate/foundry/compute-modules/runtimes/:runtimeId/schemas` - runtime schema upload
+- `POST /_emulate/foundry/compute-modules/runtimes/:runtimeId/results/:jobId` - runtime result upload
+- `POST /contour-backend-multiplexer/api/module-group-multiplexer/compute-modules/jobs/execute` - sync contour execute route
+- `POST /contour-backend-multiplexer/api/module-group-multiplexer/deployed-apps/jobs` - async contour submit route
+- `GET /contour-backend-multiplexer/api/module-group-multiplexer/jobs/:jobId/status` - async contour status route
+- `PUT /contour-backend-multiplexer/api/module-group-multiplexer/jobs/result/v2` - async contour raw result fetch
+
+## Compute Module Flow
+
+1. Create a runtime session with `POST /_emulate/foundry/compute-modules/runtimes`
+2. Boot a real compute-module container with the returned URLs and `Module-Auth-Token`
+3. Submit sync or async contour jobs with bearer auth
+4. Read raw `application/octet-stream` results without delimiter rewriting
+
+## Compute Module Seed Config
+
+```yaml
+foundry:
+  compute_modules:
+    deployed_apps:
+      - deployed_app_rid: ri.foundry.main.deployed-app.agent-loop
+        branch: master
+        runtime_id: agent-loop
+        display_name: Agent Loop
+        active: true
+    runtimes:
+      - runtime_id: agent-loop
+        module_auth_token: local-module-auth-token
+```

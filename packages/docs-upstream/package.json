@@ -1,0 +1,28 @@
+{
+  "name": "docs-upstream",
+  "version": "0.1.0",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./generated/index.js",
+  "types": "./generated/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./generated/index.js",
+      "types": "./generated/index.d.ts"
+    },
+    "./manifest": {
+      "import": "./generated/manifest.json"
+    },
+    "./nav": {
+      "import": "./generated/nav.json"
+    },
+    "./content/*": {
+      "import": "./generated/content/*"
+    }
+  },
+  "scripts": {
+    "sync": "node --experimental-strip-types src/sync.ts",
+    "sync:check": "node --experimental-strip-types src/sync.ts --check"
+  }
+}

@@ -10,7 +10,9 @@
     "clean": "turbo clean",
     "type-check": "turbo type-check",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx}\""
+    "format:check": "prettier --check \"**/*.{ts,tsx}\"",
+    "docs:sync": "node --experimental-strip-types packages/docs-upstream/src/sync.ts",
+    "docs:sync:check": "node --experimental-strip-types packages/docs-upstream/src/sync.ts --check"
   },
   "devDependencies": {
     "@types/node": "^22",

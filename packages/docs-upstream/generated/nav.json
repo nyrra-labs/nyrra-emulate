@@ -1,0 +1,20 @@
+{
+  "topSectionHrefs": [
+    "/",
+    "/programmatic-api",
+    "/configuration",
+    "/nextjs"
+  ],
+  "referenceSectionHrefs": [
+    "/authentication",
+    "/architecture"
+  ],
+  "navLabelOverrides": {
+    "/vercel": "Vercel",
+    "title": "Apple Sign In",
+    "/github": "GitHub",
+    "/google": "Google",
+    "/slack": "Slack",
+    "/apple": "Apple"
+  }
+}

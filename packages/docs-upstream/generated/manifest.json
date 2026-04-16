@@ -1,0 +1,113 @@
+{
+  "generatedAt": "2026-04-16",
+  "pages": [
+    {
+      "name": "Getting Started",
+      "href": "/",
+      "slug": "",
+      "contentFile": "_root.mdx"
+    },
+    {
+      "name": "Programmatic API",
+      "href": "/programmatic-api",
+      "slug": "programmatic-api",
+      "contentFile": "programmatic-api.mdx"
+    },
+    {
+      "name": "Configuration",
+      "href": "/configuration",
+      "slug": "configuration",
+      "contentFile": "configuration.mdx"
+    },
+    {
+      "name": "Next.js Integration",
+      "href": "/nextjs",
+      "slug": "nextjs",
+      "contentFile": "nextjs.mdx"
+    },
+    {
+      "name": "Vercel API",
+      "href": "/vercel",
+      "slug": "vercel",
+      "contentFile": "vercel.mdx"
+    },
+    {
+      "name": "GitHub API",
+      "href": "/github",
+      "slug": "github",
+      "contentFile": "github.mdx"
+    },
+    {
+      "name": "Google API",
+      "href": "/google",
+      "slug": "google",
+      "contentFile": "google.mdx"
+    },
+    {
+      "name": "Slack API",
+      "href": "/slack",
+      "slug": "slack",
+      "contentFile": "slack.mdx"
+    },
+    {
+      "name": "Apple Sign In",
+      "href": "/apple",
+      "slug": "apple",
+      "contentFile": "apple.mdx"
+    },
+    {
+      "name": "Microsoft Entra ID",
+      "href": "/microsoft",
+      "slug": "microsoft",
+      "contentFile": "microsoft.mdx"
+    },
+    {
+      "name": "Foundry",
+      "href": "/foundry",
+      "slug": "foundry",
+      "contentFile": "foundry.mdx"
+    },
+    {
+      "name": "AWS",
+      "href": "/aws",
+      "slug": "aws",
+      "contentFile": "aws.mdx"
+    },
+    {
+      "name": "Okta",
+      "href": "/okta",
+      "slug": "okta",
+      "contentFile": "okta.mdx"
+    },
+    {
+      "name": "MongoDB Atlas",
+      "href": "/mongoatlas",
+      "slug": "mongoatlas",
+      "contentFile": "mongoatlas.mdx"
+    },
+    {
+      "name": "Resend",
+      "href": "/resend",
+      "slug": "resend",
+      "contentFile": "resend.mdx"
+    },
+    {
+      "name": "Stripe",
+      "href": "/stripe",
+      "slug": "stripe",
+      "contentFile": "stripe.mdx"
+    },
+    {
+      "name": "Authentication",
+      "href": "/authentication",
+      "slug": "authentication",
+      "contentFile": "authentication.mdx"
+    },
+    {
+      "name": "Architecture",
+      "href": "/architecture",
+      "slug": "architecture",
+      "contentFile": "architecture.mdx"
+    }
+  ]
+}
