@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { allDocsPages } from "../../../../web/lib/docs-pages";
+import { allDocsPages } from "docs-upstream";
 import { PAGE_TITLES, PAGE_TITLE_OVERRIDES, getPageTitle } from "../page-titles";
 
 const slugForHref = (href: string) => (href === "/" ? "" : href.replace(/^\/+/, ""));

@@ -9,41 +9,36 @@ export const ROOT_SITE_DESCRIPTION = "Local drop-in replacement services for CI 
 export const PAGE_SITE_DESCRIPTION = "Local drop-in replacement services for CI and no-network sandboxes. Fully stateful, production-fidelity API emulation.";
 export const OG_IMAGE_WIDTH = 1200;
 export const OG_IMAGE_HEIGHT = 630;
-export const OG_TYPE = "website" as const;
+export const OG_TYPE = "website";
 export const OG_LOCALE = "en_US";
-export const TWITTER_CARD = "summary_large_image" as const;
+export const TWITTER_CARD = "summary_large_image";
 export const GITHUB_REPO_URL = "https://github.com/vercel-labs/emulate";
 export const NPM_PACKAGE_URL = "https://www.npmjs.com/package/emulate";
 
-export function suffixWithSiteName(shortTitle: string): string {
+export function suffixWithSiteName(shortTitle) {
   return `${shortTitle} | ${SITE_NAME}`;
 }
 
-export function ogImageAlt(displayTitle: string): string {
+export function ogImageAlt(displayTitle) {
   return `${displayTitle} - ${SITE_NAME}`;
 }
 
-export const STARTUP_LABEL_OVERRIDES: Readonly<Record<string, string>> = {
+export const STARTUP_LABEL_OVERRIDES = {
   "github": "GitHub",
   "aws": "AWS",
   "mongoatlas": "MongoDB Atlas"
 };
 
-export function resolveServiceLabel(name: string): string {
+export function resolveServiceLabel(name) {
   return STARTUP_LABEL_OVERRIDES[name] ?? name.charAt(0).toUpperCase() + name.slice(1);
 }
 
-export function formatServiceLabelsProse(labels: readonly string[]): string {
+export function formatServiceLabelsProse(labels) {
   const formatter = new Intl.ListFormat("en", { style: "long", type: "conjunction" });
   return formatter.format(labels);
 }
 
-export type NavItem = {
-  name: string;
-  href: string;
-};
-
-export const allDocsPages: NavItem[] = [
+export const allDocsPages = [
   {
     "name": "Getting Started",
     "href": "/"
@@ -118,20 +113,12 @@ export const allDocsPages: NavItem[] = [
   }
 ];
 
-export const TOP_SECTION_HREFS: readonly string[] = ["/","/programmatic-api","/configuration","/nextjs"];
-export const REFERENCE_SECTION_HREFS: readonly string[] = ["/authentication","/architecture"];
-export const NAV_LABEL_OVERRIDES: Readonly<Record<string, string>> = {
+export const TOP_SECTION_HREFS = ["/","/programmatic-api","/configuration","/nextjs"];
+export const REFERENCE_SECTION_HREFS = ["/authentication","/architecture"];
+export const NAV_LABEL_OVERRIDES = {
   "/vercel": "Vercel",
-  "title": "Apple Sign In",
   "/github": "GitHub",
   "/google": "Google",
   "/slack": "Slack",
   "/apple": "Apple"
-};
-
-export type ManifestPage = {
-  name: string;
-  href: string;
-  slug: string;
-  contentFile: string;
 };
