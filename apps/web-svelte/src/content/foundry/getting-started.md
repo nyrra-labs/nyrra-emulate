@@ -22,7 +22,8 @@ This launches a local Foundry server at `http://localhost:4000` by default with:
 
 - A default user `admin` (email `admin@localhost`)
 - OAuth 2.0 authorization and token endpoints
-- Admin and compute module API routes
+- Admin identity routes, including enrollment lookup and the `/multipass/api/me` CLI shim
+- Connectivity, ontology query, and compute module API routes
 
 If you start more than one service in the same process, ports are assigned in the order you pass to
 `--service`, starting from the base port. That means Foundry only stays on `4000` when it is the
@@ -48,8 +49,29 @@ foundry:
         - http://localhost:3000/callback
       allowed_scopes:
         - api:admin-read
+        - api:connectivity-connection-read
+        - api:connectivity-connection-write
         - api:ontologies-read
         - offline_access
+
+  enrollment:
+    name: Local Enrollment
+
+  connections:
+    - display_name: External API
+      parent_folder_rid: ri.compass.main.folder.project
+      domains:
+        - host: api.example.com
+          scheme: HTTPS
+
+  ontologies:
+    - api_name: system-health
+      display_name: System Health
+      queries:
+        - api_name: echo
+          result:
+            value:
+              status: ok
 
   compute_modules:
     runtimes:

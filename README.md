@@ -704,13 +704,24 @@ Microsoft Entra ID (Azure AD) v2.0 OAuth 2.0 and OpenID Connect emulation with a
 
 ## Foundry
 
-Palantir Foundry emulation with OAuth 2.0, current-user lookup, and compute-module runtime plus contour job routes.
+Palantir Foundry emulation with OAuth 2.0, admin identity, connectivity, ontology queries, and compute-module runtime plus contour job routes.
 
-### OAuth and current user
+### OAuth and admin identity
 
 - `GET /multipass/api/oauth2/authorize` - authorization endpoint (shows user picker)
 - `POST /multipass/api/oauth2/token` - token exchange (authorization code, refresh token, client credentials)
 - `GET /api/v2/admin/users/getCurrent` - current user lookup
+- `GET /api/v2/admin/enrollments/getCurrent` - current enrollment lookup
+- `GET /multipass/api/me` - CLI compatibility shim returning `id`, `username`, and `displayName`
+
+### Connectivity and ontologies
+
+- `POST /api/v2/connectivity/connections` - create a REST connection
+- `GET /api/v2/connectivity/connections/:connectionRid` - fetch a connection, including worker and configuration metadata
+- `GET /api/v2/connectivity/connections/:connectionRid/getConfiguration` - fetch connection configuration with secret names only
+- `POST /api/v2/connectivity/connections/:connectionRid/updateSecrets` - update connection secrets and return 204
+- `GET /api/v2/ontologies` - list ontologies, honoring `pageSize` and `pageToken` request params
+- `POST /api/v2/ontologies/:ontology/queries/:queryApiName/execute` - execute a seeded ontology query by RID or `apiName`
 
 ### Compute modules
 
@@ -728,7 +739,10 @@ Behavior notes:
 - The token endpoint accepts `application/x-www-form-urlencoded`
 - `offline_access` returns refresh tokens and refresh rotates them
 - `client_credentials` creates a service principal whose username matches `client_id`
-- `getCurrent` requires the `api:admin-read` scope
+- `getCurrent` and `getCurrent enrollment` require the `api:admin-read` scope
+- Connectivity routes enforce `api:connectivity-connection-read` and `api:connectivity-connection-write`
+- Ontology list and query execution enforce `api:ontologies-read`
+- `getConfiguration` and `GET /connections/:rid` return secret names only, never plaintext secret values
 - Runtime polling, schema, and result routes require the exact `Module-Auth-Token` header returned by the control route
 - Contour routes require bearer auth and return raw `application/octet-stream` bodies for both single JSON and streaming outputs
 

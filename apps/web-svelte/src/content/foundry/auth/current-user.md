@@ -61,6 +61,11 @@ When the token was obtained through the client credentials grant, the response r
 
 Service principals have an empty `organization` field and omit `givenName`, `familyName`, and `email`.
 
+## Related Identity Endpoints
+
+- `GET /api/v2/admin/enrollments/getCurrent` returns the current enrollment and also requires `api:admin-read`
+- `GET /multipass/api/me` is a CLI compatibility shim that returns `{ id, username, displayName }` for any authenticated principal
+
 ## Response Fields
 
 | Field | Type | Description |

@@ -60,6 +60,84 @@ export const FOUNDRY_ROUTES: readonly RouteEntry[] = [
     requiredScopes: ["api:admin-read"],
     category: "Admin",
   },
+  {
+    method: "GET",
+    path: "/api/v2/admin/enrollments/getCurrent",
+    domain: "admin",
+    description: "Returns the current enrollment for the authenticated principal.",
+    auth: "bearer",
+    requiredScopes: ["api:admin-read"],
+    category: "Admin",
+  },
+  {
+    method: "GET",
+    path: "/multipass/api/me",
+    domain: "auth",
+    description: "CLI compatibility shim returning id, username, and displayName for the current principal.",
+    auth: "bearer",
+    category: "OAuth",
+  },
+
+  // --- Connectivity ---
+  {
+    method: "POST",
+    path: "/api/v2/connectivity/connections",
+    domain: "connectivity",
+    description: "Create a REST API connection.",
+    auth: "bearer",
+    requiredScopes: ["api:connectivity-connection-write"],
+    contentType: "application/json",
+    category: "Connectivity",
+  },
+  {
+    method: "GET",
+    path: "/api/v2/connectivity/connections/:connectionRid",
+    domain: "connectivity",
+    description: "Fetch a connection, including worker and configuration metadata.",
+    auth: "bearer",
+    requiredScopes: ["api:connectivity-connection-read"],
+    category: "Connectivity",
+  },
+  {
+    method: "GET",
+    path: "/api/v2/connectivity/connections/:connectionRid/getConfiguration",
+    domain: "connectivity",
+    description: "Fetch a connection configuration without leaking secret values.",
+    auth: "bearer",
+    requiredScopes: ["api:connectivity-connection-read"],
+    category: "Connectivity",
+  },
+  {
+    method: "POST",
+    path: "/api/v2/connectivity/connections/:connectionRid/updateSecrets",
+    domain: "connectivity",
+    description: "Update REST connection secrets and return 204 on success.",
+    auth: "bearer",
+    requiredScopes: ["api:connectivity-connection-write"],
+    contentType: "application/json",
+    category: "Connectivity",
+  },
+
+  // --- Ontologies ---
+  {
+    method: "GET",
+    path: "/api/v2/ontologies",
+    domain: "ontologies",
+    description: "List ontologies visible to the current principal.",
+    auth: "bearer",
+    requiredScopes: ["api:ontologies-read"],
+    category: "Ontologies",
+  },
+  {
+    method: "POST",
+    path: "/api/v2/ontologies/:ontology/queries/:queryApiName/execute",
+    domain: "ontologies",
+    description: "Execute a seeded ontology query by ontology RID or apiName.",
+    auth: "bearer",
+    requiredScopes: ["api:ontologies-read"],
+    contentType: "application/json",
+    category: "Ontologies",
+  },
 
   // --- Compute Modules: Runtime Control ---
   {
@@ -148,8 +226,10 @@ export const FOUNDRY_ROUTES: readonly RouteEntry[] = [
  * All scopes recognized by the Foundry emulator.
  */
 export const FOUNDRY_SCOPES = [
-  { scope: "api:admin-read", description: "Read admin data (current user, user management)" },
-  { scope: "api:ontologies-read", description: "Read ontology data (future)" },
+  { scope: "api:admin-read", description: "Read admin data such as current user and enrollment." },
+  { scope: "api:connectivity-connection-read", description: "Read connectivity connections and configurations." },
+  { scope: "api:connectivity-connection-write", description: "Create connections and update their secrets." },
+  { scope: "api:ontologies-read", description: "Read ontology metadata and execute seeded queries." },
   { scope: "api:ontologies-write", description: "Write ontology data (future)" },
   { scope: "offline_access", description: "Request refresh tokens for long-lived sessions" },
 ] as const;

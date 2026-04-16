@@ -31,7 +31,7 @@ The default startup set starts with sensible defaults:
 | MongoDB Atlas | 4010    |
 | Clerk     | 4011        |
 
-Foundry is opt-in. Start it explicitly with `npx emulate --service foundry`, or include `foundry:` in the seed config so service inference enables it. When Foundry runs on its own, it uses `http://localhost:4000`; if you start multiple services together, ports are assigned in `--service` order from the base port. The current Foundry slice covers OAuth, current-user lookup, and compute-module runtime plus contour routes.
+Foundry is opt-in. Start it explicitly with `npx emulate --service foundry`, or include `foundry:` in the seed config so service inference enables it. When Foundry runs on its own, it uses `http://localhost:4000`; if you start multiple services together, ports are assigned in `--service` order from the base port. The current Foundry slice covers OAuth, admin identity, connectivity, ontology queries, and compute-module runtime plus contour routes.
 
 ## CLI
 

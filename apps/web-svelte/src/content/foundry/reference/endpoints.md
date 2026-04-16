@@ -25,6 +25,24 @@ The token endpoint (`POST /multipass/api/oauth2/token`) handles three grant type
 | Method | Path | Auth | Required Scope | Description |
 |---|---|---|---|---|
 | GET | `/api/v2/admin/users/getCurrent` | Bearer | `api:admin-read` | Returns the current authenticated user |
+| GET | `/api/v2/admin/enrollments/getCurrent` | Bearer | `api:admin-read` | Returns the current enrollment |
+| GET | `/multipass/api/me` | Bearer | None | Returns the CLI-compatible principal shape |
+
+## Connectivity API
+
+| Method | Path | Auth | Required Scope | Description |
+|---|---|---|---|---|
+| POST | `/api/v2/connectivity/connections` | Bearer | `api:connectivity-connection-write` | Create a REST connection |
+| GET | `/api/v2/connectivity/connections/:connectionRid` | Bearer | `api:connectivity-connection-read` | Fetch a connection |
+| GET | `/api/v2/connectivity/connections/:connectionRid/getConfiguration` | Bearer | `api:connectivity-connection-read` | Fetch configuration with secret names only |
+| POST | `/api/v2/connectivity/connections/:connectionRid/updateSecrets` | Bearer | `api:connectivity-connection-write` | Update secrets and return 204 |
+
+## Ontology API
+
+| Method | Path | Auth | Required Scope | Description |
+|---|---|---|---|---|
+| GET | `/api/v2/ontologies` | Bearer | `api:ontologies-read` | List ontologies |
+| POST | `/api/v2/ontologies/:ontology/queries/:queryApiName/execute` | Bearer | `api:ontologies-read` | Execute a seeded ontology query |
 
 ## Compute Module Runtime Routes
 
@@ -53,7 +71,7 @@ These routes are used by your application to submit and monitor jobs. All paths 
 
 | Type | Header | Used By |
 |---|---|---|
-| Bearer | `Authorization: Bearer <token>` | Admin API, Contour routes |
+| Bearer | `Authorization: Bearer <token>` | Admin, connectivity, ontology, and contour routes |
 | Module-Auth-Token | `Module-Auth-Token: <token>` | Runtime routes (polling, schemas, results) |
 | None | No authentication required | OAuth endpoints, runtime creation, job inspection |
 
@@ -64,6 +82,13 @@ These routes are used by your application to submit and monitor jobs. All paths 
 | Token endpoint | `application/x-www-form-urlencoded` | `application/json` |
 | Authorization page | N/A | `text/html` |
 | Admin getCurrent | N/A | `application/json` |
+| Admin getCurrent enrollment | N/A | `application/json` |
+| Multipass me | N/A | `application/json` |
+| Connectivity create | `application/json` | `application/json` |
+| Connectivity getConfiguration | N/A | `application/json` |
+| Connectivity updateSecrets | `application/json` | `204 No Content` |
+| Ontology list | N/A | `application/json` |
+| Ontology query execute | `application/json` | `application/json` |
 | Runtime creation | `application/json` | `application/json` |
 | Schema posting | `application/json` | `application/json` |
 | Result posting | `application/octet-stream` | `application/json` |
@@ -83,13 +108,25 @@ These routes are used by your application to submit and monitor jobs. All paths 
 }
 ```
 
-**Permission errors** (admin API):
+**Permission errors** (admin, connectivity, and ontology APIs):
 
 ```json
 {
   "errorCode": "PERMISSION_DENIED",
   "errorName": "...",
   "errorDescription": "..."
+}
+```
+
+**Not found / invalid argument errors** (admin, connectivity, and ontology APIs):
+
+```json
+{
+  "errorCode": "NOT_FOUND",
+  "errorName": "...",
+  "errorDescription": "...",
+  "errorInstanceId": "...",
+  "parameters": {}
 }
 ```
 

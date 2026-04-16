@@ -299,6 +299,10 @@ describe("Foundry auth slice", () => {
     expect(res.status).toBe(403);
     const body = (await res.json()) as Record<string, unknown>;
     expect(body.errorCode).toBe("PERMISSION_DENIED");
+    expect(body.errorName).toBe("GetCurrentUserPermissionDenied");
+    expect(body.errorDescription).toBe("Could not getCurrent the User.");
+    expect(body.errorInstanceId).toBeDefined();
+    expect(body.parameters).toEqual({});
   });
 
   it("requires authentication for getCurrent when no bearer token is provided", async () => {
@@ -332,5 +336,97 @@ describe("Foundry auth slice", () => {
     const tokenRes = await exchangeCode(app, code, { client_secret: "foundry-secret" });
     const tokenBody = (await tokenRes.json()) as Record<string, unknown>;
     expect(tokenMap.has(tokenBody.access_token as string)).toBe(true);
+  });
+
+  // --- Deliverable 1: Admin baseline ---
+
+  it("seeds a default enrollment", () => {
+    const fs = getFoundryStore(store);
+    const enrollment = fs.enrollments.all()[0];
+    expect(enrollment).toBeDefined();
+    expect(enrollment.enrollment_rid).toBe("ri.enrollment..enrollment.default");
+    expect(enrollment.name).toBe("Default Enrollment");
+  });
+
+  it("GET /api/v2/admin/enrollments/getCurrent returns the seeded enrollment", async () => {
+    const { code } = await getAuthCode(app, { scope: "api:admin-read" });
+    const tokenRes = await exchangeCode(app, code, { client_secret: "foundry-secret" });
+    const tokenBody = (await tokenRes.json()) as Record<string, unknown>;
+
+    const res = await app.request(`${base}/api/v2/admin/enrollments/getCurrent?preview=true`, {
+      headers: { Authorization: `Bearer ${tokenBody.access_token}` },
+    });
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.rid).toBe("ri.enrollment..enrollment.default");
+    expect(body.name).toBe("Default Enrollment");
+    expect(body.createdTime).toBeDefined();
+  });
+
+  it("GET /api/v2/admin/enrollments/getCurrent requires api:admin-read scope", async () => {
+    // Use a token without admin-read scope
+    tokenMap.set("no-scope-token", { login: "jane", id: 1, scopes: [] });
+    const res = await app.request(`${base}/api/v2/admin/enrollments/getCurrent?preview=true`, {
+      headers: { Authorization: "Bearer no-scope-token" },
+    });
+    expect(res.status).toBe(403);
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.errorCode).toBe("PERMISSION_DENIED");
+    expect(body.errorName).toBe("GetCurrentEnrollmentPermissionDenied");
+    expect(body.errorDescription).toBe("Could not getCurrent the Enrollment.");
+    expect(body.errorInstanceId).toBeDefined();
+    expect(body.parameters).toEqual({});
+  });
+
+  it("GET /api/v2/admin/enrollments/getCurrent requires auth", async () => {
+    const res = await app.request(`${base}/api/v2/admin/enrollments/getCurrent?preview=true`);
+    expect(res.status).toBe(401);
+  });
+
+  it("GET /multipass/api/me returns the CLI-compatible shape", async () => {
+    const { code } = await getAuthCode(app, { scope: "api:admin-read" });
+    const tokenRes = await exchangeCode(app, code, { client_secret: "foundry-secret" });
+    const tokenBody = (await tokenRes.json()) as Record<string, unknown>;
+
+    const res = await app.request(`${base}/multipass/api/me`, {
+      headers: { Authorization: `Bearer ${tokenBody.access_token}` },
+    });
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.id).toBeDefined();
+    expect(body.username).toBe("jane");
+    expect(body.displayName).toBe("Jane Smith");
+    // CLI expects exactly these three fields
+    expect(Object.keys(body).sort()).toEqual(["displayName", "id", "username"]);
+  });
+
+  it("GET /multipass/api/me requires auth", async () => {
+    const res = await app.request(`${base}/multipass/api/me`);
+    expect(res.status).toBe(401);
+  });
+
+  it("GET /multipass/api/me returns the service principal for client_credentials", async () => {
+    const form = new URLSearchParams({
+      grant_type: "client_credentials",
+      client_id: "foundry-web",
+      client_secret: "foundry-secret",
+      scope: "api:admin-read",
+    });
+    const tokenRes = await app.request(`${base}/multipass/api/oauth2/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: form.toString(),
+    });
+    const tokenBody = (await tokenRes.json()) as Record<string, unknown>;
+
+    const res = await app.request(`${base}/multipass/api/me`, {
+      headers: { Authorization: `Bearer ${tokenBody.access_token}` },
+    });
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body.username).toBe("foundry-web");
   });
 });

@@ -3,14 +3,23 @@ import type { AppEnv, RouteContext, ServicePlugin, Store, TokenMap, WebhookDispa
 import type { FoundryOAuthGrantType, FoundryPrincipalType } from "./entities.js";
 import { bindComputeModuleDeployedApp, ensureComputeModuleRuntime } from "./compute-modules/helpers.js";
 import { getFoundryStore } from "./store.js";
-import { oauthRoutes, adminRoutes, computeModuleRuntimeRoutes, computeModuleContourRoutes } from "./domains.js";
-import { DEFAULT_ORGANIZATION_RID, DEFAULT_REALM, foundryUserId } from "./helpers.js";
+import { oauthRoutes } from "./routes/oauth.js";
+import { adminRoutes } from "./routes/admin.js";
+import { v2ConnectivityRoutes } from "./routes/v2-connectivity.js";
+import { v2OntologyRoutes } from "./routes/v2-ontologies.js";
+import { computeModuleRuntimeRoutes } from "./routes/compute-modules-runtime.js";
+import { computeModuleContourRoutes } from "./routes/compute-modules-contour.js";
+import {
+  DEFAULT_ORGANIZATION_RID,
+  DEFAULT_REALM,
+  foundryRid,
+  foundryUserId,
+  normalizeFoundryUriScheme,
+} from "./helpers.js";
 
 export { getFoundryStore, type FoundryStore } from "./store.js";
 export * from "./entities.js";
 export * from "./compute-modules/entities.js";
-export { FOUNDRY_ROUTES, FOUNDRY_SCOPES, FOUNDRY_GRANT_TYPES } from "./route-registry.js";
-export type { RouteEntry, RouteAuth } from "./route-registry.js";
 
 export interface FoundrySeedConfig {
   port?: number;
@@ -35,6 +44,27 @@ export interface FoundrySeedConfig {
     grant_types?: FoundryOAuthGrantType[];
     allowed_scopes?: string[];
   }>;
+  enrollment?: {
+    rid?: string;
+    name?: string;
+  };
+  connections?: Array<{
+    rid?: string;
+    display_name: string;
+    parent_folder_rid: string;
+    domains?: Array<{ host: string; port?: number; scheme?: string; auth?: Record<string, unknown> }>;
+    oauth2_client_rid?: string;
+  }>;
+  ontologies?: Array<{
+    rid?: string;
+    api_name: string;
+    display_name: string;
+    description?: string;
+    queries?: Array<{
+      api_name: string;
+      result: unknown;
+    }>;
+  }>;
   compute_modules?: {
     deployed_apps?: Array<{
       deployed_app_rid: string;
@@ -49,6 +79,9 @@ export interface FoundrySeedConfig {
     }>;
   };
 }
+
+export const DEFAULT_ENROLLMENT_RID = "ri.enrollment..enrollment.default";
+export const DEFAULT_ENROLLMENT_NAME = "Default Enrollment";
 
 function seedDefaults(store: Store, _baseUrl: string): void {
   const fs = getFoundryStore(store);
@@ -67,6 +100,14 @@ function seedDefaults(store: Store, _baseUrl: string): void {
       active: true,
       oauth_client_id: null,
       attributes: {},
+    });
+  }
+
+  if (fs.enrollments.all().length === 0) {
+    fs.enrollments.insert({
+      enrollment_rid: DEFAULT_ENROLLMENT_RID,
+      name: DEFAULT_ENROLLMENT_NAME,
+      created_time: new Date().toISOString(),
     });
   }
 }
@@ -112,6 +153,75 @@ export function seedFromConfig(store: Store, _baseUrl: string, config: FoundrySe
     }
   }
 
+  if (config.enrollment) {
+    const existing = fs.enrollments.all()[0];
+    if (existing) {
+      fs.enrollments.update(existing.id, {
+        enrollment_rid: config.enrollment.rid ?? existing.enrollment_rid,
+        name: config.enrollment.name ?? existing.name,
+      });
+    } else {
+      fs.enrollments.insert({
+        enrollment_rid: config.enrollment.rid ?? DEFAULT_ENROLLMENT_RID,
+        name: config.enrollment.name ?? DEFAULT_ENROLLMENT_NAME,
+        created_time: new Date().toISOString(),
+      });
+    }
+  }
+
+  if (config.connections) {
+    for (const conn of config.connections) {
+      const rid = conn.rid ?? foundryRid("magritte", "source", "");
+      const existing = fs.connections.findOneBy("rid", rid);
+      if (existing) continue;
+
+      fs.connections.insert({
+        rid,
+        display_name: conn.display_name,
+        parent_folder_rid: conn.parent_folder_rid,
+        config_type: "rest",
+        config_domains:
+          conn.domains?.map((domain) => ({
+            host: domain.host,
+            ...(typeof domain.port === "number" ? { port: domain.port } : {}),
+            ...(normalizeFoundryUriScheme(domain.scheme) ? { scheme: normalizeFoundryUriScheme(domain.scheme) } : {}),
+            ...(domain.auth ? { auth: domain.auth } : {}),
+          })) ?? [],
+        config_oauth2_client_rid: conn.oauth2_client_rid ?? null,
+        worker_type: "unknownWorker",
+        worker_network_egress_policy_rids: [],
+        secrets: {},
+        exports_enabled: false,
+        export_enabled_without_markings_validation: false,
+      });
+    }
+  }
+
+  if (config.ontologies) {
+    for (const ont of config.ontologies) {
+      const rid = ont.rid ?? foundryRid("ontology", "ontology");
+      const existing = fs.ontologies.findOneBy("rid", rid);
+      if (existing) continue;
+
+      fs.ontologies.insert({
+        rid,
+        api_name: ont.api_name,
+        display_name: ont.display_name,
+        description: ont.description ?? null,
+      });
+
+      if (ont.queries) {
+        for (const q of ont.queries) {
+          fs.ontologyQueryResults.insert({
+            ontology_rid: rid,
+            query_api_name: q.api_name,
+            result_json: JSON.stringify(q.result),
+          });
+        }
+      }
+    }
+  }
+
   if (config.compute_modules?.runtimes) {
     for (const runtime of config.compute_modules.runtimes) {
       ensureComputeModuleRuntime(store, runtime.runtime_id, runtime.module_auth_token);
@@ -138,6 +248,8 @@ export const foundryPlugin: ServicePlugin = {
     const ctx: RouteContext = { app, store, webhooks, baseUrl, tokenMap };
     oauthRoutes(ctx);
     adminRoutes(ctx);
+    v2ConnectivityRoutes(ctx);
+    v2OntologyRoutes(ctx);
     computeModuleRuntimeRoutes(ctx);
     computeModuleContourRoutes(ctx);
   },
