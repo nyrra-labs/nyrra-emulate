@@ -37,12 +37,15 @@ If a new page type cannot be built with the existing render functions and CSS cl
 
 ## Docs Updates
 
-When a change affects how humans or agents use emulate (new/changed/removed commands, flags, behavior, routes, seed config, or SDK integration), update all of these:
+When a change affects how humans or agents use emulate (new/changed/removed commands, flags, behavior, routes, seed config, or SDK integration), update the appropriate surfaces:
 
 1. `README.md`
 2. `skills/*/SKILL.md` (agent skills for each service)
-3. `apps/web/` (docs site pages)
-4. CLI `--help` output in `packages/emulate/src/index.ts`
+3. CLI `--help` output in `packages/emulate/src/index.ts`
+4. For Foundry changes: local docs in `apps/web-svelte/src/content/foundry/`
+5. For upstream service changes: `apps/web/` (mirror), then run `pnpm docs:sync`
+
+Note: `apps/web` is a read-only upstream mirror. `apps/web-svelte` is the deployed docs app. See `docs/architecture/docs-platform.md` for the full ownership model.
 
 ## Claude Worker Trial
 

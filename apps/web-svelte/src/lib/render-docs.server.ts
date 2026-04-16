@@ -25,6 +25,24 @@ const LINK_CLASS =
 const CODE_BLOCK_OUTER_CLASS =
   "my-4 overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 font-mono text-[13px] dark:border-neutral-800 dark:bg-neutral-900";
 const CODE_BLOCK_INNER_CLASS = "code-block-shiki overflow-x-auto";
+const TABLE_WRAPPER_CLASS = "my-4 overflow-x-auto";
+const TABLE_CLASS = "w-full text-sm";
+const TABLE_HEAD_ROW_CLASS = "border-b border-neutral-200 dark:border-neutral-800";
+const TABLE_BODY_CLASS = "text-neutral-600 dark:text-neutral-400";
+const TABLE_BODY_ROW_CLASS = "border-b border-neutral-100 dark:border-neutral-800/50";
+const TABLE_HEADER_CELL_CLASS = "pb-2 pr-4 font-medium text-neutral-900 dark:text-neutral-100";
+const TABLE_CELL_CLASS = "py-2 pr-4 align-top";
+
+function tableAlignClass(align: Tokens.TableCell["align"]): string {
+  switch (align) {
+    case "center":
+      return "text-center";
+    case "right":
+      return "text-right";
+    default:
+      return "text-left";
+  }
+}
 
 /**
  * Maps a fenced code block's language hint onto the `SupportedLang`
@@ -102,6 +120,27 @@ export async function renderDocsHtml(rawMdx: string): Promise<string> {
       },
       listitem(item) {
         return `<li class="${LI_CLASS}">${this.parser.parse(item.tokens)}</li>\n`;
+      },
+      table(token) {
+        const headerCells = token.header
+          .map((cell) => {
+            const text = this.parser.parseInline(cell.tokens);
+            return `<th class="${TABLE_HEADER_CELL_CLASS} ${tableAlignClass(cell.align)}">${text}</th>`;
+          })
+          .join("");
+        const bodyRows = token.rows
+          .map((row) => {
+            const cells = row
+              .map((cell) => {
+                const text = this.parser.parseInline(cell.tokens);
+                return `<td class="${TABLE_CELL_CLASS} ${tableAlignClass(cell.align)}">${text}</td>`;
+              })
+              .join("");
+            return `<tr class="${TABLE_BODY_ROW_CLASS}">${cells}</tr>`;
+          })
+          .join("");
+        const body = bodyRows.length > 0 ? `<tbody class="${TABLE_BODY_CLASS}">${bodyRows}</tbody>` : "";
+        return `<div class="${TABLE_WRAPPER_CLASS}"><table class="${TABLE_CLASS}"><thead><tr class="${TABLE_HEAD_ROW_CLASS}">${headerCells}</tr></thead>${body}</table></div>\n`;
       },
       code(token) {
         const html = highlightedByToken.get(token);

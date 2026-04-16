@@ -59,6 +59,13 @@ describe("generic [...slug] route load contract", () => {
     expect(data.html.length).toBeGreaterThan(50);
   });
 
+  it("preserves import lines inside local fenced code examples", async () => {
+    const data = await callLoad("foundry/auth/oauth");
+    expect(data.html).toContain("createHash");
+    expect(data.html).toContain("randomBytes");
+    expect(data.html).toContain("crypto");
+  });
+
   it("throws for an unregistered slug", async () => {
     await expect(callLoad("this-route-does-not-exist")).rejects.toThrow(/no registry entry for href/);
   });
