@@ -8,6 +8,16 @@ Local drop-in replacement services for CI and no-network sandboxes. Fully statef
 npx emulate
 ```
 
+If you are here for local Foundry emulation specifically, start with:
+
+```bash
+npx emulate --service foundry
+```
+
+When Foundry runs on its own, its base URL is `http://localhost:4000`. If you start multiple
+services in one process, ports are assigned in the order you pass to `--service`, starting from the
+base port (`4000` by default, or `--port <n>` if you override it).
+
 The default startup set starts with sensible defaults. No config file needed:
 
 - **Vercel** on `http://localhost:4000`

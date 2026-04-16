@@ -15,14 +15,18 @@ npm install -g emulate
 Start the Foundry emulator:
 
 ```bash
-emulate --service foundry
+npx emulate --service foundry
 ```
 
-This launches a local server (default port 4000) with:
+This launches a local Foundry server at `http://localhost:4000` by default with:
 
 - A default user `admin` (email `admin@localhost`)
 - OAuth 2.0 authorization and token endpoints
 - Admin and compute module API routes
+
+If you start more than one service in the same process, ports are assigned in the order you pass to
+`--service`, starting from the base port. That means Foundry only stays on `4000` when it is the
+only service, or the first service in the list.
 
 ## Seed Configuration
 
@@ -58,7 +62,7 @@ foundry:
 Then start the emulator with that seed file:
 
 ```bash
-emulate --service foundry --seed emulate.seed.yaml
+npx emulate --service foundry --seed emulate.seed.yaml
 ```
 
 ## Verifying the Setup

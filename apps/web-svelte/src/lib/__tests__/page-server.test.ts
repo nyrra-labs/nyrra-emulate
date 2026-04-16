@@ -50,6 +50,8 @@ describe("root +page.server.ts", () => {
     const data = await callLoad();
     expect(data.codeBlocks.quickStart).toContain("npx");
     expect(data.codeBlocks.quickStart).toContain("emulate");
+    expect(data.codeBlocks.quickStart).toContain("--service");
+    expect(data.codeBlocks.quickStart).toContain("foundry");
   });
 
   it("the cli block contains the --service and --port source tokens", async () => {

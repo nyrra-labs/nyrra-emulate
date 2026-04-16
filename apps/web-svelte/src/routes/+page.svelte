@@ -29,10 +29,18 @@
 </h2>
 
 <p class="mb-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
-	Two docs pages cover everything you need to run Foundry locally:
+	FoundryCI should get you to local Foundry first, not make you hunt through generic emulate docs.
+	These are the pages to start with:
 </p>
 
 <ul class="mb-4 list-disc space-y-1 pl-5 text-sm">
+	<li class="text-neutral-600 dark:text-neutral-400">
+		<a
+			class="text-neutral-900 underline decoration-neutral-300 underline-offset-2 hover:decoration-neutral-900 dark:text-neutral-100 dark:decoration-neutral-700 dark:hover:decoration-neutral-100"
+			href="/foundry/getting-started">Getting Started</a
+		>
+		shows the fastest path to a local Foundry process, seed config, and a first verification request.
+	</li>
 	<li class="text-neutral-600 dark:text-neutral-400">
 		<a
 			class="text-neutral-900 underline decoration-neutral-300 underline-offset-2 hover:decoration-neutral-900 dark:text-neutral-100 dark:decoration-neutral-700 dark:hover:decoration-neutral-100"
@@ -57,17 +65,42 @@
 	or include
 	<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
 		>foundry:</code
-	> in the seed config.
+	> in the seed config. When Foundry runs by itself, its base URL is
+	<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
+		>http://localhost:4000</code
+	>.
 </p>
 
-<h2 class="mb-4 mt-12 text-lg font-semibold text-neutral-900 dark:text-neutral-100">
-	Quick Start
-</h2>
+<p class="mb-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
+	If you start multiple services in one process, ports are assigned in the order you pass to
+	<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
+		>--service</code
+	>, starting from the base port. So Foundry is guaranteed to stay on
+	<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
+		>4000</code
+	> only when it is the only service, or the first service in the list.
+</p>
+
+<h2 class="mb-4 mt-12 text-lg font-semibold text-neutral-900 dark:text-neutral-100">Foundry Quick Start</h2>
 
 <CodeBlock html={data.codeBlocks.quickStart} />
 
 <p class="mb-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
-	The default startup set starts with sensible defaults. No config file needed:
+	Set
+	<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
+		>FOUNDRY_EMULATOR_URL=http://localhost:4000</code
+	>
+	when Foundry is running on its own. If you launch more than one service, use the startup banner
+	to see which port Foundry received.
+</p>
+
+<h2 class="mb-4 mt-12 text-lg font-semibold text-neutral-900 dark:text-neutral-100">
+	Default Startup Set
+</h2>
+
+<p class="mb-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
+	The generic multi-service emulate stack is still available. It starts with sensible defaults and
+	keeps Foundry out of the default list unless you opt in:
 </p>
 
 <ul class="mb-4 list-disc space-y-1 pl-5 text-sm">
