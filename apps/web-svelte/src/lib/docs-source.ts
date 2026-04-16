@@ -10,6 +10,7 @@
  */
 import { PAGE_TITLES } from "./page-titles";
 
+// @ts-ignore Vite injects import.meta.glob; apps/web imports this file under a non-Vite tsconfig for architecture tests.
 const upstreamMdxRaw = import.meta.glob("../../../../packages/docs-upstream/generated/content/*.mdx", {
   query: "?raw",
   import: "default",
