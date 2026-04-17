@@ -123,8 +123,10 @@ Response:
 ```json
 {
   "errorCode": "PERMISSION_DENIED",
-  "errorName": "Get Current User Permission Denied",
-  "errorDescription": "Could not get the current user."
+  "errorName": "GetCurrentUserPermissionDenied",
+  "errorDescription": "Could not getCurrent the User.",
+  "errorInstanceId": "00000000-0000-0000-0000-000000000000",
+  "parameters": {}
 }
 ```
 

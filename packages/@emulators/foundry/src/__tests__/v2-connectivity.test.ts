@@ -200,6 +200,42 @@ describe("Foundry v2 connectivity routes", () => {
     expect(JSON.stringify(configBody)).not.toContain("leaked?");
   });
 
+  it("POST updateSecrets merges new keys without deleting omitted secret names", async () => {
+    const createRes = await app.request(`${base}/api/v2/connectivity/connections`, {
+      method: "POST",
+      headers: { ...authHeader("conn-rw"), "Content-Type": "application/json" },
+      body: JSON.stringify({
+        displayName: "Merge Secrets Source",
+        parentFolderRid: "ri.compass.main.folder.test",
+        configuration: {
+          type: "rest",
+          domains: [{ host: "merge.example.com" }],
+          additionalSecrets: {
+            type: "asSecretsWithPlaintextValues",
+            secrets: { API_KEY: "first-secret" },
+          },
+        },
+      }),
+    });
+    const created = (await createRes.json()) as Record<string, unknown>;
+
+    const updateRes = await app.request(`${base}/api/v2/connectivity/connections/${created.rid}/updateSecrets`, {
+      method: "POST",
+      headers: { ...authHeader("conn-rw"), "Content-Type": "application/json" },
+      body: JSON.stringify({ secrets: { API_SECRET: "second-secret" } }),
+    });
+    expect(updateRes.status).toBe(204);
+
+    const configRes = await app.request(`${base}/api/v2/connectivity/connections/${created.rid}/getConfiguration`, {
+      headers: authHeader("conn-read"),
+    });
+    const configBody = (await configRes.json()) as Record<string, unknown>;
+    expect(configBody.additionalSecrets).toEqual({
+      type: "asSecretsNames",
+      secretNames: ["API_KEY", "API_SECRET"],
+    });
+  });
+
   it("POST updateSecrets requires write scope", async () => {
     const created = await createConnection();
     const res = await app.request(`${base}/api/v2/connectivity/connections/${created.rid}/updateSecrets`, {

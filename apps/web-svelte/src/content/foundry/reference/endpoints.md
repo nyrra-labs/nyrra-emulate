@@ -114,7 +114,9 @@ These routes are used by your application to submit and monitor jobs. All paths 
 {
   "errorCode": "PERMISSION_DENIED",
   "errorName": "...",
-  "errorDescription": "..."
+  "errorDescription": "...",
+  "errorInstanceId": "...",
+  "parameters": {}
 }
 ```
 
