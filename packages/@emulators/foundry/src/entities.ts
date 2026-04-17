@@ -38,7 +38,12 @@ export interface FoundryConnection extends Entity {
   display_name: string;
   parent_folder_rid: string;
   config_type: "rest";
-  config_domains: Array<{ host: string; port?: number; scheme?: "HTTP" | "HTTPS" }>;
+  config_domains: Array<{
+    host: string;
+    port?: number;
+    scheme?: "HTTP" | "HTTPS";
+    auth?: Record<string, unknown>;
+  }>;
   config_oauth2_client_rid: string | null;
   worker_type: "unknownWorker" | "foundryWorker";
   worker_network_egress_policy_rids: string[];
