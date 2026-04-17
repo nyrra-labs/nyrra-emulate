@@ -26,3 +26,41 @@ export interface FoundryOAuthClient extends Entity {
   grant_types: FoundryOAuthGrantType[];
   allowed_scopes: string[];
 }
+
+export interface FoundryEnrollment extends Entity {
+  enrollment_rid: string;
+  name: string;
+  created_time: string | null;
+}
+
+export interface FoundryConnection extends Entity {
+  rid: string;
+  display_name: string;
+  parent_folder_rid: string;
+  config_type: "rest";
+  config_domains: Array<{
+    host: string;
+    port?: number;
+    scheme?: "HTTP" | "HTTPS";
+    auth?: Record<string, unknown>;
+  }>;
+  config_oauth2_client_rid: string | null;
+  worker_type: "unknownWorker" | "foundryWorker";
+  worker_network_egress_policy_rids: string[];
+  secrets: Record<string, string>;
+  exports_enabled: boolean;
+  export_enabled_without_markings_validation: boolean;
+}
+
+export interface FoundryOntology extends Entity {
+  rid: string;
+  api_name: string;
+  display_name: string;
+  description: string | null;
+}
+
+export interface FoundryOntologyQueryResult extends Entity {
+  ontology_rid: string;
+  query_api_name: string;
+  result_json: string;
+}

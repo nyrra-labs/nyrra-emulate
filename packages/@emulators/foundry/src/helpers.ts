@@ -39,6 +39,42 @@ export function grantAllowed(client: FoundryOAuthClient | null, grantType: strin
   return client.grant_types.includes(grantType as FoundryOAuthClient["grant_types"][number]);
 }
 
+export function foundryRid(service: string, resourceType: string, namespace = "main"): string {
+  return `ri.${service}.${namespace}.${resourceType}.${randomUUID()}`;
+}
+
+export function foundryErrorInstanceId(): string {
+  return randomUUID();
+}
+
+export function normalizeFoundryUriScheme(value: unknown): "HTTP" | "HTTPS" | undefined {
+  if (typeof value !== "string") return undefined;
+  const normalized = value.trim().toUpperCase();
+  if (normalized === "HTTP" || normalized === "HTTPS") return normalized;
+  return undefined;
+}
+
+export function foundryPaginate<T>(
+  items: T[],
+  pageSize: number,
+  pageToken: string | null,
+): { data: T[]; nextPageToken: string } {
+  const maxPageSize = Math.max(1, Math.min(pageSize || 100, 500));
+  let offset = 0;
+  if (pageToken) {
+    try {
+      offset = parseInt(Buffer.from(pageToken, "base64url").toString("utf8"), 10);
+    } catch {
+      offset = 0;
+    }
+    if (Number.isNaN(offset) || offset < 0) offset = 0;
+  }
+  const page = items.slice(offset, offset + maxPageSize);
+  const nextOffset = offset + maxPageSize;
+  const nextPageToken = nextOffset < items.length ? Buffer.from(String(nextOffset)).toString("base64url") : "";
+  return { data: page, nextPageToken };
+}
+
 export function currentUserResponse(user: FoundryUser): Record<string, unknown> {
   const reservedAttributes: Record<string, string[]> = {
     "multipass:realm": [user.realm],

@@ -61,6 +61,11 @@ When the token was obtained through the client credentials grant, the response r
 
 Service principals have an empty `organization` field and omit `givenName`, `familyName`, and `email`.
 
+## Related Identity Endpoints
+
+- `GET /api/v2/admin/enrollments/getCurrent` returns the current enrollment and also requires `api:admin-read`
+- `GET /multipass/api/me` is a CLI compatibility shim that returns `{ id, username, displayName }` for any authenticated principal
+
 ## Response Fields
 
 | Field | Type | Description |
@@ -118,8 +123,10 @@ Response:
 ```json
 {
   "errorCode": "PERMISSION_DENIED",
-  "errorName": "Get Current User Permission Denied",
-  "errorDescription": "Could not get the current user."
+  "errorName": "GetCurrentUserPermissionDenied",
+  "errorDescription": "Could not getCurrent the User.",
+  "errorInstanceId": "00000000-0000-0000-0000-000000000000",
+  "parameters": {}
 }
 ```
 

@@ -1,6 +1,6 @@
 # Seed Config Reference
 
-The seed config file pre-populates the Foundry emulator with users, OAuth clients, and compute module resources. Pass it when starting the emulator:
+The seed config file pre-populates the Foundry emulator with users, OAuth clients, enrollment data, connectivity resources, ontologies, and compute module resources. Pass it when starting the emulator:
 
 ```bash
 emulate --service foundry --seed emulate.seed.yaml
@@ -38,6 +38,28 @@ foundry:
         - client_credentials
       allowed_scopes:           # optional; restricts which scopes the client can request
         - string
+
+  enrollment:
+    rid: string               # defaults to "ri.enrollment..enrollment.default"
+    name: string              # defaults to "Default Enrollment"
+
+  connections:
+    - rid: string               # optional; auto-generated if omitted
+      display_name: string      # required
+      parent_folder_rid: string # required
+      domains:
+        - host: string
+          port: number
+          scheme: HTTP | HTTPS
+
+  ontologies:
+    - rid: string               # optional; auto-generated if omitted
+      api_name: string          # required, unique
+      display_name: string      # required
+      description: string       # optional
+      queries:
+        - api_name: string      # required, unique within the ontology
+          result: any           # required; returned as JSON
 
   compute_modules:
     runtimes:
@@ -89,6 +111,8 @@ foundry:
         - refresh_token
       allowed_scopes:
         - api:admin-read
+        - api:connectivity-connection-read
+        - api:connectivity-connection-write
         - api:ontologies-read
         - api:ontologies-write
         - offline_access
@@ -100,6 +124,27 @@ foundry:
       allowed_scopes:
         - api:ontologies-read
         - api:ontologies-write
+
+  enrollment:
+    name: Default Enrollment
+
+  connections:
+    - display_name: External API
+      parent_folder_rid: ri.compass.main.folder.project
+      domains:
+        - host: api.example.com
+          port: 443
+          scheme: HTTPS
+
+  ontologies:
+    - api_name: system-health
+      display_name: System Health
+      description: Health checks
+      queries:
+        - api_name: echo
+          result:
+            value:
+              status: ok
 
   compute_modules:
     runtimes:
@@ -127,6 +172,8 @@ foundry:
 | `oauth_clients[].redirect_uris` | `[]` |
 | `oauth_clients[].grant_types` | `["authorization_code", "refresh_token", "client_credentials"]` |
 | `oauth_clients[].allowed_scopes` | `[]` (no restriction) |
+| `enrollment.rid` | `ri.enrollment..enrollment.default` |
+| `enrollment.name` | `Default Enrollment` |
 | `deployed_apps[].branch` | `master` |
 | `deployed_apps[].active` | `true` |
 

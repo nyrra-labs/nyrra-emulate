@@ -1,12 +1,12 @@
 ---
 name: foundry
-description: Emulated Palantir Foundry OAuth 2.0, current-user, and compute-module APIs for local development and testing. Use when the user needs to test Foundry OAuth locally, emulate authorization code or client credentials flows, configure Foundry OAuth clients, validate PKCE behavior, rotate refresh tokens, call the current user endpoint, or run compute-module containers and contour job flows without hitting a real Foundry stack.
+description: Emulated Palantir Foundry OAuth 2.0, admin identity, connectivity, ontology query, and compute-module APIs for local development and testing. Use when the user needs to test Foundry OAuth locally, emulate authorization code or client credentials flows, configure Foundry OAuth clients, validate PKCE behavior, rotate refresh tokens, call the current user or enrollment endpoints, exercise connectivity or ontology APIs, or run compute-module containers and contour job flows without hitting a real Foundry stack.
 allowed-tools: Bash(npx emulate:*), Bash(emulate:*), Bash(curl:*)
 ---
 
 # Foundry Emulator
 
-Palantir Foundry emulation with OAuth 2.0, current-user lookup, and compute-module runtime plus contour job routes.
+Palantir Foundry emulation with OAuth 2.0, admin identity, connectivity, ontology query, and compute-module runtime plus contour job routes.
 
 ## Start
 
@@ -76,9 +76,27 @@ foundry:
         - client_credentials
       allowed_scopes:
         - api:admin-read
+        - api:connectivity-connection-read
+        - api:connectivity-connection-write
         - api:ontologies-read
         - api:ontologies-write
         - offline_access
+  enrollment:
+    name: Default Enrollment
+  connections:
+    - display_name: External API
+      parent_folder_rid: ri.compass.main.folder.project
+      domains:
+        - host: api.example.com
+          scheme: HTTPS
+  ontologies:
+    - api_name: health
+      display_name: Health Ontology
+      queries:
+        - api_name: echo
+          result:
+            value:
+              ok: true
   compute_modules:
     deployed_apps:
       - deployed_app_rid: ri.foundry.main.deployed-app.agent-loop
@@ -169,6 +187,40 @@ curl http://localhost:4000/api/v2/admin/users/getCurrent \
 ```
 
 `getCurrent` requires the `api:admin-read` scope. Auth code and refresh tokens resolve to seeded human users. Client credentials tokens resolve to the service principal.
+
+## Enrollment and CLI Identity
+
+```bash
+curl "http://localhost:4000/api/v2/admin/enrollments/getCurrent?preview=true" \
+  -H "Authorization: Bearer foundry_..."
+
+curl http://localhost:4000/multipass/api/me \
+  -H "Authorization: Bearer foundry_..."
+```
+
+`/api/v2/admin/enrollments/getCurrent` also requires `api:admin-read`. `/multipass/api/me` is a CLI compatibility shim and returns `{ id, username, displayName }`.
+
+## Connectivity and Ontologies
+
+```bash
+curl -X POST http://localhost:4000/api/v2/connectivity/connections \
+  -H "Authorization: Bearer foundry_..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "displayName": "External API",
+    "parentFolderRid": "ri.compass.main.folder.project",
+    "worker": { "type": "unknownWorker" },
+    "configuration": {
+      "type": "rest",
+      "domains": [{ "host": "api.example.com", "scheme": "HTTPS" }]
+    }
+  }'
+
+curl "http://localhost:4000/api/v2/ontologies?pageSize=100" \
+  -H "Authorization: Bearer foundry_..."
+```
+
+Connectivity routes require `api:connectivity-connection-read` or `api:connectivity-connection-write`. Ontology list and query execution require `api:ontologies-read`.
 
 ## Compute Modules
 

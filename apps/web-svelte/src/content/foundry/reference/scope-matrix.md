@@ -6,8 +6,10 @@ This reference maps OAuth scopes to the endpoints they protect.
 
 | Scope | Endpoint | Effect |
 |---|---|---|
-| `api:admin-read` | `GET /api/v2/admin/users/getCurrent` | Required; returns 403 without it |
-| `api:ontologies-read` | Ontology read endpoints | Stored on token for application-level checks |
+| `api:admin-read` | `GET /api/v2/admin/users/getCurrent`, `GET /api/v2/admin/enrollments/getCurrent` | Required; returns 403 without it |
+| `api:connectivity-connection-read` | `GET /api/v2/connectivity/connections/*` | Required for reading connections and configurations |
+| `api:connectivity-connection-write` | `POST /api/v2/connectivity/connections*` | Required for creating connections and updating secrets |
+| `api:ontologies-read` | `GET /api/v2/ontologies`, ontology query execute | Required for ontology list and query execution |
 | `api:ontologies-write` | Ontology write endpoints | Stored on token for application-level checks |
 | `offline_access` | `POST /multipass/api/oauth2/token` (authorization_code) | Triggers refresh token issuance |
 
@@ -21,14 +23,16 @@ These scopes are checked by the emulator itself and produce errors if missing:
 
 | Scope | Enforcement |
 |---|---|
-| `api:admin-read` | The `getCurrent` endpoint returns `PERMISSION_DENIED` (403) without this scope |
+| `api:admin-read` | `getCurrent` and `getCurrent enrollment` return `PERMISSION_DENIED` (403) without this scope |
+| `api:connectivity-connection-read` | Connectivity read routes return `PERMISSION_DENIED` (403) without this scope |
+| `api:connectivity-connection-write` | Connectivity write routes return `PERMISSION_DENIED` (403) without this scope |
+| `api:ontologies-read` | Ontology list and query execution return `PERMISSION_DENIED` (403) without this scope |
 | `offline_access` | The token endpoint omits `refresh_token` from the response without this scope |
 
 ### Application-Level Scopes
 
-These scopes are stored on the access token and passed through to your application. The emulator does not enforce them at the route level, but your application can read them from the token to make access control decisions:
+These scopes are stored on the access token and passed through to your application. The emulator does not enforce them at the route level yet, but your application can read them from the token to make access control decisions:
 
-- `api:ontologies-read`
 - `api:ontologies-write`
 - Any custom scope strings
 
@@ -42,6 +46,7 @@ foundry:
     - client_id: restricted-app
       client_secret: secret
       allowed_scopes:
+        - api:connectivity-connection-read
         - api:ontologies-read
 ```
 

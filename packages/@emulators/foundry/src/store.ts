@@ -1,5 +1,12 @@
 import { type Store, type Collection } from "@emulators/core";
-import type { FoundryOAuthClient, FoundryUser } from "./entities.js";
+import type {
+  FoundryOAuthClient,
+  FoundryUser,
+  FoundryEnrollment,
+  FoundryConnection,
+  FoundryOntology,
+  FoundryOntologyQueryResult,
+} from "./entities.js";
 import type {
   FoundryComputeModuleDeployedApp,
   FoundryComputeModuleJob,
@@ -10,6 +17,10 @@ import type {
 export interface FoundryStore {
   users: Collection<FoundryUser>;
   oauthClients: Collection<FoundryOAuthClient>;
+  enrollments: Collection<FoundryEnrollment>;
+  connections: Collection<FoundryConnection>;
+  ontologies: Collection<FoundryOntology>;
+  ontologyQueryResults: Collection<FoundryOntologyQueryResult>;
   computeModuleDeployedApps: Collection<FoundryComputeModuleDeployedApp>;
   computeModuleRuntimes: Collection<FoundryComputeModuleRuntime>;
   computeModuleJobs: Collection<FoundryComputeModuleJob>;
@@ -20,6 +31,13 @@ export function getFoundryStore(store: Store): FoundryStore {
   return {
     users: store.collection<FoundryUser>("foundry.users", ["user_id", "username", "email", "oauth_client_id"]),
     oauthClients: store.collection<FoundryOAuthClient>("foundry.oauthClients", ["client_id"]),
+    enrollments: store.collection<FoundryEnrollment>("foundry.enrollments", ["enrollment_rid"]),
+    connections: store.collection<FoundryConnection>("foundry.connections", ["rid", "parent_folder_rid"]),
+    ontologies: store.collection<FoundryOntology>("foundry.ontologies", ["rid", "api_name"]),
+    ontologyQueryResults: store.collection<FoundryOntologyQueryResult>("foundry.ontologyQueryResults", [
+      "ontology_rid",
+      "query_api_name",
+    ]),
     computeModuleDeployedApps: store.collection<FoundryComputeModuleDeployedApp>("foundry.computeModuleDeployedApps", [
       "deployed_app_rid",
       "runtime_id",
