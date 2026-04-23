@@ -12,8 +12,8 @@ export const OG_IMAGE_HEIGHT = 630;
 export const OG_TYPE = "website";
 export const OG_LOCALE = "en_US";
 export const TWITTER_CARD = "summary_large_image";
-export const GITHUB_REPO_URL = "https://github.com/vercel-labs/emulate";
-export const NPM_PACKAGE_URL = "https://www.npmjs.com/package/emulate";
+export const GITHUB_REPO_URL = "https://github.com/nyrra-labs/nyrra-emulate";
+export const NPM_PACKAGE_URL = "https://www.npmjs.com/package/@nyrra/emulate";
 
 export function suffixWithSiteName(shortTitle) {
   return `${shortTitle} | ${SITE_NAME}`;

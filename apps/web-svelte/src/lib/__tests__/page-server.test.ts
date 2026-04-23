@@ -42,13 +42,14 @@ describe("root +page.server.ts", () => {
     const data = await callLoad();
     expect(isShikiHtml(data.codeBlocks.quickStart)).toBe(true);
     expect(isShikiHtml(data.codeBlocks.cli)).toBe(true);
-    expect(data.codeBlocks.quickStart).not.toBe("npx emulate");
+    expect(data.codeBlocks.quickStart).not.toBe("npx @nyrra/emulate --service foundry");
     expect(data.codeBlocks.cli).not.toMatch(/^# Start the default startup set/);
   });
 
-  it("the quickStart block contains the npx emulate source token", async () => {
+  it("the quickStart block contains the scoped npx command source tokens", async () => {
     const data = await callLoad();
     expect(data.codeBlocks.quickStart).toContain("npx");
+    expect(data.codeBlocks.quickStart).toContain("@nyrra/emulate");
     expect(data.codeBlocks.quickStart).toContain("emulate");
     expect(data.codeBlocks.quickStart).toContain("--service");
     expect(data.codeBlocks.quickStart).toContain("foundry");

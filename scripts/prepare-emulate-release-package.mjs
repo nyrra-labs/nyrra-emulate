@@ -9,7 +9,7 @@ import {
   statSync,
   writeFileSync,
 } from "node:fs";
-import { dirname, extname, resolve } from "node:path";
+import { dirname, extname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const workspaceRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -19,13 +19,61 @@ const releaseDir = resolve(packageRoot, ".release");
 
 const sourceManifest = JSON.parse(readFileSync(resolve(packageRoot, "package.json"), "utf8"));
 
+function collectWorkspacePackageVersions() {
+  const packageVersions = new Map();
+  const searchRoots = ["packages", "apps", "examples"];
+  const ignoredDirs = new Set(["node_modules", ".git", ".next", ".svelte-kit", ".turbo", "dist", ".release"]);
+
+  function walk(dir) {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (ignoredDirs.has(entry.name)) {
+        continue;
+      }
+
+      const fullPath = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(fullPath);
+        continue;
+      }
+
+      if (entry.isFile() && entry.name === "package.json") {
+        const manifest = JSON.parse(readFileSync(fullPath, "utf8"));
+        if (typeof manifest.name === "string" && typeof manifest.version === "string") {
+          packageVersions.set(manifest.name, manifest.version);
+        }
+      }
+    }
+  }
+
+  for (const relativeRoot of searchRoots) {
+    const absoluteRoot = resolve(workspaceRoot, relativeRoot);
+    if (statSync(absoluteRoot, { throwIfNoEntry: false })?.isDirectory()) {
+      walk(absoluteRoot);
+    }
+  }
+
+  return packageVersions;
+}
+
+const workspacePackageVersions = collectWorkspacePackageVersions();
+
 function replaceWorkspaceProtocolVersion(dependencyName, versionRange) {
   if (typeof versionRange !== "string" || !versionRange.startsWith("workspace:")) {
     return versionRange;
   }
 
   const workspaceReference = versionRange.slice("workspace:".length);
-  const referencedVersion = sourceManifest.version;
+  const referencedVersion =
+    workspacePackageVersions.get(dependencyName) ??
+    workspacePackageVersions.get(
+      workspaceReference.startsWith("^") || workspaceReference.startsWith("~")
+        ? workspaceReference.slice(1)
+        : workspaceReference,
+    );
+
+  if (!referencedVersion) {
+    throw new Error(`Unable to resolve workspace dependency version for ${dependencyName}@${versionRange}.`);
+  }
 
   if (workspaceReference === "^") {
     return `^${referencedVersion}`;

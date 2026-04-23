@@ -64,7 +64,7 @@ describe("root +page.svelte SSR landing copy", () => {
     expect(body).toContain("FoundryCI is a Nyrra project");
     expect(body).toContain("Palantir Foundry");
     expect(body).toContain("emulate by Vercel Labs");
-    expect(body).toContain('href="https://github.com/vercel-labs/emulate"');
+    expect(body).toContain('href="https://github.com/nyrra-labs/nyrra-emulate"');
   });
 
   it("renders the Start with Foundry section heading", () => {
