@@ -96,8 +96,8 @@ describe("site-metadata.ts constant values", () => {
     expect(TWITTER_CARD).toBe("summary_large_image");
   });
 
-  it("GITHUB_REPO_URL is the canonical vercel-labs/emulate GitHub URL", () => {
-    expect(GITHUB_REPO_URL).toBe("https://github.com/vercel-labs/emulate");
+  it("GITHUB_REPO_URL is the canonical nyrra-labs/nyrra-emulate GitHub URL", () => {
+    expect(GITHUB_REPO_URL).toBe("https://github.com/nyrra-labs/nyrra-emulate");
   });
 
   it("GITHUB_REPO_URL is a valid absolute URL that `new URL()` can parse", () => {
@@ -105,8 +105,8 @@ describe("site-metadata.ts constant values", () => {
     expect(new URL(GITHUB_REPO_URL).hostname).toBe("github.com");
   });
 
-  it("NPM_PACKAGE_URL is the canonical npmjs.com/package/emulate URL", () => {
-    expect(NPM_PACKAGE_URL).toBe("https://www.npmjs.com/package/emulate");
+  it("NPM_PACKAGE_URL is the canonical npmjs.com/package/@nyrra/emulate URL", () => {
+    expect(NPM_PACKAGE_URL).toBe("https://www.npmjs.com/package/@nyrra/emulate");
   });
 
   it("NPM_PACKAGE_URL is a valid absolute URL that `new URL()` can parse", () => {
@@ -260,13 +260,13 @@ describe("apps/web/app/layout.tsx delegates site metadata to the shared module",
   it("Header references GITHUB_REPO_URL (not the literal GitHub URL)", () => {
     const src = readFileSync(APPS_WEB_LAYOUT_PATH, "utf-8");
     expect(src).toContain("href={GITHUB_REPO_URL}");
-    expect(src).not.toContain('"https://github.com/vercel-labs/emulate"');
+    expect(src).not.toContain('"https://github.com/nyrra-labs/nyrra-emulate"');
   });
 
   it("Header references NPM_PACKAGE_URL (not the literal npm URL)", () => {
     const src = readFileSync(APPS_WEB_LAYOUT_PATH, "utf-8");
     expect(src).toContain("href={NPM_PACKAGE_URL}");
-    expect(src).not.toContain('"https://www.npmjs.com/package/emulate"');
+    expect(src).not.toContain('"https://www.npmjs.com/package/@nyrra/emulate"');
   });
 
   it("Header references VERCEL_ATTRIBUTION_URL + VERCEL_ATTRIBUTION_TITLE (not the literal Vercel URL or tooltip)", () => {
@@ -432,17 +432,17 @@ describe("apps/web/lib/docs-chat-summary.ts delegates product-name branding to S
     expect(src).not.toContain("emulate provides fully stateful");
   });
 
-  it("buildDocsChatOpeningSummary interpolates SITE_NAME for the quoted '\"X\" npm package' phrase", () => {
+  it("buildDocsChatOpeningSummary uses the dedicated CLI package-name constant for the quoted npm package phrase", () => {
     const src = readFileSync(APPS_WEB_DOCS_CHAT_SUMMARY_PATH, "utf-8");
-    expect(src).toContain('"${SITE_NAME}" npm package');
-    expect(src).not.toContain('"emulate" npm package');
+    expect(src).toContain('"${CLI_NPM_PACKAGE}" npm package');
+    expect(src).not.toContain('"@nyrra/emulate" npm package');
   });
 
-  it("buildDocsChatOpeningSummary interpolates SITE_NAME for the 'npx X' and 'just \"X\"' CLI phrases", () => {
+  it("buildDocsChatOpeningSummary uses the dedicated npx command constant and the SITE_NAME bare binary phrase", () => {
     const src = readFileSync(APPS_WEB_DOCS_CHAT_SUMMARY_PATH, "utf-8");
-    expect(src).toContain('"npx ${SITE_NAME}"');
+    expect(src).toContain('"${CLI_NPX_COMMAND}"');
     expect(src).toContain('just "${SITE_NAME}"');
-    expect(src).not.toContain('"npx emulate"');
+    expect(src).not.toContain('"npx @nyrra/emulate"');
     expect(src).not.toContain('just "emulate"');
   });
 
@@ -597,13 +597,13 @@ describe("apps/web-svelte/src/lib/components/Header.svelte delegates GitHub/npm 
   it("GitHub icon anchor references {GITHUB_REPO_URL} (not the literal URL)", () => {
     const src = readFileSync(WEB_SVELTE_HEADER_PATH, "utf-8");
     expect(src).toContain("href={GITHUB_REPO_URL}");
-    expect(src).not.toContain('"https://github.com/vercel-labs/emulate"');
+    expect(src).not.toContain('"https://github.com/nyrra-labs/nyrra-emulate"');
   });
 
   it("npm link anchor references {NPM_PACKAGE_URL} (not the literal URL)", () => {
     const src = readFileSync(WEB_SVELTE_HEADER_PATH, "utf-8");
     expect(src).toContain("href={NPM_PACKAGE_URL}");
-    expect(src).not.toContain('"https://www.npmjs.com/package/emulate"');
+    expect(src).not.toContain('"https://www.npmjs.com/package/@nyrra/emulate"');
   });
 
   it("routes the Nyrra attribution link through foundryci-branding (NYRRA_URL + NYRRA_PARENT_LABEL)", () => {
@@ -646,7 +646,7 @@ describe("apps/web-svelte/src/routes/+layout.svelte footer delegates the GitHub 
   it("footer 'Built on emulate by Vercel Labs' link references {GITHUB_REPO_URL} (not the literal URL)", () => {
     const src = readFileSync(WEB_SVELTE_LAYOUT_PATH, "utf-8");
     expect(src).toContain("href={GITHUB_REPO_URL}");
-    expect(src).not.toContain('"https://github.com/vercel-labs/emulate"');
+    expect(src).not.toContain('"https://github.com/nyrra-labs/nyrra-emulate"');
   });
 
   it("preserves the 'emulate by Vercel Labs' link text as the footer's visible attribution label", () => {
@@ -813,7 +813,7 @@ describe("apps/web-svelte/src/routes/+page.svelte delegates the upstream attribu
   it("the 'emulate by Vercel Labs' hero link references {GITHUB_REPO_URL} (not the literal URL)", () => {
     const src = readFileSync(WEB_SVELTE_ROOT_PAGE_PATH, "utf-8");
     expect(src).toContain("href={GITHUB_REPO_URL}");
-    expect(src).not.toContain('href="https://github.com/vercel-labs/emulate"');
+    expect(src).not.toContain('href="https://github.com/nyrra-labs/nyrra-emulate"');
   });
 
   it("preserves the 'emulate by Vercel Labs' visible link text (editorial attribution)", () => {
@@ -850,12 +850,12 @@ describe("site-metadata.ts is the one source of each literal", () => {
 
   it("the GitHub repo URL literal is defined in site-metadata.ts", () => {
     const src = readFileSync(APPS_WEB_SITE_METADATA_PATH, "utf-8");
-    expect(src).toContain('"https://github.com/vercel-labs/emulate"');
+    expect(src).toContain('"https://github.com/nyrra-labs/nyrra-emulate"');
   });
 
   it("the npm package URL literal is defined in site-metadata.ts", () => {
     const src = readFileSync(APPS_WEB_SITE_METADATA_PATH, "utf-8");
-    expect(src).toContain('"https://www.npmjs.com/package/emulate"');
+    expect(src).toContain('"https://www.npmjs.com/package/@nyrra/emulate"');
   });
 
   it("the 'https://vercel.com' parent attribution URL literal is defined in site-metadata.ts", () => {

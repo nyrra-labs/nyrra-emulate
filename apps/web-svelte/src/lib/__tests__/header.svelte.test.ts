@@ -19,17 +19,17 @@ describe("Header.svelte SSR", () => {
     expect(body).toMatch(/href="https:\/\/nyrra\.ai"[^>]*rel="noopener noreferrer"/);
   });
 
-  it("renders the GitHub repo link to vercel-labs/emulate with the GitHub repository aria-label", () => {
+  it("renders the GitHub repo link to nyrra-labs/nyrra-emulate with the GitHub repository aria-label", () => {
     const { body } = render(Header);
-    expect(body).toContain('href="https://github.com/vercel-labs/emulate"');
+    expect(body).toContain('href="https://github.com/nyrra-labs/nyrra-emulate"');
     expect(body).toContain('aria-label="GitHub repository"');
-    expect(body).toMatch(/href="https:\/\/github\.com\/vercel-labs\/emulate"[^>]*target="_blank"/);
+    expect(body).toMatch(/href="https:\/\/github\.com\/nyrra-labs\/nyrra-emulate"[^>]*target="_blank"/);
   });
 
-  it("renders the npm link to the emulate package", () => {
+  it("renders the npm link to the @nyrra/emulate package", () => {
     const { body } = render(Header);
-    expect(body).toContain('href="https://www.npmjs.com/package/emulate"');
-    expect(body).toMatch(/href="https:\/\/www\.npmjs\.com\/package\/emulate"[^>]*target="_blank"/);
+    expect(body).toContain('href="https://www.npmjs.com/package/@nyrra/emulate"');
+    expect(body).toMatch(/href="https:\/\/www\.npmjs\.com\/package\/@nyrra\/emulate"[^>]*target="_blank"/);
     expect(body).toContain(">npm</a>");
   });
 

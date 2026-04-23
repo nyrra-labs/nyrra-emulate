@@ -12,7 +12,7 @@ Fully stateful Slack Web API emulation with channels, messages, threads, reactio
 
 ```bash
 # Slack only
-npx emulate --service slack
+npx @nyrra/emulate --service slack
 
 # Default port (when run alone)
 # http://localhost:4000
@@ -21,7 +21,7 @@ npx emulate --service slack
 Or programmatically:
 
 ```typescript
-import { createEmulator } from 'emulate'
+import { createEmulator } from '@nyrra/emulate'
 
 const slack = await createEmulator({ service: 'slack', port: 4003 })
 // slack.url === 'http://localhost:4003'

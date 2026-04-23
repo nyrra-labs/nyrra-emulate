@@ -32,7 +32,7 @@ describe("+layout.svelte SSR shared shell composition for /foundry", () => {
     expect(body).toContain("<header");
     expect(body).toContain('aria-label="FoundryCI home"');
     expect(body).toContain("FoundryCI");
-    expect(body).toContain('href="https://github.com/vercel-labs/emulate"');
+    expect(body).toContain('href="https://github.com/nyrra-labs/nyrra-emulate"');
   });
 
   it("renders the MobileNav closed-state trigger inside the layout", () => {
@@ -53,7 +53,7 @@ describe("+layout.svelte SSR shared shell composition for /foundry", () => {
   it("renders the footer with both attribution links", () => {
     const { body } = renderLayout("/foundry");
     expect(body).toContain("<footer");
-    expect(body).toContain('href="https://github.com/vercel-labs/emulate"');
+    expect(body).toContain('href="https://github.com/nyrra-labs/nyrra-emulate"');
     expect(body).toContain(">emulate by Vercel Labs</a>");
     expect(body).toContain('href="https://nyrra.ai"');
     expect(body).toContain(">Nyrra</a>");

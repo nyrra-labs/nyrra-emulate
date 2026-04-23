@@ -4,6 +4,8 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
   buildDocsChatOpeningSummary,
+  CLI_NPM_PACKAGE,
+  CLI_NPX_COMMAND,
   NEXTJS_ADAPTER_PACKAGE,
   NEXTJS_DOCS_KEY,
   PROGRAMMATIC_API_DOCS_KEY,
@@ -154,8 +156,9 @@ describe("buildDocsChatOpeningSummary happy-path composition", () => {
 
   it("preserves the CLI installation and invocation hints", () => {
     const summary = buildDocsChatOpeningSummary(docsFiles);
-    expect(summary).toContain('"emulate" npm package');
-    expect(summary).toContain('"npx emulate"');
+    expect(summary).toContain(`"${CLI_NPM_PACKAGE}" npm package`);
+    expect(summary).toContain(`"${CLI_NPX_COMMAND}"`);
+    expect(summary).toContain('just "emulate"');
   });
 });
 

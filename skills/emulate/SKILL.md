@@ -11,7 +11,7 @@ Local drop-in replacement services for CI and no-network sandboxes. Fully statef
 ## Quick Start
 
 ```bash
-npx emulate
+npx @nyrra/emulate
 ```
 
 The default startup set starts with sensible defaults:
@@ -31,7 +31,7 @@ The default startup set starts with sensible defaults:
 | MongoDB Atlas | 4010    |
 | Clerk     | 4011        |
 
-Foundry is opt-in. Start it explicitly with `npx emulate --service foundry`, or include `foundry:` in the seed config so service inference enables it. When Foundry runs on its own, it uses `http://localhost:4000`; if you start multiple services together, ports are assigned in `--service` order from the base port. The current Foundry slice covers OAuth, admin identity, connectivity, ontology queries, and compute-module runtime plus contour routes.
+Foundry is opt-in. Start it explicitly with `npx @nyrra/emulate --service foundry`, or include `foundry:` in the seed config so service inference enables it. If you install the package globally, the executable name is still `emulate`. When Foundry runs on its own, it uses `http://localhost:4000`; if you start multiple services together, ports are assigned in `--service` order from the base port. The current Foundry slice covers OAuth, admin identity, connectivity, ontology queries, and compute-module runtime plus contour routes.
 
 ## CLI
 
@@ -71,13 +71,13 @@ The port can also be set via `EMULATE_PORT` or `PORT` environment variables.
 ## Programmatic API
 
 ```bash
-npm install emulate
+npm install @nyrra/emulate
 ```
 
 Each call to `createEmulator` starts a single service:
 
 ```typescript
-import { createEmulator } from 'emulate'
+import { createEmulator } from '@nyrra/emulate'
 
 const github = await createEmulator({ service: 'github', port: 4001 })
 const vercel = await createEmulator({ service: 'vercel', port: 4002 })
@@ -111,7 +111,7 @@ await foundry.close()
 ## Vitest / Jest Setup
 
 ```typescript
-import { createEmulator, type Emulator } from 'emulate'
+import { createEmulator, type Emulator } from '@nyrra/emulate'
 
 let github: Emulator
 let vercel: Emulator

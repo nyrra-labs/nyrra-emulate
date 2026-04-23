@@ -40,11 +40,10 @@
  * The editorial phrases ("fully stateful, production-fidelity API
  * emulation, not mocks") remain literal — they are not drift-prone
  * and their copy is deliberate framing that upstream docs do not own
- * verbatim. The product-name occurrences (the bare wordmark, the
- * `npx` CLI invocation, the quoted `"X" npm package` form, and the
- * `just "X"` bare binary form) all now derive from `SITE_NAME` in
- * `./site-metadata.ts` so a future product rename touches one
- * constant instead of five runtime strings.
+ * verbatim. The product-name occurrences still derive from `SITE_NAME`
+ * in `./site-metadata.ts`, while the npm install and `npx` invocation
+ * forms derive from dedicated constants below so package-scope changes
+ * do not force a broader product rename.
  *
  * Only relative imports are used so this helper can be loaded from
  * both Next.js's webpack build (via the `@/lib/docs-chat-summary`
@@ -99,6 +98,16 @@ export const PROGRAMMATIC_API_TOKEN = "createEmulator";
  * `/nextjs/page.mdx`.
  */
 export const NEXTJS_ADAPTER_PACKAGE = "@emulators/adapter-next";
+
+/**
+ * Published npm package name for the CLI wrapper.
+ */
+export const CLI_NPM_PACKAGE = "@nyrra/emulate";
+
+/**
+ * Canonical `npx` invocation for the published CLI wrapper.
+ */
+export const CLI_NPX_COMMAND = `npx ${CLI_NPM_PACKAGE}`;
 
 /**
  * Docs-files map key that the `/api/docs-chat` route handler uses for
@@ -173,7 +182,7 @@ export function buildDocsChatOpeningSummary(docsFiles: Readonly<Record<string, s
     `for ${supportedServicesProse} APIs used in CI and no-network sandboxes.\n` +
     `\n` +
     `${SITE_NAME} provides fully stateful, production-fidelity API emulation, not mocks. ` +
-    `The CLI is installed as the "${SITE_NAME}" npm package and run via "npx ${SITE_NAME}" or ` +
+    `The CLI is installed as the "${CLI_NPM_PACKAGE}" npm package and run via "${CLI_NPX_COMMAND}" or ` +
     `just "${SITE_NAME}". It also supports a programmatic API via ${PROGRAMMATIC_API_TOKEN} ` +
     `and a Next.js adapter (${NEXTJS_ADAPTER_PACKAGE}) for embedding emulators in your app.`
   );

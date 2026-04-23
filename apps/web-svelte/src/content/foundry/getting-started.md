@@ -7,7 +7,7 @@ The Foundry emulator provides a local implementation of Palantir Foundry's OAuth
 Install emulate globally or use it via npx:
 
 ```bash
-npm install -g emulate
+npm install -g @nyrra/emulate
 ```
 
 ## Quick Start
@@ -15,7 +15,7 @@ npm install -g emulate
 Start the Foundry emulator:
 
 ```bash
-npx emulate --service foundry
+npx @nyrra/emulate --service foundry
 ```
 
 This launches a local Foundry server at `http://localhost:4000` by default with:
@@ -84,7 +84,7 @@ foundry:
 Then start the emulator with that seed file:
 
 ```bash
-npx emulate --service foundry --seed emulate.seed.yaml
+npx @nyrra/emulate --service foundry --seed emulate.seed.yaml
 ```
 
 ## Verifying the Setup

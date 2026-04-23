@@ -12,7 +12,7 @@ S3, SQS, IAM, and STS emulation with REST-style S3 paths and query-style SQS/IAM
 
 ```bash
 # AWS only
-npx emulate --service aws
+npx @nyrra/emulate --service aws
 
 # Default port (when run alone)
 # http://localhost:4000
@@ -21,7 +21,7 @@ npx emulate --service aws
 Or programmatically:
 
 ```typescript
-import { createEmulator } from 'emulate'
+import { createEmulator } from '@nyrra/emulate'
 
 const aws = await createEmulator({ service: 'aws', port: 4006 })
 // aws.url === 'http://localhost:4006'

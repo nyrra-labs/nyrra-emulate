@@ -1,0 +1,143 @@
+name: Release npm package
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/release.yml"
+      - "LICENSE"
+      - "README.md"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "turbo.json"
+      - "eslint.config.mjs"
+      - "packages/emulate/**"
+      - "packages/@emulators/**"
+      - "scripts/prepare-emulate-release-package.mjs"
+      - "scripts/resolve-next-prerelease-version.mjs"
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: Preview the stable release without publishing
+        default: false
+        required: true
+        type: boolean
+
+permissions:
+  actions: read
+  contents: write
+  id-token: write
+
+concurrency:
+  group: release-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main' && (github.event_name != 'push' || github.actor != 'github-actions[bot]')
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+      NPM_CONFIG_PROVENANCE: "true"
+    steps:
+      - name: 01-checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: 02-setup-pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          version: 10.11.0
+
+      - name: 03-setup-node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - name: 04-install-deps
+        run: pnpm install --frozen-lockfile
+
+      - name: 05-verify-workspace
+        run: |
+          pnpm format:check
+          pnpm type-check
+          pnpm lint
+          pnpm test
+
+      - name: 06-release
+        env:
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run || 'false' }}
+        run: |
+          set -euo pipefail
+
+          set_package_version() {
+            local version="$1"
+            node -e "const fs=require('node:fs'); const path='packages/emulate/package.json'; const version=process.argv[1]; const pkg=JSON.parse(fs.readFileSync(path,'utf8')); pkg.version=version; fs.writeFileSync(path, JSON.stringify(pkg, null, 2) + '\n');" "$version"
+          }
+
+          prepare_release_dir() {
+            pnpm --filter @nyrra/emulate build
+            node scripts/prepare-emulate-release-package.mjs
+          }
+
+          publish_release_dir() {
+            local release_dir="packages/emulate/.release"
+            local dist_tag="$1"
+            local package_name
+            local package_version
+            local current_tag_version
+
+            package_name=$(node -p "require('./${release_dir}/package.json').name")
+            package_version=$(node -p "require('./${release_dir}/package.json').version")
+
+            if npm view "${package_name}@${package_version}" version --registry=https://registry.npmjs.org >/dev/null 2>&1; then
+              current_tag_version=$(npm view "${package_name}" "dist-tags.${dist_tag}" --json --registry=https://registry.npmjs.org 2>/dev/null | tr -d '"')
+
+              if [[ "${current_tag_version}" == "${package_version}" ]]; then
+                echo "${package_name}@${package_version} is already published with dist-tag ${dist_tag}; skipping publish."
+                return
+              fi
+
+              echo "::error::${package_name}@${package_version} already exists, but dist-tag ${dist_tag} points to ${current_tag_version:-<unset>}."
+              return 1
+            fi
+
+            if [[ "${DRY_RUN}" == "true" ]]; then
+              echo "Would publish ${package_name}@${package_version} with dist-tag ${dist_tag}."
+              return
+            fi
+
+            env -u NODE_AUTH_TOKEN npm publish "${release_dir}" --access public --tag "${dist_tag}" --provenance
+          }
+
+          if [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
+            prerelease_version=$(node scripts/resolve-next-prerelease-version.mjs)
+            set_package_version "${prerelease_version}"
+            prepare_release_dir
+            publish_release_dir "next"
+          elif [[ "${DRY_RUN}" == "true" ]]; then
+            prepare_release_dir
+            publish_release_dir "latest"
+          else
+            prepare_release_dir
+            publish_release_dir "latest"
+
+            package_name=$(node -p "require('./packages/emulate/.release/package.json').name")
+            package_version=$(node -p "require('./packages/emulate/.release/package.json').version")
+            tag="${package_name}@${package_version}"
+
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+            if git ls-remote --tags origin "refs/tags/${tag}" | grep -q .; then
+              echo "${tag} already exists on origin; skipping tag push."
+              exit 0
+            fi
+
+            git tag -a "${tag}" -m "Release ${tag}"
+            git push origin --tags
+          fi

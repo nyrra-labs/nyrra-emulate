@@ -60,7 +60,7 @@
 <p class="mb-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
 	Bring up the Foundry emulator with
 	<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
-		>emulate --service foundry</code
+		>npx @nyrra/emulate --service foundry</code
 	>
 	or include
 	<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
@@ -118,7 +118,7 @@
 <p class="mb-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
 	Foundry is available when you enable it explicitly with
 	<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"
-		>emulate --service foundry</code
+		>npx @nyrra/emulate --service foundry</code
 	>
 	or include
 	<code class="rounded bg-neutral-100 px-1.5 py-0.5 text-[13px] dark:bg-neutral-800"

@@ -106,14 +106,14 @@ export const TWITTER_CARD = "summary_large_image" as const;
  * deep-link to the upstream repo. Kept here so a future repo move
  * (e.g. org rename, fork promotion) only needs one edit.
  */
-export const GITHUB_REPO_URL = "https://github.com/vercel-labs/emulate";
+export const GITHUB_REPO_URL = "https://github.com/nyrra-labs/nyrra-emulate";
 
 /**
  * Canonical npm package URL for emulate. Used by the docs-site
  * header's "npm" link. Kept here so a future package rename or scope
  * change only needs one edit.
  */
-export const NPM_PACKAGE_URL = "https://www.npmjs.com/package/emulate";
+export const NPM_PACKAGE_URL = "https://www.npmjs.com/package/@nyrra/emulate";
 
 /**
  * Parent-company attribution URL shown in the docs-site header next

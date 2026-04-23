@@ -5,14 +5,16 @@ Local drop-in replacement services for CI and no-network sandboxes. Fully statef
 ## Quick Start
 
 ```bash
-npx emulate
+npx @nyrra/emulate
 ```
 
 If you are here for local Foundry emulation specifically, start with:
 
 ```bash
-npx emulate --service foundry
+npx @nyrra/emulate --service foundry
 ```
+
+If you install the package globally, the executable name is still `emulate`.
 
 When Foundry runs on its own, its base URL is `http://localhost:4000`. If you start multiple
 services in one process, ports are assigned in the order you pass to `--service`, starting from the
@@ -73,13 +75,13 @@ The port can also be set via `EMULATE_PORT` or `PORT` environment variables.
 ## Programmatic API
 
 ```bash
-npm install emulate
+npm install @nyrra/emulate
 ```
 
 Each call to `createEmulator` starts a single service:
 
 ```typescript
-import { createEmulator } from 'emulate'
+import { createEmulator } from '@nyrra/emulate'
 
 const github = await createEmulator({ service: 'github', port: 4001 })
 const vercel = await createEmulator({ service: 'vercel', port: 4002 })
@@ -98,7 +100,7 @@ await foundry.close()
 
 ```typescript
 // vitest.setup.ts
-import { createEmulator, type Emulator } from 'emulate'
+import { createEmulator, type Emulator } from '@nyrra/emulate'
 
 let github: Emulator
 let vercel: Emulator

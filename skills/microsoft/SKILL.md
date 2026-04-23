@@ -12,7 +12,7 @@ Microsoft Entra ID (Azure AD) v2.0 OAuth 2.0 and OpenID Connect emulation with a
 
 ```bash
 # Microsoft only
-npx emulate --service microsoft
+npx @nyrra/emulate --service microsoft
 
 # Default port (when run alone)
 # http://localhost:4000
@@ -21,7 +21,7 @@ npx emulate --service microsoft
 Or programmatically:
 
 ```typescript
-import { createEmulator } from 'emulate'
+import { createEmulator } from '@nyrra/emulate'
 
 const microsoft = await createEmulator({ service: 'microsoft', port: 4005 })
 // microsoft.url === 'http://localhost:4005'
