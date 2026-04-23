@@ -12,7 +12,7 @@ Palantir Foundry emulation with OAuth 2.0, admin identity, connectivity, ontolog
 
 ```bash
 # Foundry only
-npx emulate --service foundry
+npx @nyrra/emulate --service foundry
 
 # Default port when run alone
 # http://localhost:4000
@@ -25,7 +25,7 @@ land on a later port.
 Or programmatically:
 
 ```typescript
-import { createEmulator } from 'emulate'
+import { createEmulator } from '@nyrra/emulate'
 
 const foundry = await createEmulator({ service: 'foundry', port: 4000 })
 // foundry.url === 'http://localhost:4000'

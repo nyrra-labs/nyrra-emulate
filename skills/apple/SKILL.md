@@ -12,7 +12,7 @@ Sign in with Apple emulation with authorization code flow, PKCE support, RS256 I
 
 ```bash
 # Apple only
-npx emulate --service apple
+npx @nyrra/emulate --service apple
 
 # Default port (when run alone)
 # http://localhost:4000
@@ -21,7 +21,7 @@ npx emulate --service apple
 Or programmatically:
 
 ```typescript
-import { createEmulator } from 'emulate'
+import { createEmulator } from '@nyrra/emulate'
 
 const apple = await createEmulator({ service: 'apple', port: 4004 })
 // apple.url === 'http://localhost:4004'

@@ -3,3 +3,4 @@ dist
 .svelte-kit
 node_modules
 pnpm-lock.yaml
+packages/emulate/.release

@@ -14,7 +14,7 @@ No real emails are sent. Every call to `POST /emails` stores the message locally
 
 ```bash
 # Resend only
-npx emulate --service resend
+npx @nyrra/emulate --service resend
 
 # Default port (when run alone)
 # http://localhost:4000
@@ -23,7 +23,7 @@ npx emulate --service resend
 Or programmatically:
 
 ```typescript
-import { createEmulator } from 'emulate'
+import { createEmulator } from '@nyrra/emulate'
 
 const resend = await createEmulator({ service: 'resend', port: 4000 })
 // resend.url === 'http://localhost:4000'
@@ -314,7 +314,7 @@ curl -s $BASE/emails/$EMAIL_ID -H "Authorization: Bearer $TOKEN" | jq -r '.html'
 ### Send and Verify in a Test
 
 ```typescript
-import { createEmulator } from 'emulate'
+import { createEmulator } from '@nyrra/emulate'
 import { Resend } from 'resend'
 
 const emu = await createEmulator({ service: 'resend', port: 4000 })

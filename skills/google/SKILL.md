@@ -12,7 +12,7 @@ OAuth 2.0 and OpenID Connect emulation with authorization code flow, PKCE suppor
 
 ```bash
 # Google only
-npx emulate --service google
+npx @nyrra/emulate --service google
 
 # Default port
 # http://localhost:4002
@@ -21,7 +21,7 @@ npx emulate --service google
 Or programmatically:
 
 ```typescript
-import { createEmulator } from 'emulate'
+import { createEmulator } from '@nyrra/emulate'
 
 const google = await createEmulator({ service: 'google', port: 4002 })
 // google.url === 'http://localhost:4002'

@@ -12,7 +12,7 @@ Fully stateful Vercel REST API emulation with Vercel-style JSON responses and cu
 
 ```bash
 # Vercel only
-npx emulate --service vercel
+npx @nyrra/emulate --service vercel
 
 # Default port
 # http://localhost:4000
@@ -21,7 +21,7 @@ npx emulate --service vercel
 Or programmatically:
 
 ```typescript
-import { createEmulator } from 'emulate'
+import { createEmulator } from '@nyrra/emulate'
 
 const vercel = await createEmulator({ service: 'vercel', port: 4000 })
 // vercel.url === 'http://localhost:4000'
