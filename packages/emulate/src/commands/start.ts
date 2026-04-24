@@ -1,6 +1,6 @@
 import { createServer, type AppKeyResolver, type Store } from "@emulators/core";
 import { DEFAULT_SERVICE_NAMES, SERVICE_REGISTRY, SERVICE_NAMES, type ServiceName } from "../registry.js";
-import { serve } from "@hono/node-server";
+import { createAdaptorServer } from "@hono/node-server";
 import { readFileSync, existsSync } from "fs";
 import { resolve } from "path";
 import { parse as parseYaml } from "yaml";
@@ -73,6 +73,48 @@ function inferServicesFromConfig(config: SeedConfig): ServiceName[] | null {
   return found.length > 0 ? [...found] : null;
 }
 
+type HttpServer = ReturnType<typeof createAdaptorServer>;
+type NodeServerFetch = Parameters<typeof createAdaptorServer>[0]["fetch"];
+
+export function buildPortInUseMessage(service: string, port: number, usesCustomPort: boolean): string {
+  if (usesCustomPort) {
+    return `Port ${port} is already in use for ${service}. Free that port or change ${service}.port in your seed config.`;
+  }
+
+  return `Port ${port} is already in use for ${service}. Free that port or choose a different base port with --port.`;
+}
+
+async function startHttpServer(
+  appFetch: NodeServerFetch,
+  port: number,
+  service: string,
+  usesCustomPort: boolean,
+): Promise<HttpServer> {
+  return await new Promise((resolve, reject) => {
+    const server = createAdaptorServer({ fetch: appFetch });
+
+    const handleListening = () => {
+      server.off("error", handleError);
+      resolve(server);
+    };
+
+    const handleError = (error: NodeJS.ErrnoException) => {
+      server.off("listening", handleListening);
+
+      if (error.code === "EADDRINUSE") {
+        reject(new Error(buildPortInUseMessage(service, port, usesCustomPort)));
+        return;
+      }
+
+      reject(new Error(`Failed to start ${service} on port ${port}: ${error.message}`));
+    };
+
+    server.once("listening", handleListening);
+    server.once("error", handleError);
+    server.listen(port);
+  });
+}
+
 export async function startCommand(options: StartOptions): Promise<void> {
   const { port: basePort } = options;
 
@@ -112,46 +154,51 @@ export async function startCommand(options: StartOptions): Promise<void> {
 
   const serviceUrls: Array<{ name: string; url: string }> = [];
   const stores: Store[] = [];
-  const httpServers: ReturnType<typeof serve>[] = [];
+  const httpServers: HttpServer[] = [];
 
-  for (let i = 0; i < services.length; i++) {
-    const svc = services[i];
-    const entry = SERVICE_REGISTRY[svc];
-    const loadedSvc = await entry.load();
+  try {
+    for (let i = 0; i < services.length; i++) {
+      const svc = services[i];
+      const entry = SERVICE_REGISTRY[svc];
+      const loadedSvc = await entry.load();
 
-    const svcSeedConfig = seedConfig?.[svc] as Record<string, unknown> | undefined;
-    const port = (svcSeedConfig?.port as number | undefined) ?? basePort + i;
-    const baseUrl = `http://localhost:${port}`;
-    serviceUrls.push({ name: svc, url: baseUrl });
+      const svcSeedConfig = seedConfig?.[svc] as Record<string, unknown> | undefined;
+      const usesCustomPort = typeof svcSeedConfig?.port === "number";
+      const port = (svcSeedConfig?.port as number | undefined) ?? basePort + i;
+      const baseUrl = `http://localhost:${port}`;
+      serviceUrls.push({ name: svc, url: baseUrl });
 
-    // eslint-disable-next-line prefer-const -- reassigned after closure captures it
-    let cachedResolver: AppKeyResolver | undefined;
-    const appKeyResolver: AppKeyResolver | undefined = loadedSvc.createAppKeyResolver
-      ? (appId) => cachedResolver!(appId)
-      : undefined;
+      // eslint-disable-next-line prefer-const -- reassigned after closure captures it
+      let cachedResolver: AppKeyResolver | undefined;
+      const appKeyResolver: AppKeyResolver | undefined = loadedSvc.createAppKeyResolver
+        ? (appId) => cachedResolver!(appId)
+        : undefined;
 
-    const fallbackUser = entry.defaultFallback(svcSeedConfig);
+      const fallbackUser = entry.defaultFallback(svcSeedConfig);
 
-    const { app, store } = createServer(loadedSvc.plugin, { port, baseUrl, tokens, appKeyResolver, fallbackUser });
-    cachedResolver = loadedSvc.createAppKeyResolver?.(store);
-    stores.push(store);
+      const { app, store } = createServer(loadedSvc.plugin, { port, baseUrl, tokens, appKeyResolver, fallbackUser });
+      cachedResolver = loadedSvc.createAppKeyResolver?.(store);
+      stores.push(store);
 
-    loadedSvc.plugin.seed?.(store, baseUrl);
+      loadedSvc.plugin.seed?.(store, baseUrl);
 
-    if (svcSeedConfig && loadedSvc.seedFromConfig) {
-      loadedSvc.seedFromConfig(store, baseUrl, svcSeedConfig);
+      if (svcSeedConfig && loadedSvc.seedFromConfig) {
+        loadedSvc.seedFromConfig(store, baseUrl, svcSeedConfig);
+      }
+
+      const httpServer = await startHttpServer(app.fetch, port, svc, usesCustomPort);
+      httpServers.push(httpServer);
+    }
+  } catch (error) {
+    for (const srv of httpServers) {
+      srv.close();
+    }
+    for (const store of stores) {
+      store.reset();
     }
 
-    const httpServer = serve({ fetch: app.fetch, port });
-    httpServer.on("error", (error: NodeJS.ErrnoException) => {
-      if (error.code === "EADDRINUSE") {
-        console.error(`Port ${port} is already in use for ${svc}. Try --port ${port + 1} or free the port first.`);
-      } else {
-        console.error(`Failed to start ${svc} on port ${port}: ${error.message}`);
-      }
-      process.exit(1);
-    });
-    httpServers.push(httpServer);
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
   }
 
   printBanner(serviceUrls, tokens, configSource, seedConfig);
