@@ -14,6 +14,12 @@ Palantir Foundry emulation with OAuth 2.0, admin identity, connectivity, ontolog
 # Foundry only
 npx @nyrra/emulate --service foundry
 
+# Generate a starter config non-interactively
+emulate init --service foundry
+
+# Or launch the interactive starter-config builder in a TTY
+emulate init
+
 # Default port when run alone
 # http://localhost:4000
 ```
@@ -21,6 +27,8 @@ npx @nyrra/emulate --service foundry
 `http://localhost:4000` is guaranteed when Foundry is running on its own. If you start multiple
 services in one process, ports are assigned in `--service` order from the base port, so Foundry may
 land on a later port.
+
+When Foundry starts, the banner prints a `Quick start` section with a ready-to-open authorize URL and curl examples for `/multipass/api/me` and `/api/v2/admin/users/getCurrent`.
 
 Or programmatically:
 
@@ -53,7 +61,15 @@ FOUNDRY_EMULATOR_URL=http://localhost:4000
 
 ## Seed Config
 
+The bundled starter config for `emulate init --service foundry` also includes a working token:
+
 ```yaml
+tokens:
+  foundry_test_token:
+    login: jane
+    scopes:
+      - api:admin-read
+
 foundry:
   users:
     - username: jane
@@ -183,10 +199,10 @@ This creates or reuses a service principal whose `username` matches `client_id`.
 
 ```bash
 curl http://localhost:4000/api/v2/admin/users/getCurrent \
-  -H "Authorization: Bearer foundry_..."
+  -H "Authorization: Bearer foundry_test_token"
 ```
 
-`getCurrent` requires the `api:admin-read` scope. Auth code and refresh tokens resolve to seeded human users. Client credentials tokens resolve to the service principal.
+`getCurrent` requires the `api:admin-read` scope. The bundled `foundry_test_token` includes that scope. Auth code and refresh tokens also resolve to seeded human users. Client credentials tokens resolve to the service principal.
 
 ## Enrollment and CLI Identity
 

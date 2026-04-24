@@ -31,7 +31,7 @@ The default startup set starts with sensible defaults:
 | MongoDB Atlas | 4010    |
 | Clerk     | 4011        |
 
-Foundry is opt-in. Start it explicitly with `npx @nyrra/emulate --service foundry`, or include `foundry:` in the seed config so service inference enables it. If you install the package globally, the executable name is still `emulate`. When Foundry runs on its own, it uses `http://localhost:4000`; if you start multiple services together, ports are assigned in `--service` order from the base port. The current Foundry slice covers OAuth, admin identity, connectivity, ontology queries, and compute-module runtime plus contour routes.
+Foundry is opt-in. Start it explicitly with `npx @nyrra/emulate --service foundry`, or include `foundry:` in the seed config so service inference enables it. If you install the package globally, the executable name is still `emulate`. Starter configs are bundled into the CLI: run `emulate init` in a TTY for the interactive builder, or use `--service`, `--stdout`, and `--out` for scripted generation. When Foundry runs on its own, it uses `http://localhost:4000`; if you start multiple services together, ports are assigned in `--service` order from the base port. The current Foundry slice covers OAuth, admin identity, connectivity, ontology queries, and compute-module runtime plus contour routes.
 
 ## CLI
 
@@ -48,11 +48,14 @@ emulate --port 3000
 # Use a seed config file
 emulate --seed config.yaml
 
-# Generate a starter config
+# Launch the interactive starter-config builder
 emulate init
 
 # Generate config for a specific service
 emulate init --service foundry
+
+# Print starter YAML without writing a file
+emulate init --service foundry --stdout
 
 # List available services
 emulate list
@@ -67,6 +70,15 @@ emulate list
 | `--seed` | auto-detect | Path to seed config (YAML or JSON) |
 
 The port can also be set via `EMULATE_PORT` or `PORT` environment variables.
+
+### Starter Config Generation
+
+- `emulate init` opens an interactive builder when a TTY is available.
+- `emulate init --service foundry` writes `emulate.config.yaml` with a Foundry starter template and a working `foundry_test_token`.
+- `emulate init --service github,foundry --stdout` prints bundled starter YAML for scripting or redirection.
+- `emulate init --out ./configs/local.yaml --force` writes to a custom path and overwrites the file when needed.
+
+When Foundry starts, the banner also prints a `Quick start` section with a ready-to-open authorize URL and curl examples for `/multipass/api/me` and `/api/v2/admin/users/getCurrent`.
 
 ## Programmatic API
 
@@ -138,7 +150,7 @@ Configuration is optional. The CLI auto-detects config files in this order:
 3. `service-emulator.config.yaml` / `.yml`
 4. `service-emulator.config.json`
 
-Or pass `--seed <file>` explicitly. Run `emulate init` to generate a starter file.
+Or pass `--seed <file>` explicitly. Run `emulate init` for the interactive builder, or use `emulate init --service <name> --stdout` to generate starter YAML non-interactively.
 
 ### Config Structure
 
@@ -293,11 +305,11 @@ aws:
 
 ### Auth
 
-Tokens map to users. Pass them as `Authorization: Bearer <token>` or `Authorization: token <token>`. When no tokens are configured, a default `test_token_admin` is created for the `admin` user.
+Tokens map to users. Pass them as `Authorization: Bearer <token>` or `Authorization: token <token>`. Generated starter configs include service-specific tokens such as `foundry_test_token`, while zero-config startup still creates a default `test_token_admin` for the `admin` user.
 
 Each service also has a fallback user. If no token is provided, requests authenticate as the first seeded user.
 
-Foundry current-user lookups still require `api:admin-read`, even when the token resolves to a seeded fallback user.
+Foundry current-user lookups require `api:admin-read`. The bundled `foundry_test_token` includes that scope, and zero-config Foundry startup gives `test_token_admin` the same scope.
 
 ## Pointing Your App at the Emulator
 

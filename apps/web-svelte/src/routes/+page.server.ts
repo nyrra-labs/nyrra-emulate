@@ -20,11 +20,14 @@ emulate --port 3000
 # Use a seed config file
 emulate --seed config.yaml
 
-# Generate a starter config
+# Launch the interactive starter-config builder
 emulate init
 
 # Generate config for a specific service
 emulate init --service foundry
+
+# Print starter YAML without writing a file
+emulate init --service foundry --stdout
 
 # List available services
 emulate list`,
