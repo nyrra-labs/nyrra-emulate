@@ -22,6 +22,12 @@ export interface ServerOptions {
   fallbackUser?: AuthFallback;
 }
 
+const DOCS_BASE_URL = "https://foundryci.com";
+
+function defaultDocsUrlForService(serviceName: string): string {
+  return `${DOCS_BASE_URL}/${serviceName}`;
+}
+
 export function createServer(plugin: ServicePlugin, options: ServerOptions = {}) {
   const port = options.port ?? 4000;
   const baseUrl = options.baseUrl ?? `http://localhost:${port}`;
@@ -41,7 +47,7 @@ export function createServer(plugin: ServicePlugin, options: ServerOptions = {})
     }
   }
 
-  const docsUrl = options.docsUrl ?? `https://emulate.dev/${plugin.name}`;
+  const docsUrl = options.docsUrl ?? defaultDocsUrlForService(plugin.name);
 
   registerFontRoutes(app);
 
