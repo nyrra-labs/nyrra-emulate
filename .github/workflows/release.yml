@@ -111,7 +111,7 @@ jobs:
               return
             fi
 
-            NODE_AUTH_TOKEN="" npm publish "${release_dir}" --access public --tag "${dist_tag}" --provenance
+            env -u NODE_AUTH_TOKEN npm publish "${release_dir}" --access public --tag "${dist_tag}" --provenance
           }
 
           if [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then
