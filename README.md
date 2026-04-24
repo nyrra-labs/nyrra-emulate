@@ -16,6 +16,9 @@ npx @nyrra/emulate --service foundry
 
 If you install the package globally, the executable name is still `emulate`.
 
+Starter configs are bundled into the CLI. Run `emulate init` in a TTY for an interactive builder, or
+use flags such as `--service`, `--stdout`, and `--out` for non-interactive generation.
+
 When Foundry runs on its own, its base URL is `http://localhost:4000`. If you start multiple
 services in one process, ports are assigned in the order you pass to `--service`, starting from the
 base port (`4000` by default, or `--port <n>` if you override it).
@@ -52,11 +55,14 @@ emulate --port 3000
 # Use a seed config file
 emulate --seed config.yaml
 
-# Generate a starter config
+# Launch the interactive starter-config builder
 emulate init
 
 # Generate config for a specific service
 emulate init --service foundry
+
+# Print starter YAML without writing a file
+emulate init --service foundry --stdout
 
 # List available services
 emulate list
@@ -71,6 +77,15 @@ emulate list
 | `--seed` | auto-detect | Path to seed config (YAML or JSON) |
 
 The port can also be set via `EMULATE_PORT` or `PORT` environment variables.
+
+### Starter config generation
+
+- `emulate init` opens an interactive builder when you have a TTY.
+- `emulate init --service foundry` writes `emulate.config.yaml` with a Foundry starter template and a working `foundry_test_token`.
+- `emulate init --service github,foundry --stdout` prints bundled starter YAML for scripting or redirection.
+- `emulate init --out ./configs/local.yaml --force` writes to a custom path and overwrites the file when needed.
+
+When Foundry starts, the banner also prints a `Quick start` section with a ready-to-open authorize URL and curl examples for `/multipass/api/me` and `/api/v2/admin/users/getCurrent`.
 
 ## Programmatic API
 
@@ -136,7 +151,7 @@ afterAll(() => Promise.all([github.close(), vercel.close()]))
 
 ## Configuration
 
-Configuration is optional. The CLI auto-detects config files in this order: `emulate.config.yaml` / `.yml`, `emulate.config.json`, `service-emulator.config.yaml` / `.yml`, `service-emulator.config.json`. Or pass `--seed <file>` explicitly. Run `emulate init` to generate a starter file.
+Configuration is optional. The CLI auto-detects config files in this order: `emulate.config.yaml` / `.yml`, `emulate.config.json`, `service-emulator.config.yaml` / `.yml`, `service-emulator.config.json`. Or pass `--seed <file>` explicitly. Run `emulate init` for the interactive builder, or use `emulate init --service <name> --stdout` to generate starter YAML non-interactively.
 
 ```yaml
 tokens:

@@ -18,12 +18,23 @@ Start the Foundry emulator:
 npx @nyrra/emulate --service foundry
 ```
 
+Or generate a starter config first:
+
+```bash
+# Interactive builder when a TTY is available
+emulate init
+
+# Non-interactive Foundry starter config
+emulate init --service foundry
+```
+
 This launches a local Foundry server at `http://localhost:4000` by default with:
 
 - A default user `admin` (email `admin@localhost`)
 - OAuth 2.0 authorization and token endpoints
 - Admin identity routes, including enrollment lookup and the `/multipass/api/me` CLI shim
 - Connectivity, ontology query, and compute module API routes
+- A `Quick start` banner section with a ready-to-open authorize URL and curl examples for `/multipass/api/me` and `/api/v2/admin/users/getCurrent`
 
 If you start more than one service in the same process, ports are assigned in the order you pass to
 `--service`, starting from the base port. That means Foundry only stays on `4000` when it is the
@@ -31,7 +42,7 @@ only service, or the first service in the list.
 
 ## Seed Configuration
 
-For most workflows you will want to define users, OAuth clients, and compute modules up front. Create an `emulate.seed.yaml` file:
+For most workflows you will want to define users, OAuth clients, and compute modules up front. The bundled starter config from `emulate init --service foundry` already includes a working `foundry_test_token` with `api:admin-read`, so you can verify the current-user route immediately. If you want a custom file, create an `emulate.seed.yaml` file:
 
 ```yaml
 foundry:
@@ -89,7 +100,14 @@ npx @nyrra/emulate --service foundry --seed emulate.seed.yaml
 
 ## Verifying the Setup
 
-Once the emulator is running, verify it by fetching the current user. First, obtain an access token through the OAuth flow or the client credentials grant, then call the current-user endpoint:
+Once the emulator is running, verify it by fetching the current user. If you used the bundled starter config, you can hit the route directly with `foundry_test_token`:
+
+```bash
+curl -s http://localhost:4000/api/v2/admin/users/getCurrent \
+  -H "Authorization: Bearer foundry_test_token" | jq
+```
+
+For custom OAuth clients, you can also obtain an access token through the OAuth flow or the client credentials grant:
 
 ```bash
 # Quick client_credentials token

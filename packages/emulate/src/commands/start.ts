@@ -91,7 +91,7 @@ export async function startCommand(options: StartOptions): Promise<void> {
 
   for (const svc of services) {
     if (!SERVICE_REGISTRY[svc]) {
-      console.error(`Unknown service: ${svc}`);
+      console.error(`Unknown service: ${svc}. Available: ${SERVICE_NAMES.join(", ")}`);
       process.exit(1);
     }
   }
@@ -103,7 +103,11 @@ export async function startCommand(options: StartOptions): Promise<void> {
       tokens[token] = { login: user.login, id: tokenId++, scopes: user.scopes };
     }
   } else {
-    tokens["test_token_admin"] = { login: "admin", id: 2, scopes: ["repo", "user", "admin:org", "admin:repo_hook"] };
+    tokens["test_token_admin"] = {
+      login: "admin",
+      id: 2,
+      scopes: ["repo", "user", "admin:org", "admin:repo_hook", "api:admin-read"],
+    };
   }
 
   const serviceUrls: Array<{ name: string; url: string }> = [];
@@ -139,10 +143,18 @@ export async function startCommand(options: StartOptions): Promise<void> {
     }
 
     const httpServer = serve({ fetch: app.fetch, port });
+    httpServer.on("error", (error: NodeJS.ErrnoException) => {
+      if (error.code === "EADDRINUSE") {
+        console.error(`Port ${port} is already in use for ${svc}. Try --port ${port + 1} or free the port first.`);
+      } else {
+        console.error(`Failed to start ${svc} on port ${port}: ${error.message}`);
+      }
+      process.exit(1);
+    });
     httpServers.push(httpServer);
   }
 
-  printBanner(serviceUrls, tokens, configSource);
+  printBanner(serviceUrls, tokens, configSource, seedConfig);
 
   const shutdown = () => {
     console.log(`\n${pc.dim("Shutting down...")}`);
@@ -162,6 +174,7 @@ function printBanner(
   services: Array<{ name: string; url: string }>,
   tokens: Record<string, { login: string; id: number; scopes?: string[] }>,
   configSource: string | null,
+  seedConfig: SeedConfig | null,
 ): void {
   const lines: string[] = [];
   lines.push("");
@@ -188,7 +201,55 @@ function printBanner(
   } else {
     lines.push(`  ${pc.dim("Config:")} defaults ${pc.dim("(run")} emulate init ${pc.dim("to customize)")}`);
   }
+
+  const quickStartLines = buildQuickStartLines(services, tokens, seedConfig);
+  if (quickStartLines.length > 0) {
+    lines.push("");
+    lines.push(...quickStartLines);
+  }
+
   lines.push("");
 
   console.log(lines.join("\n"));
+}
+
+function buildQuickStartLines(
+  services: Array<{ name: string; url: string }>,
+  tokens: Record<string, { login: string; id: number; scopes?: string[] }>,
+  seedConfig: SeedConfig | null,
+): string[] {
+  const foundry = services.find((service) => service.name === "foundry");
+  if (!foundry) return [];
+
+  const foundrySeed = seedConfig?.foundry as
+    | {
+        oauth_clients?: Array<{
+          client_id?: string;
+          redirect_uris?: string[];
+          allowed_scopes?: string[];
+        }>;
+      }
+    | undefined;
+  const firstClient = foundrySeed?.oauth_clients?.[0];
+  const clientId = firstClient?.client_id ?? "foundry-local";
+  const redirectUri = firstClient?.redirect_uris?.[0] ?? "http://localhost:3000/callback";
+  const scope = firstClient?.allowed_scopes?.includes("api:admin-read")
+    ? "api:admin-read"
+    : (firstClient?.allowed_scopes?.[0] ?? "api:admin-read");
+  const authTokenName =
+    Object.entries(tokens).find(([, token]) => (token.scopes ?? []).includes("api:admin-read"))?.[0] ??
+    "test_token_admin";
+
+  const authorizeUrl = new URL(`${foundry.url}/multipass/api/oauth2/authorize`);
+  authorizeUrl.searchParams.set("client_id", clientId);
+  authorizeUrl.searchParams.set("redirect_uri", redirectUri);
+  authorizeUrl.searchParams.set("response_type", "code");
+  authorizeUrl.searchParams.set("scope", scope);
+
+  return [
+    `  ${pc.dim("Quick start")}`,
+    `  ${pc.dim("authorize")} ${authorizeUrl.toString()}`,
+    `  ${pc.dim("me")} curl -H \"Authorization: Bearer ${authTokenName}\" ${foundry.url}/multipass/api/me`,
+    `  ${pc.dim("current user")} curl -H \"Authorization: Bearer ${authTokenName}\" ${foundry.url}/api/v2/admin/users/getCurrent`,
+  ];
 }

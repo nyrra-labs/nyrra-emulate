@@ -41,12 +41,23 @@ program
   .command("init")
   .description("Generate a starter config file")
   .option(
-    "-s, --service <service>",
-    "Service to generate config for (for example: foundry with oauth_clients or compute_modules)",
-    "all",
+    "-s, --service <services>",
+    "Comma-separated services to include, or 'all' for every bundled starter template",
   )
-  .action((opts) => {
-    initCommand({ service: opts.service });
+  .option("--out <file>", "Write the generated YAML to a custom file path")
+  .option("--stdout", "Print the generated YAML to stdout instead of writing a file")
+  .option("--force", "Overwrite an existing output file")
+  .option("--interactive", "Prompt for services, tokens, and output settings")
+  .option("--no-tokens", "Omit the shared test tokens block from the generated config")
+  .action(async (opts) => {
+    await initCommand({
+      service: opts.service,
+      out: opts.out,
+      stdout: opts.stdout,
+      force: opts.force,
+      interactive: opts.interactive,
+      tokens: opts.tokens,
+    });
   });
 
 program
