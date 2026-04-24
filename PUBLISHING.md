@@ -95,7 +95,9 @@ Use these values:
 - package: `@nyrra/emulate`
 - provider: GitHub Actions
 - repository: `nyrra-labs/nyrra-emulate`
-- workflow file: `.github/workflows/release.yml`
+- workflow filename: `release.yml`
+
+In the npm trusted publisher UI, enter only the workflow filename, not the full path. The file lives at `.github/workflows/release.yml` in this repo, but npm expects `release.yml`.
 
 You can manage that from the npm package settings UI for the `nyrra` org.
 
