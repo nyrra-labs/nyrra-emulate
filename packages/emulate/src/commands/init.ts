@@ -1,7 +1,7 @@
 import { cancel, confirm, intro, isCancel, multiselect, note, outro, select, text } from "@clack/prompts";
-import chalk from "chalk";
-import { existsSync, writeFileSync } from "fs";
-import { resolve } from "path";
+import pc from "picocolors";
+import { existsSync, mkdirSync, writeFileSync } from "fs";
+import { dirname, resolve } from "path";
 import { stringify as yamlStringify } from "yaml";
 import { buildInitTokens, SERVICE_REGISTRY, SERVICE_NAMES, type ServiceName } from "../registry.js";
 
@@ -116,8 +116,8 @@ function ensureCanWrite(outPath: string, force = false): void {
 
 function printWriteSummary(plan: InitPlan): void {
   if (plan.outputMode === "stdout") {
-    console.error(chalk.green("Printed starter config to stdout."));
-    console.error(chalk.dim("Tip: redirect it to a file with emulate init --stdout > emulate.config.yaml"));
+    console.error(pc.green("Printed starter config to stdout."));
+    console.error(pc.dim("Tip: redirect it to a file with emulate init --stdout > emulate.config.yaml"));
     return;
   }
 
@@ -125,13 +125,13 @@ function printWriteSummary(plan: InitPlan): void {
     ? "emulate"
     : `emulate --seed ${renderExplicitSeedPath(plan.outPath)}`;
 
-  console.log(chalk.green(`Created ${plan.outPath}`));
-  console.log(chalk.dim(`Bundled starter templates included: ${plan.services.join(", ")}`));
-  console.log(`\nRun ${chalk.bold(startCommand)} to start the emulator.`);
+  console.log(pc.green(`Created ${plan.outPath}`));
+  console.log(pc.dim(`Bundled starter templates included: ${plan.services.join(", ")}`));
+  console.log(`\nRun ${pc.bold(startCommand)} to start the emulator.`);
 }
 
 function cancelInteractive(message = "Init cancelled."): never {
-  cancel(chalk.yellow(message));
+  cancel(pc.yellow(message));
   process.exit(0);
 }
 
@@ -143,8 +143,8 @@ function assertInteractiveSupported(): void {
 
 function shouldPromptInteractively(options: InitOptions): boolean {
   if (options.interactive) return true;
-  if (options.stdout) return false;
-  return !options.service && process.stdin.isTTY && process.stdout.isTTY;
+  if (options.stdout || options.service || options.out || options.force || options.tokens !== undefined) return false;
+  return process.stdin.isTTY && process.stdout.isTTY;
 }
 
 async function promptForOutputPath(initialValue: string): Promise<string> {
@@ -152,7 +152,7 @@ async function promptForOutputPath(initialValue: string): Promise<string> {
 
   for (;;) {
     const outputPath = await text({
-      message: chalk.cyan("Where should the starter config be saved?"),
+      message: pc.cyan("Where should the starter config be saved?"),
       defaultValue: currentValue,
       validate(value) {
         if (!value || value.trim().length === 0) return "Enter a file path.";
@@ -167,7 +167,7 @@ async function promptForOutputPath(initialValue: string): Promise<string> {
     if (!existsSync(fullPath)) return trimmedValue;
 
     const overwrite = await confirm({
-      message: chalk.yellow(`${trimmedValue} already exists. Overwrite it?`),
+      message: pc.yellow(`${trimmedValue} already exists. Overwrite it?`),
       initialValue: false,
       active: "overwrite",
       inactive: "choose another path",
@@ -186,22 +186,22 @@ async function promptInitPlan(options: InitOptions): Promise<InitPlan> {
   const initialIncludeTokens = options.tokens ?? true;
   const initialOutPath = options.out ?? DEFAULT_FILENAME;
 
-  intro(chalk.bold.cyan("emulate init"));
+  intro(pc.bold(pc.cyan("emulate init")));
   note(
     [
-      chalk.dim("Bundled starter templates are available for every emulator service."),
-      chalk.dim("Pick what you want, then save a YAML file or print it to stdout."),
+      pc.dim("Bundled starter templates are available for every emulator service."),
+      pc.dim("Pick what you want, then save a YAML file or print it to stdout."),
     ].join("\n"),
-    chalk.bold("Starter config builder"),
+    pc.bold("Starter config builder"),
   );
 
   const selectedServices = await multiselect<ServiceName>({
-    message: chalk.cyan("Select the services to include"),
+    message: pc.cyan("Select the services to include"),
     required: true,
     initialValues: initialServices,
     options: SERVICE_NAMES.map((service) => ({
       value: service,
-      label: `${chalk.bold(service)} ${chalk.dim(`(${SERVICE_REGISTRY[service].label})`)}`,
+      label: `${pc.bold(service)} ${pc.dim(`(${SERVICE_REGISTRY[service].label})`)}`,
       hint: SERVICE_REGISTRY[service].endpoints,
     })),
   });
@@ -211,7 +211,7 @@ async function promptInitPlan(options: InitOptions): Promise<InitPlan> {
   let includeTokens = initialIncludeTokens;
   if (options.tokens === undefined) {
     const answered = await confirm({
-      message: chalk.cyan("Include the shared test tokens block?"),
+      message: pc.cyan("Include the service-specific test tokens block?"),
       initialValue: true,
       active: "include tokens",
       inactive: "omit tokens",
@@ -224,18 +224,18 @@ async function promptInitPlan(options: InitOptions): Promise<InitPlan> {
   let outputMode: OutputMode = options.stdout ? "stdout" : "file";
   if (!options.stdout) {
     const answered = await select<OutputMode>({
-      message: chalk.cyan("How should emulate output the starter config?"),
+      message: pc.cyan("How should emulate output the starter config?"),
       initialValue: "file",
       options: [
         {
           value: "file",
-          label: chalk.bold("Save to a YAML file"),
-          hint: chalk.dim("Creates a reusable config you can edit and commit."),
+          label: pc.bold("Save to a YAML file"),
+          hint: pc.dim("Creates a reusable config you can edit and commit."),
         },
         {
           value: "stdout",
-          label: chalk.bold("Print YAML to stdout"),
-          hint: chalk.dim("Great for redirection, scripting, or quick previews."),
+          label: pc.bold("Print YAML to stdout"),
+          hint: pc.dim("Great for redirection, scripting, or quick previews."),
         },
       ],
     });
@@ -248,11 +248,11 @@ async function promptInitPlan(options: InitOptions): Promise<InitPlan> {
 
   note(
     [
-      `${chalk.bold("Services")}  ${selectedServices.join(", ")}`,
-      `${chalk.bold("Tokens")}    ${includeTokens ? "included" : "omitted"}`,
-      `${chalk.bold("Output")}    ${outputMode === "file" ? outPath : "stdout"}`,
+      `${pc.bold("Services")}  ${selectedServices.join(", ")}`,
+      `${pc.bold("Tokens")}    ${includeTokens ? "included" : "omitted"}`,
+      `${pc.bold("Output")}    ${outputMode === "file" ? outPath : "stdout"}`,
     ].join("\n"),
-    chalk.bold("Plan"),
+    pc.bold("Plan"),
   );
 
   return {
@@ -295,11 +295,12 @@ export async function initCommand(options: InitOptions): Promise<void> {
     }
 
     ensureCanWrite(plan.outPath, plan.force);
+    mkdirSync(dirname(resolve(plan.outPath)), { recursive: true });
     writeFileSync(resolve(plan.outPath), content, "utf-8");
     printWriteSummary(plan);
 
     if (shouldPromptInteractively(options)) {
-      outro(chalk.green("Starter config ready."));
+      outro(pc.green("Starter config ready."));
     }
   } catch (err) {
     console.error(err instanceof Error ? err.message : String(err));

@@ -83,4 +83,10 @@ describe("initCommand", () => {
 
     stdoutWrite.mockRestore();
   });
+
+  it("creates parent directories for custom output paths", async () => {
+    await initCommand({ service: "foundry", out: "configs/local.yaml", force: true });
+
+    expect(existsSync(join(tempDir, "configs", "local.yaml"))).toBe(true);
+  });
 });

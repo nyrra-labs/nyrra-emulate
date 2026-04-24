@@ -48,7 +48,7 @@ program
   .option("--stdout", "Print the generated YAML to stdout instead of writing a file")
   .option("--force", "Overwrite an existing output file")
   .option("--interactive", "Prompt for services, tokens, and output settings")
-  .option("--no-tokens", "Omit the shared test tokens block from the generated config")
+  .option("--skip-tokens", "Omit the service-specific test tokens block from the generated config")
   .action(async (opts) => {
     await initCommand({
       service: opts.service,
@@ -56,7 +56,7 @@ program
       stdout: opts.stdout,
       force: opts.force,
       interactive: opts.interactive,
-      tokens: opts.tokens,
+      tokens: opts.skipTokens ? false : undefined,
     });
   });
 
