@@ -1,7 +1,7 @@
 {
   "name": "@nyrra/emulate",
   "version": "0.4.2",
-  "description": "Local drop-in replacement services for CI and no-network sandboxes",
+  "description": "Local drop-in replacement services for CI and no-network sandboxes, including Palantir Foundry",
   "license": "Apache-2.0",
   "type": "module",
   "exports": {
@@ -31,6 +31,9 @@
     "vercel",
     "github",
     "google",
+    "foundry",
+    "palantir",
+    "palantir-foundry",
     "oauth",
     "testing",
     "ci",

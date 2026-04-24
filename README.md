@@ -1,6 +1,13 @@
-# emulate
+<p align="center">
+  <img src="https://www.nyrra.ai/nyrra-logo-5-colors.svg" alt="Nyrra" width="220" />
+</p>
 
-Local drop-in replacement services for CI and no-network sandboxes. Fully stateful, production-fidelity API emulation. Not mocks.
+# @nyrra/emulate
+
+Local drop-in replacement services for CI and no-network sandboxes, including Palantir Foundry. Fully stateful, production-fidelity API emulation. Not mocks.
+
+[![npm](https://img.shields.io/npm/v/%40nyrra%2Femulate/latest?logo=npm&label=npm)](https://www.npmjs.com/package/@nyrra/emulate)
+[![next](https://img.shields.io/npm/v/%40nyrra%2Femulate/next?logo=npm&label=next)](https://www.npmjs.com/package/@nyrra/emulate?activeTab=versions)
 
 ## Quick Start
 
