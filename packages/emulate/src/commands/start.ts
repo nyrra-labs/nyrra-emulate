@@ -213,7 +213,7 @@ function printBanner(
   console.log(lines.join("\n"));
 }
 
-function buildQuickStartLines(
+export function buildQuickStartLines(
   services: Array<{ name: string; url: string }>,
   tokens: Record<string, { login: string; id: number; scopes?: string[] }>,
   seedConfig: SeedConfig | null,
@@ -236,9 +236,10 @@ function buildQuickStartLines(
   const scope = firstClient?.allowed_scopes?.includes("api:admin-read")
     ? "api:admin-read"
     : (firstClient?.allowed_scopes?.[0] ?? "api:admin-read");
-  const authTokenName =
-    Object.entries(tokens).find(([, token]) => (token.scopes ?? []).includes("api:admin-read"))?.[0] ??
-    "test_token_admin";
+  const tokenEntries = Object.entries(tokens);
+  const anyTokenName = tokenEntries[0]?.[0] ?? null;
+  const adminReadTokenName =
+    tokenEntries.find(([, token]) => (token.scopes ?? []).includes("api:admin-read"))?.[0] ?? null;
 
   const authorizeUrl = new URL(`${foundry.url}/multipass/api/oauth2/authorize`);
   authorizeUrl.searchParams.set("client_id", clientId);
@@ -246,10 +247,21 @@ function buildQuickStartLines(
   authorizeUrl.searchParams.set("response_type", "code");
   authorizeUrl.searchParams.set("scope", scope);
 
-  return [
-    `  ${pc.dim("Quick start")}`,
-    `  ${pc.dim("authorize")} ${authorizeUrl.toString()}`,
-    `  ${pc.dim("me")} curl -H \"Authorization: Bearer ${authTokenName}\" ${foundry.url}/multipass/api/me`,
-    `  ${pc.dim("current user")} curl -H \"Authorization: Bearer ${authTokenName}\" ${foundry.url}/api/v2/admin/users/getCurrent`,
-  ];
+  const lines = [`  ${pc.dim("Quick start")}`, `  ${pc.dim("authorize")} ${authorizeUrl.toString()}`];
+
+  if (anyTokenName) {
+    lines.push(`  ${pc.dim("me")} curl -H \"Authorization: Bearer ${anyTokenName}\" ${foundry.url}/multipass/api/me`);
+  }
+
+  if (adminReadTokenName) {
+    lines.push(
+      `  ${pc.dim("current user")} curl -H \"Authorization: Bearer ${adminReadTokenName}\" ${foundry.url}/api/v2/admin/users/getCurrent`,
+    );
+  } else {
+    lines.push(
+      `  ${pc.dim("current user")} requires a token with api:admin-read. Use the authorize URL above or add one in your seed config.`,
+    );
+  }
+
+  return lines;
 }

@@ -6,6 +6,7 @@ import { stringify as yamlStringify } from "yaml";
 import { buildInitTokens, SERVICE_REGISTRY, SERVICE_NAMES, type ServiceName } from "../registry.js";
 
 const DEFAULT_FILENAME = "emulate.config.yaml";
+const INTERACTIVE_IO = { output: process.stderr };
 const AUTO_DETECTED_FILENAMES = new Set([
   "emulate.config.yaml",
   "emulate.config.yml",
@@ -131,12 +132,12 @@ function printWriteSummary(plan: InitPlan): void {
 }
 
 function cancelInteractive(message = "Init cancelled."): never {
-  cancel(pc.yellow(message));
+  cancel(pc.yellow(message), INTERACTIVE_IO);
   process.exit(0);
 }
 
 function assertInteractiveSupported(): void {
-  if (!process.stdin.isTTY || !process.stdout.isTTY) {
+  if (!process.stdin.isTTY || !process.stderr.isTTY) {
     throw new Error("Interactive init requires a TTY. Use flags such as --service, --out, or --stdout instead.");
   }
 }
@@ -144,7 +145,7 @@ function assertInteractiveSupported(): void {
 function shouldPromptInteractively(options: InitOptions): boolean {
   if (options.interactive) return true;
   if (options.stdout || options.service || options.out || options.force || options.tokens !== undefined) return false;
-  return process.stdin.isTTY && process.stdout.isTTY;
+  return process.stdin.isTTY && process.stdout.isTTY && process.stderr.isTTY;
 }
 
 async function promptForOutputPath(initialValue: string): Promise<string> {
@@ -152,6 +153,7 @@ async function promptForOutputPath(initialValue: string): Promise<string> {
 
   for (;;) {
     const outputPath = await text({
+      ...INTERACTIVE_IO,
       message: pc.cyan("Where should the starter config be saved?"),
       defaultValue: currentValue,
       validate(value) {
@@ -167,6 +169,7 @@ async function promptForOutputPath(initialValue: string): Promise<string> {
     if (!existsSync(fullPath)) return trimmedValue;
 
     const overwrite = await confirm({
+      ...INTERACTIVE_IO,
       message: pc.yellow(`${trimmedValue} already exists. Overwrite it?`),
       initialValue: false,
       active: "overwrite",
@@ -186,16 +189,18 @@ async function promptInitPlan(options: InitOptions): Promise<InitPlan> {
   const initialIncludeTokens = options.tokens ?? true;
   const initialOutPath = options.out ?? DEFAULT_FILENAME;
 
-  intro(pc.bold(pc.cyan("emulate init")));
+  intro(pc.bold(pc.cyan("emulate init")), INTERACTIVE_IO);
   note(
     [
       pc.dim("Bundled starter templates are available for every emulator service."),
       pc.dim("Pick what you want, then save a YAML file or print it to stdout."),
     ].join("\n"),
     pc.bold("Starter config builder"),
+    INTERACTIVE_IO,
   );
 
   const selectedServices = await multiselect<ServiceName>({
+    ...INTERACTIVE_IO,
     message: pc.cyan("Select the services to include"),
     required: true,
     initialValues: initialServices,
@@ -211,6 +216,7 @@ async function promptInitPlan(options: InitOptions): Promise<InitPlan> {
   let includeTokens = initialIncludeTokens;
   if (options.tokens === undefined) {
     const answered = await confirm({
+      ...INTERACTIVE_IO,
       message: pc.cyan("Include the service-specific test tokens block?"),
       initialValue: true,
       active: "include tokens",
@@ -224,6 +230,7 @@ async function promptInitPlan(options: InitOptions): Promise<InitPlan> {
   let outputMode: OutputMode = options.stdout ? "stdout" : "file";
   if (!options.stdout) {
     const answered = await select<OutputMode>({
+      ...INTERACTIVE_IO,
       message: pc.cyan("How should emulate output the starter config?"),
       initialValue: "file",
       options: [
@@ -253,6 +260,7 @@ async function promptInitPlan(options: InitOptions): Promise<InitPlan> {
       `${pc.bold("Output")}    ${outputMode === "file" ? outPath : "stdout"}`,
     ].join("\n"),
     pc.bold("Plan"),
+    INTERACTIVE_IO,
   );
 
   return {
@@ -291,6 +299,9 @@ export async function initCommand(options: InitOptions): Promise<void> {
       process.stdout.write(content);
       if (!content.endsWith("\n")) process.stdout.write("\n");
       printWriteSummary(plan);
+      if (shouldPromptInteractively(options)) {
+        outro(pc.green("Starter config ready."), INTERACTIVE_IO);
+      }
       return;
     }
 
@@ -300,7 +311,7 @@ export async function initCommand(options: InitOptions): Promise<void> {
     printWriteSummary(plan);
 
     if (shouldPromptInteractively(options)) {
-      outro(pc.green("Starter config ready."));
+      outro(pc.green("Starter config ready."), INTERACTIVE_IO);
     }
   } catch (err) {
     console.error(err instanceof Error ? err.message : String(err));
