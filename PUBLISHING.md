@@ -63,13 +63,21 @@ npm publish ./packages/emulate/.release --access public --tag next
 On every push to `main`, the workflow:
 
 1. verifies the repo
-2. resolves the next version like `0.4.2-next.0`
+2. if the committed stable manifest still matches npm `latest`, resolves the next version like `0.4.2-next.0`
 3. builds `packages/emulate/.release`
 4. publishes `@nyrra/emulate` with the `next` tag using OIDC trusted publishing
+
+If `packages/emulate/package.json` has already been bumped for a pending stable release, the push workflow skips the prerelease publish instead of failing.
 
 ### Stable release
 
 Run the workflow manually with `dry-run = false` after the desired stable version is on `main`.
+
+Typical stable flow:
+
+1. open and merge a `release/<version>` PR that bumps `packages/emulate/package.json`
+2. let the normal push workflow skip prerelease publishing on that merge
+3. run the release workflow manually with `dry-run = false` to publish that manifest version to `latest`
 
 That workflow will:
 
