@@ -108,6 +108,14 @@ jobs:
             --target foundryci.com \
             --dry-run
 
+      - name: Check production HTTPS redirect permissions
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          node apps/web-svelte/scripts/ensure-cloudflare-https-settings.mjs \
+            --zone foundryci.com \
+            --dry-run
+
       - name: Comment preview deployment on PR
         env:
           APP_NAME: ${{ env.APP_NAME }}
@@ -166,6 +174,13 @@ jobs:
             --zone foundryci.com \
             --record-name www \
             --target foundryci.com
+
+      - name: Ensure production HTTPS redirects
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          node apps/web-svelte/scripts/ensure-cloudflare-https-settings.mjs \
+            --zone foundryci.com
 
       - name: Comment production deployment on associated PR
         env:
