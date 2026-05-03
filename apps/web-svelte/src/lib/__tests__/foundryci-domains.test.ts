@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { alwaysUseHttpsNeedsUpdate } from "../../../scripts/ensure-cloudflare-https-settings.mjs";
 import {
   cnameNeedsUpdate,
   conflictingRecords,
@@ -61,6 +62,21 @@ describe("FoundryCI production domains", () => {
     expect(workflow).toContain("--record-name www");
     expect(workflow).toContain("--target foundryci.com");
     expect(workflow).toContain("--dry-run");
+  });
+
+  it("checks HTTPS redirect permissions on previews and enables HTTPS redirects after production deploys", () => {
+    const workflow = readFileSync(DEPLOY_WORKFLOW_PATH, "utf-8");
+
+    expect(workflow).toContain("Check production HTTPS redirect permissions");
+    expect(workflow).toContain("Ensure production HTTPS redirects");
+    expect(workflow).toContain("node apps/web-svelte/scripts/ensure-cloudflare-https-settings.mjs");
+    expect(workflow).toContain("--zone foundryci.com");
+    expect(workflow).toContain("--dry-run");
+  });
+
+  it("detects when Always Use HTTPS needs to be enabled", () => {
+    expect(alwaysUseHttpsNeedsUpdate({ id: "always_use_https", value: "on" })).toBe(false);
+    expect(alwaysUseHttpsNeedsUpdate({ id: "always_use_https", value: "off" })).toBe(true);
   });
 
   it("targets the www hostname at the apex through a proxied CNAME", () => {
