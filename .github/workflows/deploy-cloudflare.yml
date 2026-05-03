@@ -98,6 +98,16 @@ jobs:
           echo "preview_url=$preview_url" >> "$GITHUB_OUTPUT"
           echo "version_id=$version_id" >> "$GITHUB_OUTPUT"
 
+      - name: Check production www DNS permissions
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          node apps/web-svelte/scripts/ensure-cloudflare-www-dns.mjs \
+            --zone foundryci.com \
+            --record-name www \
+            --target foundryci.com \
+            --dry-run
+
       - name: Comment preview deployment on PR
         env:
           APP_NAME: ${{ env.APP_NAME }}
@@ -147,6 +157,15 @@ jobs:
 
           version_id="$(printf '%s\n' "$output" | sed -n 's/^Current Version ID: //p; s/^Version ID: //p' | tail -n 1)"
           echo "version_id=$version_id" >> "$GITHUB_OUTPUT"
+
+      - name: Ensure production www DNS
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          node apps/web-svelte/scripts/ensure-cloudflare-www-dns.mjs \
+            --zone foundryci.com \
+            --record-name www \
+            --target foundryci.com
 
       - name: Comment production deployment on associated PR
         env:

@@ -8,7 +8,7 @@
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
-    "build:cloudflare": "rm -rf .svelte-kit/cloudflare && vite build && node scripts/wrap-cloudflare-worker.mjs",
+    "build:cloudflare": "rm -rf .svelte-kit/cloudflare && vite build",
     "lint": "eslint .",
     "test": "vitest run",
     "type-check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
