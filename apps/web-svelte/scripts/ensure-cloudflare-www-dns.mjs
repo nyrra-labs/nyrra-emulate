@@ -11,6 +11,25 @@ const API_BASE = "https://api.cloudflare.com/client/v4";
  * @typedef {{ content: string; name: string; proxied: boolean; ttl: number; type: "CNAME" }} DesiredCnameRecord
  */
 
+class CloudflareApiError extends Error {
+  /** @type {CloudflareError[]} */
+  errors;
+
+  /** @type {number} */
+  status;
+
+  /**
+   * @param {string} message
+   * @param {{ errors: CloudflareError[]; status: number }} options
+   */
+  constructor(message, { errors, status }) {
+    super(message);
+    this.name = "CloudflareApiError";
+    this.errors = errors;
+    this.status = status;
+  }
+}
+
 /**
  * @param {string[]} argv
  * @returns {Args}
@@ -85,8 +104,9 @@ async function cloudflareFetch(path, { body, method = "GET", token }) {
     const hint = permissionError
       ? " The Cloudflare token must include Zone:DNS read/edit permission for the target zone."
       : "";
-    throw new Error(
+    throw new CloudflareApiError(
       `Cloudflare ${method} ${path} failed: ${JSON.stringify(errors.length > 0 ? errors : data)}.${hint}`,
+      { errors, status: response.status },
     );
   }
   return data.result;
@@ -130,6 +150,19 @@ export function conflictingRecords(records, desired) {
   return records.filter((record) => record.name === desired.name && record.type !== desired.type);
 }
 
+/**
+ * @param {unknown} error
+ * @returns {boolean}
+ */
+export function isReadOnlyRecordError(error) {
+  if (!(error instanceof Error) || !("errors" in error)) {
+    return false;
+  }
+
+  const errors = /** @type {{ errors?: CloudflareError[] }} */ (error).errors;
+  return Array.isArray(errors) && errors.some((cloudflareError) => cloudflareError.code === 1043);
+}
+
 export async function main(argv = process.argv.slice(2)) {
   const args = parseArgs(argv);
   if (args.help) {
@@ -155,18 +188,33 @@ export async function main(argv = process.argv.slice(2)) {
   const conflicts = conflictingRecords(records, desired);
   const existing = records.find((record) => record.type === desired.type);
 
+  let hasCloudflareManagedConflict = false;
+
   if (conflicts.length > 0) {
     if (args.dryRun) {
-      console.log(`dry run would delete ${conflicts.length} conflicting ${desired.name} DNS record(s)`);
+      console.log(`dry run would reconcile ${conflicts.length} conflicting ${desired.name} DNS record(s)`);
     } else {
       for (const conflict of conflicts) {
-        await cloudflareFetch(`/zones/${zone.id}/dns_records/${conflict.id}`, {
-          method: "DELETE",
-          token,
-        });
-        console.log(`deleted conflicting ${conflict.type} record for ${desired.name}`);
+        try {
+          await cloudflareFetch(`/zones/${zone.id}/dns_records/${conflict.id}`, {
+            method: "DELETE",
+            token,
+          });
+          console.log(`deleted conflicting ${conflict.type} record for ${desired.name}`);
+        } catch (error) {
+          if (!isReadOnlyRecordError(error)) {
+            throw error;
+          }
+          hasCloudflareManagedConflict = true;
+          console.log(`left Cloudflare-managed ${conflict.type} record for ${desired.name} in place`);
+        }
       }
     }
+  }
+
+  if (hasCloudflareManagedConflict) {
+    console.log(`${desired.name} DNS is already managed by the Cloudflare custom-domain trigger`);
+    return;
   }
 
   if (!existing) {
