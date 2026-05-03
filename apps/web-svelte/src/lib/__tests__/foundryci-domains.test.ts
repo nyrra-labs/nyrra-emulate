@@ -5,6 +5,7 @@ import {
   cnameNeedsUpdate,
   conflictingRecords,
   desiredCnameRecord,
+  isReadOnlyRecordError,
 } from "../../../scripts/ensure-cloudflare-www-dns.mjs";
 
 type WranglerRoute = {
@@ -88,6 +89,13 @@ describe("FoundryCI production domains", () => {
     expect(cnameNeedsUpdate(desired, desired)).toBe(false);
     expect(cnameNeedsUpdate({ ...desired, content: "old.example.com" }, desired)).toBe(true);
     expect(cnameNeedsUpdate({ ...desired, proxied: false }, desired)).toBe(true);
+  });
+
+  it("detects Cloudflare read-only DNS records as managed records", () => {
+    const error = Object.assign(new Error("read only"), { errors: [{ code: 1043 }] });
+
+    expect(isReadOnlyRecordError(error)).toBe(true);
+    expect(isReadOnlyRecordError(new Error("other"))).toBe(false);
   });
 
   it("identifies stale non-CNAME records before creating the www CNAME", () => {
